@@ -10,12 +10,18 @@
 //=============================================================================
 #include <iostream>
 
+#include "configuration.h"
 
 int
 main(int argc,char ** argv)
 {
-	std::cout << "Hello Game Engine Packer World" << std::endl;
+	Configuration config;
 
+	auto status = parse_command_line(argc,argv,config);
+	if(status)
+		return status;
+
+	std::cout << "Loading '" << config.input_file << "'\n";
 
 	return 0;
 }
