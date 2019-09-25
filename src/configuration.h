@@ -15,12 +15,26 @@
 #include <vector>
 #include <string>
 
+namespace gap
+{
+
+struct MountPoint
+{
+	std::string		path;
+	std::string		mountpoint;
+};
+
+
 struct Configuration
 {
-	std::string								input_file			= "assets.gap";
-	std::string								output_file;		// Overrides the filename from the input_file if non-empty.
+	std::string										input_file			= "assets.gap";
+	std::string										output_file;		// Overrides the filename from the input_file if non-empty.
+
+	std::vector<MountPoint>				mount_points;
 };
 
 int	parse_command_line(int argc,char ** argv,Configuration & out_config);
+
+} // namespace gap
 
 #endif // ! defined GUARD_ADE_GAME_ASSET_PACKER_CONFIGURATION_H

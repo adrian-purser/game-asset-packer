@@ -13,6 +13,9 @@
 #include "programoptions/program_options.h"
 #include "configuration.h"
 
+namespace gap
+{
+
 int
 parse_command_line(int argc,char ** argv,Configuration & out_config)
 {
@@ -23,6 +26,7 @@ parse_command_line(int argc,char ** argv,Configuration & out_config)
 	grp_general.add_option("help","Display help message");
 	grp_general.add_option("version","Display version information");
 	grp_general.add_option("output,o","Output filename","Filename");
+	grp_general.add_option("mount,m","Mount Package","<Path>,<MountPoint>");
 
 	program_options::Parser parser;
 	parser.add_group("",grp_general);
@@ -49,6 +53,18 @@ parse_command_line(int argc,char ** argv,Configuration & out_config)
 	//-------------------------------------------------------------------------
 	if(values.options.count("output"))	out_config.output_file = values.options["output"].back();
 
+	if(values.options.count("mount"))
+	{
+		for(const auto & str : values.options["mount"])
+		{
+			auto pos = str.find(',');
+			if(pos == std::string::npos)
+				out_config.mount_points.push_back({str,"/"});
+			else
+				out_config.mount_points.push_back({str.substr(0,pos),str.substr(pos+1)});
+		}
+	}
+
 	//-------------------------------------------------------------------------
 	//	Process the args.
 	//-------------------------------------------------------------------------
@@ -57,3 +73,5 @@ parse_command_line(int argc,char ** argv,Configuration & out_config)
 
 	return 0;
 }
+
+} // namespace gap

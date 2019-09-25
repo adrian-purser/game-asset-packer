@@ -1,5 +1,5 @@
 //=============================================================================
-//	FILE:					main.cpp
+//	FILE:					app.cpp
 //	SYSTEM:				Game Asset Packer
 //	DESCRIPTION:
 //-----------------------------------------------------------------------------
@@ -8,22 +8,31 @@
 //	MAINTAINER:		AJP - Adrian Purser <ade&arcadestuff.com>
 //	CREATED:			24-SEP-2019 Adrian Purser <ade&arcadestuff.com>
 //=============================================================================
-#include <iostream>
 
-#include "configuration.h"
+#include <iostream>
 #include "app.h"
 
-int
-main(int argc,char ** argv)
+namespace gap
 {
-	gap::Configuration config;
 
-	auto status = gap::parse_command_line(argc,argv,config);
-	if(status)
-		return status;
-
-	gap::Application app(config);
-
-	return app.run();
+Application::Application(const gap::Configuration & config)
+	: m_config(config)
+{
 }
+
+
+int
+Application::run()
+{
+
+	// Mount Packages
+	for(const auto & mp : m_config.mount_points)
+		m_filesystem.mount(mp.path,mp.mountpoint);
+
+	return 0;
+}
+
+
+
+} // namespace gap
 
