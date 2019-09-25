@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include "app.h"
+#include "parse_gap.h"
 
 namespace gap
 {
@@ -28,6 +29,29 @@ Application::run()
 	// Mount Packages
 	for(const auto & mp : m_config.mount_points)
 		m_filesystem.mount(mp.path,mp.mountpoint);
+
+	std::cout << "=============================================================================\n\n"; 
+
+	if(m_config.input_file.empty())
+	{
+		std::cerr << "No Input File!\n";
+		return -1;
+	}
+
+	auto filedata = m_filesystem.load(m_config.input_file);
+	if(filedata.empty())
+	{
+		std::cerr << "Failed to load the source file or it is empty!\n";
+		return -1;
+	}
+
+	std::string_view source(reinterpret_cast<const char *>(filedata.data()),filedata.size());
+	gap::parse_gap(source);
+
+//	std::cout << source << std::endl;
+
+
+
 
 	return 0;
 }
