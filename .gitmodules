@@ -13,3 +13,6 @@
 [submodule "src/programoptions"]
 	path = src/programoptions
 	url = git@git.adrianpurser.co.uk:library/programoptions.git
+[submodule "src/utility"]
+	path = src/utility
+	url = git@git.adrianpurser.co.uk:library/utility.git
