@@ -20,14 +20,14 @@ namespace gap::assets
 class Assets
 {
 private:
-	std::vector<gap::Image>				m_source_images;
+	std::vector<gap::image::Image>				m_source_images;
 
 public:
 	Assets() = default;
 	Assets(const Assets &) = delete;
 	Assets & operator=(const Assets &) = delete;
 
-	int							add_source_image(gap::Image && image);
+	int							add_source_image(gap::image::Image && image);
 	
 
 

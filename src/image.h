@@ -14,8 +14,9 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include "filesystem.h"
 
-namespace gap
+namespace gap::image
 {
 
 namespace pixelformat
@@ -40,15 +41,15 @@ constexpr int	bytes_per_pixel(const std::uint8_t	pixel_format)
 							{
 								switch(pixel_format)
 								{
-									case gap::pixelformat::ARGB8888 :		return 4;
-									case gap::pixelformat::RGB888 :			return 3;
-									case gap::pixelformat::RGB565 :			
-									case gap::pixelformat::ARGB1555 :
-									case gap::pixelformat::ARGB4444 :	
-									case gap::pixelformat::AL88 :				return 2;
-									case gap::pixelformat::L8 :
-									case gap::pixelformat::AL44 :
-									case gap::pixelformat::A8 :					return 1;
+									case gap::image::pixelformat::ARGB8888 :		return 4;
+									case gap::image::pixelformat::RGB888 :			return 3;
+									case gap::image::pixelformat::RGB565 :			
+									case gap::image::pixelformat::ARGB1555 :
+									case gap::image::pixelformat::ARGB4444 :	
+									case gap::image::pixelformat::AL88 :				return 2;
+									case gap::image::pixelformat::L8 :
+									case gap::image::pixelformat::AL44 :
+									case gap::image::pixelformat::A8 :					return 1;
 									default : break;
 								}
 								return 0;
@@ -72,7 +73,8 @@ struct Image
 							}
 };
 
+Image			load(const std::string & filename,gap::FileSystem & filesystem);
 
-} // namespace gap
+} // namespace gap::image
 
 #endif // ! defined GUARD_ADE_GAME_ASSET_PACKER_IMAGE_H

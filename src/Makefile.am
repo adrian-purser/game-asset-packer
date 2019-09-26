@@ -24,11 +24,13 @@ canvas2/canvas2.h \
 config.h \
 configuration.h \
 configuration.cpp \
+filesystem.h \
 image.h \
 image.cpp \
 main.cpp \
 parse_gap.h \
 parse_gap.cpp \
-programoptions\program_options.h
+programoptions/program_options.h \
+utility/hash.hash
 
 

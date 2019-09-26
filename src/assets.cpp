@@ -16,10 +16,11 @@ namespace gap::assets
 
 
 int
-Assets::add_source_image(gap::Image && image)
+Assets::add_source_image(gap::image::Image && image)
 {
 	int index = m_source_images.size();
 	m_source_images.push_back(std::move(image));
+	return index;
 }
 
 

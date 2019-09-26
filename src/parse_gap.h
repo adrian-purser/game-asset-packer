@@ -16,11 +16,12 @@
 #include <string>
 #include <memory>
 #include "assets.h"
+#include "filesystem.h"
 
 namespace gap
 {
 
-std::unique_ptr<gap::assets::Assets>		parse_gap(std::string_view source);
+std::unique_ptr<gap::assets::Assets>		parse_gap_file(std::string_view source,gap::Filesystem & filesystem);
 
 } // namespace gap
 

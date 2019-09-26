@@ -12,7 +12,7 @@
 #define GUARD_ADE_GAMES_ASSET_PACKER_APP_H
 
 #include "configuration.h"
-#include "adefs/adefs.h"
+#include "filesystem.h"
 #include "assets.h"
 
 namespace gap
@@ -21,8 +21,8 @@ namespace gap
 class Application
 {
 private:
-	const gap::Configuration & 	m_config;
-	adefs::AdeFS								m_filesystem;
+	const gap::Configuration & 		m_config;
+	gap::FileSystem								m_filesystem;
 
 public:
 	Application() = default;
