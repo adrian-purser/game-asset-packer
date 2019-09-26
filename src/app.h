@@ -13,6 +13,7 @@
 
 #include "configuration.h"
 #include "adefs/adefs.h"
+#include "assets.h"
 
 namespace gap
 {

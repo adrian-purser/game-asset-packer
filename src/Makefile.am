@@ -18,6 +18,8 @@ window/libwindow.la
 gap_SOURCES = \
 app.h \
 app.cpp \
+assets.h \
+assets.cpp \
 canvas2/canvas2.h \
 config.h \
 configuration.h \

@@ -14,11 +14,13 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <memory>
+#include "assets.h"
 
 namespace gap
 {
 
-int		parse_gap(std::string_view source);
+std::unique_ptr<gap::assets::Assets>		parse_gap(std::string_view source);
 
 } // namespace gap
 
