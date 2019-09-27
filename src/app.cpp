@@ -46,7 +46,9 @@ Application::run()
 	}
 
 	std::string_view source(reinterpret_cast<const char *>(filedata.data()),filedata.size());
-	gap::parse_gap_file(source,m_filesystem);
+
+	gap::ParserGAP parser(m_filesystem);
+	auto p_assets = parser.parse(source);
 
 //	std::cout << source << std::endl;
 

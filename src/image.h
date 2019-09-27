@@ -15,6 +15,7 @@
 #include <vector>
 #include <string>
 #include "filesystem.h"
+#include "utility/hash.h"
 
 namespace gap::image
 {
@@ -57,13 +58,17 @@ constexpr int	bytes_per_pixel(const std::uint8_t	pixel_format)
 
 } // namespace pixelformat
 
+std::uint8_t 		parse_pixelformat_name(const std::string & name);
+std::string			get_pixelformat_name(std::uint8_t pixelformat);
+
 
 struct Image
 {
 	std::vector<std::uint32_t>	data;
-	int													width 				= 0;
-	int													height 				= 0;
-	int													offset 				= 0;					// The offset from the end of a line to the start of the next line in pixels.
+	int													width 							= 0;
+	int													height 							= 0;
+	int													offset 							= 0;					// The offset from the end of a line to the start of the next line in pixels.
+	std::uint8_t 								source_pixelformat	= 0;
 
 	Image 			duplicate_subimage(int x, int y, int width, int height)
 							{

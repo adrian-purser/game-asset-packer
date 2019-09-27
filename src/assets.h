@@ -30,7 +30,7 @@ public:
 	int							add_source_image(gap::image::Image && image);
 	
 
-
+	void						dump();
 
 };
 

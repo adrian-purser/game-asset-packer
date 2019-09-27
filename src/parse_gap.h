@@ -15,13 +15,38 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <mutex>
 #include "assets.h"
 #include "filesystem.h"
 
 namespace gap
 {
 
-std::unique_ptr<gap::assets::Assets>		parse_gap_file(std::string_view source,gap::Filesystem & filesystem);
+class ParserGAP
+{
+private:
+	gap::FileSystem &											m_filesystem;
+	std::unique_ptr<gap::assets::Assets>	m_p_assets;
+	std::mutex														m_mutex;
+
+	int																		m_current_source_image				= -1;
+
+public:
+	ParserGAP(gap::FileSystem & filesystem);
+	~ParserGAP() = default;
+	ParserGAP(const ParserGAP &) = delete;
+	ParserGAP & operator=(const ParserGAP &) = delete;
+
+	std::unique_ptr<gap::assets::Assets>		parse(std::string_view source);
+
+private:
+	int									parse_line(std::string_view line,int line_number);
+	int									on_error(int line_number,const std::string & error_message) {std::cerr << "Line " << line_number << ": " << error_message << '\n';return -1;}
+	
+	int 								command_image(int line_number,const std::vector<std::string> & tokens);
+
+};
+
 
 } // namespace gap
 

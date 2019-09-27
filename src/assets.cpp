@@ -8,7 +8,7 @@
 //	MAINTAINER:		AJP - Adrian Purser <ade&arcadestuff.com>
 //	CREATED:			25-SEP-2019 Adrian Purser <ade&arcadestuff.com>
 //=============================================================================
-
+#include <iostream>
 #include "assets.h"
 
 namespace gap::assets
@@ -23,6 +23,28 @@ Assets::add_source_image(gap::image::Image && image)
 	return index;
 }
 
+void
+Assets::dump()
+{
+
+	std::cout << 	"ASSETS:\n"
+								"================================================================================\n";
+
+	std::cout << "Images:\n";
+	int index = 0;
+
+	for(const auto & image : m_source_images)
+	{
+		auto str = std::to_string(index) + ':';
+		str.resize(5,' ');
+		str += std::to_string(image.width) + 'x' + std::to_string(image.height);
+		str.resize(15,' ');
+		str += gap::image::get_pixelformat_name(image.source_pixelformat);
+
+		std::cout << str << '\n';
+		++index;
+	}
+}
 
 
 } // namespace gap::assets

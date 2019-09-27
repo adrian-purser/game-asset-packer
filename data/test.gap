@@ -1,8 +1,5 @@
 # Test GAP file
-image,"data/test,png",RGBA8888,1,2,3
-
-image,"data/test2.png",RGBA8888,1          # test file
-    
-    #
-
-
+image,"/sunnyland/tileset.png",RGBA8888
+image,"/sunnyland/crate.png",RGBA8888
+image,"/sunnyland/player-idle.png",RGBA8888
+image,"/sunnyland/block.png",RGBA8888

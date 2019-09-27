@@ -12,20 +12,27 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include <algorithm>
 #include "parse_gap.h"
 #include "utility/hash.h"
 
 #define GAPCMD_IMAGE		"image"
 
+namespace param::image { enum {	CMD,	PATH,		PIXELFORMAT }; }
+
+
 namespace gap
 {
 
-static int	parse_line(std::string_view line,int line_number,gap::assets::Assets & assets,gap::Filesystem & filesystem);
+ParserGAP::ParserGAP(gap::FileSystem & filesystem)
+ : m_filesystem(filesystem)
+ {
+ }
 
 std::unique_ptr<gap::assets::Assets>		
-parse_gap_file(std::string_view source,gap::Filesystem & filesystem)
+ParserGAP::parse(std::string_view source)
 {
-	auto p_assets = std::make_unique<gap::assets::Assets>();
+	m_p_assets = std::make_unique<gap::assets::Assets>();
 
 	std::string_view::size_type linestart = 0;
 	int linenumber = 1;
@@ -36,7 +43,7 @@ parse_gap_file(std::string_view source,gap::Filesystem & filesystem)
 		auto linebreak = source.find('\n',linestart);
 		auto line = (linebreak == std::string_view::npos) ? source.substr(linestart) : source.substr(linestart,linebreak-linestart);
 
-		if(parse_line(line,linenumber,*(p_assets.get()),filesystem))
+		if(parse_line(line,linenumber))
 		{
 			b_error = true;
 			continue;
@@ -52,24 +59,14 @@ parse_gap_file(std::string_view source,gap::Filesystem & filesystem)
 	if(b_error)
 		return nullptr;
 
-	return p_assets;
+	m_p_assets->dump();
+	
+	return std::move(m_p_assets);
 }
 
-static int command_image(int line_number,const std::vector<std::string> & tokens,gap::assets::Assets & assets,gap::Filesystem & filesystem)
-{
-	if(tokens.size() < 2)
-	{
-		std::cerr << "Line " << line_number << ": IMAGE: Missing image path!\n";
-		return -1;
-	}
 
-	auto image = gap::image::load(tokens[0],filesystem);
-
-	return 0;
-}
-
-static int
-parse_line(std::string_view line,int line_number,gap::assets::Assets & assets,gap::Filesystem & filesystem)
+int
+ParserGAP::parse_line(std::string_view line,int line_number)
 {
 	//---------------------------------------------------------------------------
 	//	Tokenise the line string
@@ -90,8 +87,12 @@ parse_line(std::string_view line,int line_number,gap::assets::Assets & assets,ga
 
 	std::vector<std::string> tokens;
 
-	for (; it != reg_end; ++it) 
-    tokens.push_back(it->str());
+	for (;it != reg_end; ++it) 
+	{
+		auto token = it->str();
+		token.erase(std::remove(begin(token),end(token),'"'),end(token));
+    tokens.push_back(token);
+	}
 
 	//---------------------------------------------------------------------------
 	// Process the command
@@ -101,7 +102,7 @@ parse_line(std::string_view line,int line_number,gap::assets::Assets & assets,ga
 
 	switch(hash)
 	{
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :	result = command_image(line_number,tokens,assets,filesystem); break;;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :	result = command_image(line_number,tokens); break;;
 
 		default : 
 			std::cerr << "GAP: Unknown command '" << tokens[0] << "'\n";
@@ -112,6 +113,26 @@ parse_line(std::string_view line,int line_number,gap::assets::Assets & assets,ga
 	return result;
 }
 
+int 
+ParserGAP::command_image(int line_number,const std::vector<std::string> & tokens)
+{
+	std::cout << "COMMAND:IMAGE: ";
+	for(const auto & token : tokens)
+		std::cout << " [" << token << ']';
+	std::cout << std::endl;
+
+	if(tokens.size() < 2)
+		return on_error(line_number,"Missing image path!");
+
+	auto image = gap::image::load(tokens[param::image::PATH],m_filesystem);
+	if(image.data.empty())
+		return on_error(line_number,std::string("Failed to load image! - ") + tokens[param::image::PATH]);
+
+	m_current_source_image = m_p_assets->add_source_image(std::move(image));
+
+	std::cout << "  Image added into slot " << m_current_source_image << std::endl;
+	return 0;
+}
 
 } // namespace gap
 
