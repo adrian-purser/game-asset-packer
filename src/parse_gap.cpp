@@ -16,9 +16,13 @@
 #include "parse_gap.h"
 #include "utility/hash.h"
 
-#define GAPCMD_IMAGE		"image"
+#define GAPCMD_LOADIMAGE				"loadimage"
+#define GAPCMD_IMAGE						"image"
+#define GAPCMD_IMAGEGROUP				"imagegroup"
 
-namespace param::image { enum {	CMD,	PATH,		PIXELFORMAT }; }
+namespace param::loadimage 		{ enum {	CMD,	PATH,		PIXELFORMAT }; }
+namespace param::imagegroup 	{ enum {	CMD,	GROUP,	ARG_COUNT 	}; }
+namespace param::image 				{ enum {	CMD,	X,			Y,					WIDTH,				HEIGHT,		VARARGS }; }
 
 
 namespace gap
@@ -102,7 +106,9 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 
 	switch(hash)
 	{
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :	result = command_image(line_number,tokens); break;;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_LOADIMAGE) :	result = command_loadimage(line_number,tokens); break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEGROUP) :	result = command_imagegroup(line_number,tokens); break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :			result = command_image(line_number,tokens); break;
 
 		default : 
 			std::cerr << "GAP: Unknown command '" << tokens[0] << "'\n";
@@ -113,26 +119,57 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 	return result;
 }
 
+
+
 int 
-ParserGAP::command_image(int line_number,const std::vector<std::string> & tokens)
+ParserGAP::command_loadimage(int line_number,const std::vector<std::string> & tokens)
 {
-	std::cout << "COMMAND:IMAGE: ";
+	const auto argc = tokens.size();
+
+	std::cout << "COMMAND:LOADIMAGE: ";
 	for(const auto & token : tokens)
 		std::cout << " [" << token << ']';
 	std::cout << std::endl;
 
-	if(tokens.size() < 2)
+	if(tokens.size() <= param::loadimage::PATH)
 		return on_error(line_number,"Missing image path!");
 
-	auto image = gap::image::load(tokens[param::image::PATH],m_filesystem);
+	auto image = gap::image::load(tokens[param::loadimage::PATH],m_filesystem);
 	if(image.data.empty())
-		return on_error(line_number,std::string("Failed to load image! - ") + tokens[param::image::PATH]);
+		return on_error(line_number,std::string("Failed to load image! - ") + tokens[param::loadimage::PATH]);
+
+	if(tokens.size() > param::loadimage::PIXELFORMAT)
+	{
+		auto pf = gap::image::parse_pixelformat_name(tokens[param::loadimage::PIXELFORMAT]);
+		if(pf == 0)
+			return on_error(line_number,std::string("Unknown Pixel Format! - ") + tokens[param::loadimage::PIXELFORMAT]);
+		image.target_pixelformat = pf;
+	}
+	else
+		image.target_pixelformat = image.source_pixelformat;
 
 	m_current_source_image = m_p_assets->add_source_image(std::move(image));
 
 	std::cout << "  Image added into slot " << m_current_source_image << std::endl;
 	return 0;
 }
+
+int 
+ParserGAP::command_imagegroup(int line_number,const std::vector<std::string> & tokens)
+{
+	const auto argc = tokens.size();
+
+	return 0;
+}
+
+int 
+ParserGAP::command_image(int line_number,const std::vector<std::string> & tokens)
+{
+	const auto argc = tokens.size();
+
+	return 0;
+}
+
 
 } // namespace gap
 

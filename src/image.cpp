@@ -61,7 +61,7 @@ get_pixelformat_name(std::uint8_t pixelformat)
 }
 
 
-Image			
+SourceImage			
 load(const std::string & filename,gap::FileSystem & filesystem)
 {
 	auto file = filesystem.load(filename);
@@ -71,7 +71,7 @@ load(const std::string & filename,gap::FileSystem & filesystem)
 		return {};
 	}
 
-	Image image;
+	SourceImage image;
 	
 	adepng::PNGDecode decode;
 	if(decode.decode2(file.data(),file.size(),4))

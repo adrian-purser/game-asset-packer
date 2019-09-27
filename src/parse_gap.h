@@ -43,6 +43,8 @@ private:
 	int									parse_line(std::string_view line,int line_number);
 	int									on_error(int line_number,const std::string & error_message) {std::cerr << "Line " << line_number << ": " << error_message << '\n';return -1;}
 	
+	int 								command_loadimage(int line_number,const std::vector<std::string> & tokens);
+	int 								command_imagegroup(int line_number,const std::vector<std::string> & tokens);
 	int 								command_image(int line_number,const std::vector<std::string> & tokens);
 
 };

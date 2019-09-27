@@ -16,7 +16,7 @@ namespace gap::assets
 
 
 int
-Assets::add_source_image(gap::image::Image && image)
+Assets::add_source_image(gap::image::SourceImage && image)
 {
 	int index = m_source_images.size();
 	m_source_images.push_back(std::move(image));
@@ -30,7 +30,7 @@ Assets::dump()
 	std::cout << 	"ASSETS:\n"
 								"================================================================================\n";
 
-	std::cout << "Images:\n";
+	std::cout << "Image Sources:\n";
 	int index = 0;
 
 	for(const auto & image : m_source_images)
@@ -40,6 +40,9 @@ Assets::dump()
 		str += std::to_string(image.width) + 'x' + std::to_string(image.height);
 		str.resize(15,' ');
 		str += gap::image::get_pixelformat_name(image.source_pixelformat);
+		str.resize(24,' ');
+		str += "-> ";
+		str += gap::image::get_pixelformat_name(image.target_pixelformat);
 
 		std::cout << str << '\n';
 		++index;
