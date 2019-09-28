@@ -22,7 +22,7 @@
 
 namespace param::loadimage 		{ enum {	CMD,	PATH,		PIXELFORMAT }; }
 namespace param::imagegroup 	{ enum {	CMD,	GROUP,	ARG_COUNT 	}; }
-namespace param::image 				{ enum {	CMD,	X,			Y,					WIDTH,				HEIGHT,		VARARGS }; }
+namespace param::image 				{ enum {	CMD,	X,			Y,					WIDTH,				HEIGHT,			NAME,			VARARGS }; }
 
 
 namespace gap
@@ -165,8 +165,22 @@ ParserGAP::command_imagegroup(int line_number,const std::vector<std::string> & t
 int 
 ParserGAP::command_image(int line_number,const std::vector<std::string> & tokens)
 {
-	const auto argc = tokens.size();
+	const auto argc = tokens.size()-1;
 
+	if(argc < param::image::HEIGHT)
+		return on_error(line_number,"not enough parameters!");
+
+	gap::image::Image	image;
+
+	image.x							= std::strtol(tokens[param::image::X].c_str(),nullptr,10);
+	image.y							= std::strtol(tokens[param::image::Y].c_str(),nullptr,10);
+	image.width					= std::strtol(tokens[param::image::WIDTH].c_str(),nullptr,10);
+	image.height				= std::strtol(tokens[param::image::HEIGHT].c_str(),nullptr,10);
+	image.name 					= (argc >= param::image::NAME) ? tokens[param::image::NAME] : std::string();
+	image.source_image	= m_current_source_image;
+
+	m_p_assets->add_image(m_current_image_group,image);
+	
 	return 0;
 }
 

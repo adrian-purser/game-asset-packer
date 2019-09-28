@@ -20,7 +20,16 @@ namespace gap::assets
 class Assets
 {
 private:
-	std::vector<gap::image::SourceImage>				m_source_images;
+	struct ImageGroup
+	{
+		std::vector<gap::image::Image>		images;
+		int																current_index = 0;
+	};
+
+
+	static const int 															m_max_image_groups = 16;
+	std::vector<gap::image::SourceImage>					m_source_images;
+	std::array<ImageGroup,m_max_image_groups>			m_image_groups;
 
 public:
 	Assets() = default;
@@ -28,7 +37,7 @@ public:
 	Assets & operator=(const Assets &) = delete;
 
 	int							add_source_image(gap::image::SourceImage && image);
-	
+	int							add_image(int group,gap::image::Image & image);
 
 	void						dump();
 

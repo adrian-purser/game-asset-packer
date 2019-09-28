@@ -81,6 +81,18 @@ struct SourceImage
 										}
 };
 
+struct Image
+{
+	std::string				name;
+	std::uint16_t			source_image 		= 0;			
+	int								x								= 0;
+	int								y								=	0;
+	int								width						= 0;
+	int								height					= 0;
+};
+
+
+
 SourceImage			load(const std::string & filename,gap::FileSystem & filesystem);
 
 } // namespace gap::image

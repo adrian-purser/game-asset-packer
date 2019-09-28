@@ -30,7 +30,8 @@ private:
 	std::mutex														m_mutex;
 
 	int																		m_current_source_image				= -1;
-
+	int 																	m_current_image_group					= 0;
+	
 public:
 	ParserGAP(gap::FileSystem & filesystem);
 	~ParserGAP() = default;
