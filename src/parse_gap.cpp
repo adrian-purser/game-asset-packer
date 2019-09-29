@@ -63,8 +63,6 @@ ParserGAP::parse(std::string_view source)
 	if(b_error)
 		return nullptr;
 
-	m_p_assets->dump();
-	
 	return std::move(m_p_assets);
 }
 

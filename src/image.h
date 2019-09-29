@@ -35,7 +35,8 @@ enum
 	AL88,
 	L4,
 	A8,
-	A4
+	A4,
+	I8,								//	Indexed (256 colour palette)
 };
 
 constexpr int	bytes_per_pixel(const std::uint8_t	pixel_format)
@@ -50,21 +51,88 @@ constexpr int	bytes_per_pixel(const std::uint8_t	pixel_format)
 									case gap::image::pixelformat::AL88 :				return 2;
 									case gap::image::pixelformat::L8 :
 									case gap::image::pixelformat::AL44 :
-									case gap::image::pixelformat::A8 :					return 1;
+									case gap::image::pixelformat::A8 :					
+									case gap::image::pixelformat::I8 :					return 1;
 									default : break;
 								}
 								return 0;
 							}
+
+constexpr int	image_data_size(const std::uint8_t	pixel_format, int width, int height)
+							{
+								switch(pixel_format)
+								{
+									case gap::image::pixelformat::ARGB8888 :		return 4 * width * height;
+									case gap::image::pixelformat::RGB888 :			return 3 * width * height;
+									case gap::image::pixelformat::RGB565 :			
+									case gap::image::pixelformat::ARGB1555 :
+									case gap::image::pixelformat::ARGB4444 :	
+									case gap::image::pixelformat::AL88 :				return 2 * width * height;
+									case gap::image::pixelformat::L8 :
+									case gap::image::pixelformat::AL44 :
+									case gap::image::pixelformat::A8 :					
+									case gap::image::pixelformat::I8 :					return width * height;
+									case gap::image::pixelformat::L4 :
+									case gap::image::pixelformat::A4 :					return (width/2) * height;
+
+									default : break;
+								}
+								return 0;
+							}
+
 
 } // namespace pixelformat
 
 std::uint8_t 		parse_pixelformat_name(const std::string & name);
 std::string			get_pixelformat_name(std::uint8_t pixelformat);
 
+//=============================================================================
+//	Palette
+//=============================================================================
+class Palette
+{
+private:
+	std::vector<std::uint32_t>		m_palette;
 
+public:
+	Palette() = default;
+	explicit Palette(int size) : m_palette(size) {}
+	Palette(const std::vector<std::uint32_t> palette) : m_palette(palette) {}
+
+	std::uint32_t & operator[](int index)		{return m_palette[index];}
+	void						resize(int size)				{m_palette.resize(size);}
+	bool						empty()	const 					{return m_palette.empty();}
+	
+	int							find_colour(std::uint32_t colour) const
+									{
+										int index = 0;
+										for(auto c : m_palette)
+										{
+											if(c == colour)
+												return index;
+											++index;
+										}
+										return -1;	
+									}
+
+	void						set_colour(int index,std::uint32_t colour)
+									{
+										if(index>=0)
+										{
+											if(index >= m_palette.size())
+												resize(index+1);
+											m_palette[index] = colour; 
+										}
+									}
+};
+
+//=============================================================================
+//	Source Image Data
+//=============================================================================
 struct SourceImage
 {
 	std::vector<std::uint32_t>	data;
+	Palette											palette;													// Palette if a palettized image
 	int													width 							= 0;
 	int													height 							= 0;
 	int													offset 							= 0;					// The offset from the end of a line to the start of the next line in pixels.
@@ -72,6 +140,11 @@ struct SourceImage
 	std::uint8_t 								source_pixelformat	= 0;
 	std::uint8_t 								target_pixelformat	= 0;
 	std::uint16_t								flags								= 0;
+
+	std::uint32_t 		get_pixel(int x, int y) const
+										{
+											return data[(y * (width + offset)) + x];
+										}
 
 	SourceImage 			duplicate_subimage(int x, int y, int width, int height)
 										{
@@ -81,6 +154,30 @@ struct SourceImage
 										}
 };
 
+//=============================================================================
+//	Target Image Data
+//=============================================================================
+struct TargetImage
+{
+	std::vector<std::uint32_t>	data;
+	Palette											palette;													// Palette if a palettized image
+	int													width 							= 0;
+	int													height 							= 0;
+	std::uint8_t 								pixelformat					= 0;
+
+	TargetImage() = default;
+	TargetImage( int w, int h, std::uint8_t pf )
+		: data(gap::image::pixelformat::image_data_size(pf,w,h))
+		, width(w)
+		, height(h)
+		, pixelformat(pf)
+		{}
+
+};
+
+//=============================================================================
+//	Image - Describes image region. References Source Image
+//=============================================================================
 struct Image
 {
 	std::string				name;
@@ -94,6 +191,7 @@ struct Image
 
 
 SourceImage			load(const std::string & filename,gap::FileSystem & filesystem);
+TargetImage			CreateTargetImage(const SourceImage & source);
 
 } // namespace gap::image
 

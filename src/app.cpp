@@ -50,10 +50,12 @@ Application::run()
 	gap::ParserGAP parser(m_filesystem);
 	auto p_assets = parser.parse(source);
 
+	if(p_assets == nullptr)
+		return -1;
+
 //	std::cout << source << std::endl;
-
-
-
+	p_assets->dump();
+	
 
 	return 0;
 }

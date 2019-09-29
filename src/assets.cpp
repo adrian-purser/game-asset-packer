@@ -110,5 +110,14 @@ Assets::dump()
 }
 
 
+void
+Assets::enumerate_source_images(std::function<bool (const gap::image::SourceImage &)> callback)
+{
+	for(const auto & image : m_source_images)
+		if(!callback(image))
+			break;
+}
+
+
 } // namespace gap::assets
 
