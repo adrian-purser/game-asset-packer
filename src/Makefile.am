@@ -24,6 +24,8 @@ canvas2/canvas2.h \
 config.h \
 configuration.h \
 configuration.cpp \
+encode_gbin.h \
+encode_gbin.cpp \
 filesystem.h \
 image.h \
 image.cpp \

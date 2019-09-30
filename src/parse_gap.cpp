@@ -20,11 +20,6 @@
 #define GAPCMD_IMAGE						"image"
 #define GAPCMD_IMAGEGROUP				"imagegroup"
 
-namespace param::loadimage 		{ enum {	CMD,	PATH,		PIXELFORMAT }; }
-namespace param::imagegroup 	{ enum {	CMD,	GROUP,	ARG_COUNT 	}; }
-namespace param::image 				{ enum {	CMD,	X,			Y,					WIDTH,				HEIGHT,			NAME,			VARARGS }; }
-
-
 namespace gap
 {
 
@@ -174,10 +169,6 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 		}
 	}
 
-//	std::cout << "COMMAND: '" << cmd.command << "'\n";
-//	for(const auto & arg_pair : cmd.args)
-//		std::cout << "    " << arg_pair.first << " = " << arg_pair.second << '\n';
-
 	if(cmd.command.empty())
 		return 0;
 
@@ -191,9 +182,9 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 
 	switch(hash)
 	{
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_LOADIMAGE) :	result = command_loadimage(line_number,cmd); break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEGROUP) :	result = command_imagegroup(line_number,cmd); break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :			result = command_image(line_number,cmd); break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_LOADIMAGE) :	result = command_loadimage(line_number,cmd); 		break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEGROUP) :	result = command_imagegroup(line_number,cmd); 	break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :			result = command_image(line_number,cmd); 				break;
 
 		default : 
 			std::cerr << "GAP: Unknown command '" << cmd.command << "'\n";
