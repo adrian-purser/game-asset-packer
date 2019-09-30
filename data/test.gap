@@ -1,11 +1,11 @@
 # Test GAP file
-loadimage,"/sunnyland/tileset.png",ARGB8888
-imagegroup,4
-image,16,16,16,16,TILE_01
-image,48,16,16,16
-image,80,16,16,16
-image,96,16,16,16
-loadimage,"/sunnyland/crate.png",ARGB8888
-loadimage,"/sunnyland/player-idle.png",ARGB8888
-loadimage,"/sunnyland/block.png",A8
+loadimage,src="/sunnyland/tileset.png",format=ARGB8888
+imagegroup,group=4
+image,x=16,y=16,width=16,height=16,name=TILE_01
+image,x=48,y=16,width=16,height=16
+image,x=80,y=16,width=16,height=16
+image,x=96,y=16,width=16,height=16
+loadimage,src="/sunnyland/crate.png",format=ARGB8888
+loadimage,src="/sunnyland/player-idle.png",format=ARGB8888
+loadimage,src="/sunnyland/block.png",format=A8
 

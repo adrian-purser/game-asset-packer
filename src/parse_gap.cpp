@@ -76,40 +76,127 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 	if(line.empty())
 		return 0;
 
-	auto comment 	= line.find('#');
-	auto ws 			= line.find_last_not_of(" \t\f\v\n\r",comment == std::string_view::npos ? line.size() : comment-1);
-	auto eol 			= (comment == std::string_view::npos ? (ws == std::string_view::npos ? 0 : ws) : (ws == std::string_view::npos ? 0 : std::min(comment,ws)));
-	if(eol == 0)
-		return 0;
+	gap::CommandLine	cmd;
+	int 							iarg = 0;
+	std::string 			token;
+	bool							b_quotes = false;
 
-	std::string l(line.substr(0,eol+1));
-	std::regex re(R"((,)(?=(?:[^"]|"[^"]*")*$))");
-	std::sregex_token_iterator it(l.begin(), l.end(), re, -1);
-	std::sregex_token_iterator reg_end;
+	auto parse_arg = 	[&](int line_number,const std::string & token)->std::pair<std::string,std::string>
+										{
+											auto pos = token.find('=');
+											if(pos == std::string::npos)
+											{
+												on_error(line_number,"Missing value for '" + token + "'!");
+												return {};
+											}
+											auto key = token.substr(0,pos);
+											auto val = token.substr(pos+1);
+											if(key.empty() || val.empty())
+											{
+												on_error(line_number,"Syntax Error!");
+												return {};
+											}
+											return {key,val};
+										};
 
-	std::vector<std::string> tokens;
-
-	for (;it != reg_end; ++it) 
+	for(auto ch : line)
 	{
-		auto token = it->str();
-		token.erase(std::remove(begin(token),end(token),'"'),end(token));
-    tokens.push_back(token);
+		bool b_finished = false;
+
+		switch(ch)
+		{
+			case ' ' :
+			case '\t' :
+				if(!token.empty())
+					token.push_back(ch);
+				break;
+				
+			case '#' :
+				b_finished = true;
+				break;
+
+			case ',' :
+				if(!b_quotes)
+				{
+					if(iarg == 0)
+					{
+						if(token.empty())
+							return on_error(line_number,"Missing command!");
+						cmd.command = token;
+					}
+					else if(!token.empty())
+					{
+						auto arg = parse_arg(line_number,token);
+						if(arg.first.empty())
+							return -1;
+						cmd.args[arg.first] = arg.second;
+					}
+					++iarg;
+					token.clear();
+				}
+				else
+					token.push_back(ch);
+				break;
+
+			case '"' :
+				b_quotes = !b_quotes;
+				break;
+
+			case 8 :
+			case 10 :
+			case 13 :
+				break;
+			
+			default :
+				token.push_back(ch);
+				break;
+		}
+	
+		if(b_finished)
+			break;
 	}
+
+		
+	if(!token.empty())
+	{
+		if(iarg == 0)
+		{
+			if(token.empty())
+				return on_error(line_number,"Missing command!");
+			cmd.command = token;
+		}
+		else if(!token.empty())
+		{
+			auto arg = parse_arg(line_number,token);
+			if(arg.first.empty())
+				return -1;
+			cmd.args[arg.first] = arg.second;
+		}
+	}
+
+//	std::cout << "COMMAND: '" << cmd.command << "'\n";
+//	for(const auto & arg_pair : cmd.args)
+//		std::cout << "    " << arg_pair.first << " = " << arg_pair.second << '\n';
+
+	if(cmd.command.empty())
+		return 0;
 
 	//---------------------------------------------------------------------------
 	// Process the command
 	//---------------------------------------------------------------------------
+	
 	int result = 0;
-	auto hash = ade::hash::hash_ascii_string_as_lower(tokens[0].c_str(),tokens[0].size());
+
+	auto hash = ade::hash::hash_ascii_string_as_lower(cmd.command.c_str(),cmd.command.size());
 
 	switch(hash)
 	{
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_LOADIMAGE) :	result = command_loadimage(line_number,tokens); break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEGROUP) :	result = command_imagegroup(line_number,tokens); break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :			result = command_image(line_number,tokens); break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_LOADIMAGE) :	result = command_loadimage(line_number,cmd); break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEGROUP) :	result = command_imagegroup(line_number,cmd); break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :			result = command_image(line_number,cmd); break;
 
 		default : 
-			std::cerr << "GAP: Unknown command '" << tokens[0] << "'\n";
+			std::cerr << "GAP: Unknown command '" << cmd.command << "'\n";
 			result = -1;
 			break;
 	}
@@ -120,27 +207,37 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 
 
 int 
-ParserGAP::command_loadimage(int line_number,const std::vector<std::string> & tokens)
+ParserGAP::command_loadimage(int line_number, const CommandLine & command)
 {
-	const auto argc = tokens.size();
+	
+	std::string src;
+	std::string format;
 
-	std::cout << "COMMAND:LOADIMAGE: ";
-	for(const auto & token : tokens)
-		std::cout << " [" << token << ']';
-	std::cout << std::endl;
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("src") 		:	src 		= value; break;
+			case ade::hash::hash_ascii_string_as_lower("format") 	:	format 	= value; break;
+			default : 
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
 
-	if(tokens.size() <= param::loadimage::PATH)
+	if(src.empty())
 		return on_error(line_number,"Missing image path!");
 
-	auto image = gap::image::load(tokens[param::loadimage::PATH],m_filesystem);
+	auto image = gap::image::load(src,m_filesystem);
 	if(image.data.empty())
-		return on_error(line_number,std::string("Failed to load image! - ") + tokens[param::loadimage::PATH]);
+		return on_error(line_number,std::string("Failed to load image! - ") + src);
 
-	if(tokens.size() > param::loadimage::PIXELFORMAT)
+	if(!format.empty())
 	{
-		auto pf = gap::image::parse_pixelformat_name(tokens[param::loadimage::PIXELFORMAT]);
+		auto pf = gap::image::parse_pixelformat_name(format);
 		if(pf == 0)
-			return on_error(line_number,std::string("Unknown Pixel Format! - ") + tokens[param::loadimage::PIXELFORMAT]);
+			return on_error(line_number,std::string("Unknown Pixel Format! - ") + format);
 		image.target_pixelformat = pf;
 	}
 	else
@@ -149,36 +246,45 @@ ParserGAP::command_loadimage(int line_number,const std::vector<std::string> & to
 	m_current_source_image = m_p_assets->add_source_image(std::move(image));
 
 	std::cout << "  Image added into slot " << m_current_source_image << std::endl;
+	
 	return 0;
 }
 
 int 
-ParserGAP::command_imagegroup(int line_number,const std::vector<std::string> & tokens)
+ParserGAP::command_imagegroup(int line_number, const CommandLine & command)
 {
-	const auto argc = tokens.size();
 
+	// TODO :
+	
 	return 0;
 }
 
 int 
-ParserGAP::command_image(int line_number,const std::vector<std::string> & tokens)
+ParserGAP::command_image(int line_number, const CommandLine & command)
 {
-	const auto argc = tokens.size()-1;
-
-	if(argc < param::image::HEIGHT)
-		return on_error(line_number,"not enough parameters!");
-
 	gap::image::Image	image;
 
-	image.x							= std::strtol(tokens[param::image::X].c_str(),nullptr,10);
-	image.y							= std::strtol(tokens[param::image::Y].c_str(),nullptr,10);
-	image.width					= std::strtol(tokens[param::image::WIDTH].c_str(),nullptr,10);
-	image.height				= std::strtol(tokens[param::image::HEIGHT].c_str(),nullptr,10);
-	image.name 					= (argc >= param::image::NAME) ? tokens[param::image::NAME] : std::string();
-	image.source_image	= m_current_source_image;
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("x") 			:	image.x 			= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("y") 			:	image.y 			= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("w") 			:	
+			case ade::hash::hash_ascii_string_as_lower("width") 	:	image.width		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("h") 			:	
+			case ade::hash::hash_ascii_string_as_lower("height")	:	image.height	= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("name") 		:	image.name 		= value; break;
+			default : 
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
 
+	image.source_image	= m_current_source_image;
 	m_p_assets->add_image(m_current_image_group,image);
-	
+
 	return 0;
 }
 
