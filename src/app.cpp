@@ -12,6 +12,9 @@
 #include <iostream>
 #include "app.h"
 #include "parse_gap.h"
+#include "encode_gbin.h"
+#include "export.h"
+#include "utility/hexdump.h"
 
 namespace gap
 {
@@ -56,7 +59,9 @@ Application::run()
 //	std::cout << source << std::endl;
 	p_assets->dump();
 	
+	export_assets(*(p_assets.get()),m_config);
 
+	
 	return 0;
 }
 

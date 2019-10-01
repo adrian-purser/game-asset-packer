@@ -25,14 +25,17 @@ HEADER
     +--------+--------+--------+--------+
 $00 |   G    |   B    |   I    |   N    |			FourCC 'GBIN' (Game-Assets Binary) - 4 Bytes
     +--------+--------+--------+--------+
-$04 | FLAGS  |      Version Number      |			Flags - 1 Byte. Version Number - 3 Bytes (ASCII Characters)
-    +--------+--------------------------+
-$08 |               CRC32               |			CRC32 of ALL data after this field - 4 Bytes 
+$04 | SIZE   | FLAGS  | Version Number  |			Flags - 1 Byte. Size - 1 Byte. Version Number - 2 Bytes (ASCII Characters)
+    +--------+--------+-----------------+
+$08 |               CRC32               |			CRC32 of ALL data after the header - 4 Bytes 
+    +-----------------------------------+
+$0C |              RESERVED             |			4 Bytes 
     +-----------------------------------+
 
     +--------+--------+--------+--------+
-$0C |   x    |   x    |   x    |   x    |			First Chunk
+$10 |   x    |   x    |   x    |   x    |			First Chunk
     +--------+--------+--------+--------+
+
 
 HEADER FLAGS
 ------------
@@ -45,8 +48,8 @@ HEADER FLAGS
 
 
 
-CHUNK HEADER
-------------
+CHUNK 
+-----
 
           -------------------->
         0        1        2        3
@@ -62,8 +65,8 @@ $08 |            CHUNK DATA             |			Chunk Data - 4 * n Bytes (Aligned to
     +-----------------------------------+
 
 
-CHUNKS
-------
+CHUNK TYPES
+-----------
 
 +------+----------------------------------------------------------------------+
 | IMGD | Image Data                                                           |

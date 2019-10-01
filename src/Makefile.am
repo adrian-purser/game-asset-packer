@@ -26,6 +26,8 @@ configuration.h \
 configuration.cpp \
 encode_gbin.h \
 encode_gbin.cpp \
+export.h \
+export.cpp \
 filesystem.h \
 image.h \
 image.cpp \

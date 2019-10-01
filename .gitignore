@@ -193,3 +193,5 @@ vgcore.*
 # Ignore Project Specific files
 # =============================================================================
 src/gap
+assets.bin
+
