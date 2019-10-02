@@ -39,7 +39,7 @@ public:
 	int							add_image(int group,gap::image::Image & image);
 
 	int							source_image_count() const noexcept			{return m_source_images.size();}
-	void						enumerate_source_images(std::function<bool (const gap::image::SourceImage &)> callback);
+	void						enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;
 	void						create_target_image_data(bool big_endian = false);	
 	void						dump();
 

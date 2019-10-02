@@ -111,10 +111,11 @@ Assets::dump()
 
 
 void
-Assets::enumerate_source_images(std::function<bool (const gap::image::SourceImage &)> callback)
+Assets::enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const
 {
+	int index = 0;
 	for(const auto & image : m_source_images)
-		if(!callback(*(image.get())))
+		if(!callback(index++,*(image.get())))
 			break;
 }
 
