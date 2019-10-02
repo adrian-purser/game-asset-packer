@@ -17,10 +17,10 @@ namespace gap::assets
 
 
 int
-Assets::add_source_image(gap::image::SourceImage && image)
+Assets::add_source_image(std::unique_ptr<gap::image::SourceImage> p_image)
 {
 	int index = m_source_images.size();
-	m_source_images.push_back(std::move(image));
+	m_source_images.push_back(std::move(p_image));
 	return index;
 }
 
@@ -53,16 +53,16 @@ Assets::dump()
 	std::cout << "-----------------------------------------------------------------------------\n";
 	int index = 0;
 
-	for(const auto & image : m_source_images)
+	for(const auto & p_image : m_source_images)
 	{
 		auto str = std::to_string(index) + ':';
 		str.resize(5,' ');
-		str += std::to_string(image.width) + 'x' + std::to_string(image.height);
+		str += std::to_string(p_image->width()) + 'x' + std::to_string(p_image->height());
 		str.resize(15,' ');
-		str += gap::image::get_pixelformat_name(image.source_pixelformat);
+		str += gap::image::get_pixelformat_name(p_image->source_pixelformat());
 		str.resize(24,' ');
 		str += "-> ";
-		str += gap::image::get_pixelformat_name(image.target_pixelformat);
+		str += gap::image::get_pixelformat_name(p_image->target_pixelformat());
 
 		std::cout << str << '\n';
 		++index;
@@ -114,7 +114,7 @@ void
 Assets::enumerate_source_images(std::function<bool (const gap::image::SourceImage &)> callback)
 {
 	for(const auto & image : m_source_images)
-		if(!callback(image))
+		if(!callback(*(image.get())))
 			break;
 }
 

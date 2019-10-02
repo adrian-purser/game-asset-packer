@@ -27,16 +27,16 @@ private:
 	};
 
 
-	static const int 															m_max_image_groups = 16;
-	std::vector<gap::image::SourceImage>					m_source_images;
-	std::array<ImageGroup,m_max_image_groups>			m_image_groups;
+	static const int 																				m_max_image_groups = 16;
+	std::vector<std::unique_ptr<gap::image::SourceImage>>		m_source_images;
+	std::array<ImageGroup,m_max_image_groups>								m_image_groups;
 
 public:
 	Assets() = default;
 	Assets(const Assets &) = delete;
 	Assets & operator=(const Assets &) = delete;
 
-	int							add_source_image(gap::image::SourceImage && image);
+	int							add_source_image(std::unique_ptr<gap::image::SourceImage> p_image);
 	int							add_image(int group,gap::image::Image & image);
 
 	int							source_image_count() const noexcept			{return m_source_images.size();}

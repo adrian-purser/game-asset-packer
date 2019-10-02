@@ -63,72 +63,71 @@ get_pixelformat_name(std::uint8_t pixelformat)
 }
 
 
-SourceImage			
+std::unique_ptr<SourceImage>
 load(const std::string & filename,gap::FileSystem & filesystem)
 {
 	auto file = filesystem.load(filename);
 	if(file.empty())
 	{
 		std::cerr << "LOADIMAGE: Failed to load image '" << filename << "'\n";
-		return {};
+		return nullptr;
 	}
 
-	SourceImage image;
 	
 	adepng::PNGDecode decode;
 	if(decode.decode2(file.data(),file.size(),4))
 	{
 		std::cerr << "IMAGE: Failed to decode image!\n";
-		return {};
+		return nullptr;
 	}
 
-	image.width		= decode.width();
-	image.height	= decode.height();
-	image.offset	= 0;
+	int width					= decode.width();
+	int height				= decode.height();
+	int pixelformat		= 0;
 	
 	switch(decode.source_components())
 	{
-		case 1 : 	image.source_pixelformat	= gap::image::pixelformat::A8; break;
-		case 2 : 	image.source_pixelformat	= gap::image::pixelformat::AL88; break;
-		case 3 : 	image.source_pixelformat	= gap::image::pixelformat::RGB888; break;
-		case 4 : 	image.source_pixelformat	= gap::image::pixelformat::ARGB8888; break;
-		default :	image.source_pixelformat	= 0;
+		case 1 : 	pixelformat	= gap::image::pixelformat::A8;			 break;
+		case 2 : 	pixelformat	= gap::image::pixelformat::AL88;		 break;
+		case 3 : 	pixelformat	= gap::image::pixelformat::RGB888;	 break;
+		case 4 : 	pixelformat	= gap::image::pixelformat::ARGB8888; break;
+		default :	pixelformat	= 0;
 	}
 
-	image.data.resize(image.width * image.height);
+	auto p_image = std::make_unique<SourceImage>(width,height,decode.get_data());
 
-	auto p_img_data = reinterpret_cast<std::uint8_t *>(image.data.data());
-//	std::copy(decode.get_data(),decode.get_data()+(image.width * image.height * 4),p_img_data);
+	p_image->set_source_pixelformat(pixelformat);
+	p_image->set_target_pixelformat(pixelformat);
 
 	std::cout << "LOADIMAGE: " << decode.width() << 'x' << decode.height() 
 						<< " components=" << decode.components() 
-						<< " source_pixelformat=" << gap::image::get_pixelformat_name(image.source_pixelformat)
+						<< " source_pixelformat=" << gap::image::get_pixelformat_name(pixelformat)
 						<< std::endl;
 
-	return image;
+	return p_image;
 }
 
 
-TargetImage			
-CreateTargetImage(const SourceImage & source,bool little_endian)
+void
+SourceImage::create_target_data(bool big_endian)
 {
-	TargetImage	target( source.width, source.height, source.target_pixelformat );
-	
-	auto & data = target.data;
+	auto & data = m_target_data;
 	int iout = 0;
 
-	switch(target.pixelformat)
+	data.resize(gap::image::pixelformat::image_data_size(m_target_pixelformat,m_width,m_height));
+
+	switch(m_target_pixelformat)
 	{
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::ARGB8888 :
 		//-------------------------------------------------------------------------
-			for(int y=0;y<source.height;++y)
+			for(int y=0;y<m_height;++y)
 			{
-				for(int x=0;x<source.width;++x)
+				for(int x=0;x<m_width;++x)
 				{
-					std::uint32_t pixel = source.get_pixel(x,y);
+					std::uint32_t pixel = get_pixel(x,y);
 					for(int c=0;c<4;++c)
-						data[iout++] = (little_endian ? (pixel >> (c*8)) : (pixel >> ((3-c)*8)) ) & 0x0FF; 
+						data[iout++] = (big_endian ? (pixel >> ((3-c)*8))  : (pixel >> (c*8)) ) & 0x0FF; 
 				}
 			}	
 			break;		
@@ -136,13 +135,13 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::RGB888 :	
 		//-------------------------------------------------------------------------
-			for(int y=0;y<source.height;++y)
+			for(int y=0;y<m_height;++y)
 			{
-				for(int x=0;x<source.width;++x)
+				for(int x=0;x<m_width;++x)
 				{
-					std::uint32_t pixel = source.get_pixel(x,y);
+					std::uint32_t pixel = get_pixel(x,y);
 					for(int c=0;c<3;++c)
-						data[iout++] = (little_endian ? (pixel >> (c*8)) : (pixel >> ((2-c)*8)) ) & 0x0FF; 
+						data[iout++] = (big_endian ? (pixel >> ((2-c)*8)) : (pixel >> (c*8)) ) & 0x0FF; 
 				}
 			}	
 			break;		
@@ -150,14 +149,14 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::RGB565 :
 		//-------------------------------------------------------------------------
-			for(int y=0;y<source.height;++y)
+			for(int y=0;y<m_height;++y)
 			{
-				for(int x=0;x<source.width;++x)
+				for(int x=0;x<m_width;++x)
 				{
-					std::uint32_t pixel = source.get_pixel(x,y);
+					std::uint32_t pixel = get_pixel(x,y);
 					int out = ((pixel >> 8) & 0x0F800) | ((pixel >> 5) & 0x07E0) | ((pixel >> 3) & 0x01F);
-					data[iout++] = (little_endian		? out & 0x0FF : (out >> 8) & 0x0FF);
-					data[iout++] = (!little_endian 	? out & 0x0FF : (out >> 8) & 0x0FF);
+					data[iout++] = (!big_endian	? out & 0x0FF : (out >> 8) & 0x0FF);
+					data[iout++] = (big_endian 	? out & 0x0FF : (out >> 8) & 0x0FF);
 				}
 			}	
 			break;		
@@ -165,14 +164,14 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::ARGB1555 :	
 		//-------------------------------------------------------------------------
-			for(int y=0;y<source.height;++y)
+			for(int y=0;y<m_height;++y)
 			{
-				for(int x=0;x<source.width;++x)
+				for(int x=0;x<m_width;++x)
 				{
-					std::uint32_t pixel = source.get_pixel(x,y);
+					std::uint32_t pixel = get_pixel(x,y);
 					int out = ((pixel >> 16) & 0x08000) | ((pixel >> 9) & 0x07C00) | ((pixel >> 6) & 0x03E0) | ((pixel >> 3) & 0x01F);
-					data[iout++] = (little_endian		? out & 0x0FF : (out >> 8) & 0x0FF);
-					data[iout++] = (!little_endian 	? out & 0x0FF : (out >> 8) & 0x0FF);
+					data[iout++] = (!big_endian	? out & 0x0FF : (out >> 8) & 0x0FF);
+					data[iout++] = (big_endian 	? out & 0x0FF : (out >> 8) & 0x0FF);
 				}
 			}	
 			break;		
@@ -180,14 +179,14 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::ARGB4444 :
 		//-------------------------------------------------------------------------
-			for(int y=0;y<source.height;++y)
+			for(int y=0;y<m_height;++y)
 			{
-				for(int x=0;x<source.width;++x)
+				for(int x=0;x<m_width;++x)
 				{
-					std::uint32_t pixel = source.get_pixel(x,y);
+					std::uint32_t pixel = get_pixel(x,y);
 					int out = ((pixel >> 16) & 0x0F000) | ((pixel >> 12) & 0x0F00) | ((pixel >> 8) & 0x0F0) | ((pixel >> 4) & 0x0F);
-					data[iout++] = (little_endian		? out & 0x0FF : (out >> 8) & 0x0FF);
-					data[iout++] = (!little_endian 	? out & 0x0FF : (out >> 8) & 0x0FF);
+					data[iout++] = (!big_endian	? out & 0x0FF : (out >> 8) & 0x0FF);
+					data[iout++] = (big_endian 	? out & 0x0FF : (out >> 8) & 0x0FF);
 				}
 			}	
 			break;		
@@ -195,11 +194,11 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::L8 :
 		//-------------------------------------------------------------------------
-			for(int y=0;y<source.height;++y)
+			for(int y=0;y<m_height;++y)
 			{
-				for(int x=0;x<source.width;++x)
+				for(int x=0;x<m_width;++x)
 				{
-					std::uint32_t pixel = source.get_pixel(x,y);
+					std::uint32_t pixel = get_pixel(x,y);
 					data[iout++] = (((pixel >> 16) & 0x0FF) + ((pixel >> 8) & 0x0FF) + (pixel & 0x0FF)) / 3;
 				}
 			}	
@@ -208,11 +207,11 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::AL44 :
 		//-------------------------------------------------------------------------
-			for(int y=0;y<source.height;++y)
+			for(int y=0;y<m_height;++y)
 			{
-				for(int x=0;x<source.width;++x)
+				for(int x=0;x<m_width;++x)
 				{
-					std::uint32_t pixel = source.get_pixel(x,y);
+					std::uint32_t pixel = get_pixel(x,y);
 					data[iout++] = ((pixel >> 24) & 0x0F0) | (((((pixel >> 16) & 0x0FF) + ((pixel >> 8) & 0x0FF) + (pixel & 0x0FF)) / 3) >> 4);
 				}
 			}	
@@ -221,15 +220,15 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::AL88			:	
 		//-------------------------------------------------------------------------
-			for(int y=0;y<source.height;++y)
+			for(int y=0;y<m_height;++y)
 			{
-				for(int x=0;x<source.width;++x)
+				for(int x=0;x<m_width;++x)
 				{
-					std::uint32_t pixel = source.get_pixel(x,y);
+					std::uint32_t pixel = get_pixel(x,y);
 					const std::uint8_t l = (((pixel >> 16) & 0x0FF) + ((pixel >> 8) & 0x0FF) + (pixel & 0x0FF)) / 3;
 					const std::uint8_t a = ((pixel >> 24) & 0x0FF);
-					data[iout++] = (little_endian		? l : a);
-					data[iout++] = (!little_endian 	? a : l);
+					data[iout++] = (!big_endian	? l : a);
+					data[iout++] = (big_endian 	? a : l);
 				}
 			}	
 			break;		
@@ -238,12 +237,12 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::L4 :
 		//-------------------------------------------------------------------------
-			for(int y=0;y<source.height;++y)
+			for(int y=0;y<m_height;++y)
 			{
-				for(int x=0;x<source.width;x+=2)
+				for(int x=0;x<m_width;x+=2)
 				{
-					std::uint32_t pixel1 = source.get_pixel(x,y);
-					std::uint32_t pixel2 = source.get_pixel(x+1,y);
+					std::uint32_t pixel1 = get_pixel(x,y);
+					std::uint32_t pixel2 = get_pixel(x+1,y);
 					const std::uint8_t l1 = ((((pixel1 >> 16) & 0x0FF) + ((pixel1 >> 8) & 0x0FF) + (pixel1 & 0x0FF)) / 3) & 0x0F0;
 					const std::uint8_t l2 = ((((pixel2 >> 16) & 0x0FF) + ((pixel2 >> 8) & 0x0FF) + (pixel2 & 0x0FF)) / 3) & 0x0F0;
 					data[iout++] = (l1 >> 4) | l2;
@@ -254,11 +253,11 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::A8 :
 		//-------------------------------------------------------------------------
-			for(int y=0;y<source.height;++y)
+			for(int y=0;y<m_height;++y)
 			{
-				for(int x=0;x<source.width;++x)
+				for(int x=0;x<m_width;++x)
 				{
-					std::uint32_t pixel = source.get_pixel(x,y);
+					std::uint32_t pixel = get_pixel(x,y);
 					data[iout++] = (pixel >> 24) & 0x0FF;
 				}
 			}	
@@ -267,12 +266,12 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::A4 :
 		//-------------------------------------------------------------------------
-			for(int y=0;y<source.height;++y)
+			for(int y=0;y<m_height;++y)
 			{
-				for(int x=0;x<source.width;x+=2)
+				for(int x=0;x<m_width;x+=2)
 				{
-					std::uint32_t pixel1 = source.get_pixel(x,y);
-					std::uint32_t pixel2 = source.get_pixel(x+1,y);
+					std::uint32_t pixel1 = get_pixel(x,y);
+					std::uint32_t pixel2 = get_pixel(x+1,y);
 					const std::uint8_t a1 = (pixel1 >> 28) & 0x0F;
 					const std::uint8_t a2 = (pixel2 >> 28) & 0x0F;
 					data[iout++] = a1 | (a2 << 4);
@@ -283,9 +282,7 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::I8 :
 		//-------------------------------------------------------------------------
-			if(!source.palette.empty())
-				target.palette = source.palette;
-			else
+			if(m_palette.empty())
 			{
 				// TODO: 
 				//target.palette = create_palette(source,256);
@@ -293,15 +290,15 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 				break;
 			}
 			
-			for(int y=0;y<source.height;++y)
+			for(int y=0;y<m_height;++y)
 			{
-				for(int x=0;x<source.width;++x)
+				for(int x=0;x<m_width;++x)
 				{
-					std::uint32_t pixel = source.get_pixel(x,y);
-					int index = target.palette.find_colour(pixel);
+					std::uint32_t pixel = get_pixel(x,y);
+					int index = m_palette.find_colour(pixel);
 
 					for(int c=0;c<4;++c)
-						data[iout++] = (little_endian ? (pixel >> (c*8)) : (pixel >> ((3-c)*8)) ) & 0x0FF; 
+						data[iout++] = (big_endian ?  (pixel >> ((3-c)*8)) : (pixel >> (c*8)) ) & 0x0FF; 
 				}
 			}	
 			break;		
@@ -309,12 +306,25 @@ CreateTargetImage(const SourceImage & source,bool little_endian)
 		default : 
 			break;
 	}
-
-	return target;
-
 }
 
+SourceImage::SourceImage(int width,int height,const std::uint32_t * p_data,int line_offset)
+	: m_width(width)
+	, m_height(height)
+{
+	m_source_data.assign(p_data,p_data + ((width + line_offset) * height));
+}
 
+SourceImage::SourceImage(int width,int height,const std::uint8_t * p_data,int line_offset)
+	: m_width(width)
+	, m_height(height)
+{
+	m_source_data.reserve(width*height);
+	int i=0;
+	for(int y=0;y<height;++y,p_data+=line_offset*4)
+		for(int x=0;x<width;++x,++i,p_data += 4) 	
+			m_source_data.push_back(p_data[0] | (p_data[1]<<8) | (p_data[2]<<16) | (p_data[3]<<24));
+}
 
 
 } // namespace gap::image

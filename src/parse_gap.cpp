@@ -220,8 +220,8 @@ ParserGAP::command_loadimage(int line_number, const CommandLine & command)
 	if(src.empty())
 		return on_error(line_number,"Missing image path!");
 
-	auto image = gap::image::load(src,m_filesystem);
-	if(image.data.empty())
+	auto p_image = gap::image::load(src,m_filesystem);
+	if(p_image == nullptr)
 		return on_error(line_number,std::string("Failed to load image! - ") + src);
 
 	if(!format.empty())
@@ -229,12 +229,10 @@ ParserGAP::command_loadimage(int line_number, const CommandLine & command)
 		auto pf = gap::image::parse_pixelformat_name(format);
 		if(pf == 0)
 			return on_error(line_number,std::string("Unknown Pixel Format! - ") + format);
-		image.target_pixelformat = pf;
+		p_image->set_target_pixelformat(pf);
 	}
-	else
-		image.target_pixelformat = image.source_pixelformat;
 
-	m_current_source_image = m_p_assets->add_source_image(std::move(image));
+	m_current_source_image = m_p_assets->add_source_image(std::move(p_image));
 
 	std::cout << "  Image added into slot " << m_current_source_image << std::endl;
 	

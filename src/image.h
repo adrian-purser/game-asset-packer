@@ -129,38 +129,57 @@ public:
 //=============================================================================
 //	Source Image Data
 //=============================================================================
-struct SourceImage
+class
+SourceImage
 {
-	std::vector<std::uint32_t>	data;
-	Palette											palette;													// Palette if a palettized image
-	int													width 							= 0;
-	int													height 							= 0;
-	int													offset 							= 0;					// The offset from the end of a line to the start of the next line in pixels.
-	int													parent							= -1;					// The index of the parent image if this was copied as a subimage of another image.
-	std::uint8_t 								source_pixelformat	= 0;
-	std::uint8_t 								target_pixelformat	= 0;
-	std::uint16_t								flags								= 0;
+private:
+	std::vector<std::uint32_t>	m_source_data;
+	std::vector<std::uint8_t>		m_target_data;
+	Palette											m_palette;													// Palette if a palettized image
+	int													m_width 							= 0;
+	int													m_height 							= 0;
+	int													m_line_offset 				= 0;					// The offset from the end of a line to the start of the next line in pixels.
+	int													m_parent							= -1;					// The index of the parent image if this was copied as a subimage of another image.
+	std::uint8_t 								m_source_pixelformat	= 0;
+	std::uint8_t 								m_target_pixelformat	= 0;
+	std::uint16_t								m_flags								= 0;
+
+public:
+	SourceImage() = default;
+	SourceImage(int width,int height,const std::uint32_t * p_data = nullptr,int line_offset = 0);
+	SourceImage(int width,int height,const std::uint8_t * p_data = nullptr,int line_offset = 0);
+	
+	int 							width() const 								{return m_width;}
+	int 							height() const 								{return m_height;}
+	std::uint8_t 			source_pixelformat() const 		{m_source_pixelformat;}
+	std::uint8_t 			target_pixelformat() const 		{m_target_pixelformat;}
+
+	void 							set_source_pixelformat(std::uint8_t pixelformat)		{m_source_pixelformat = pixelformat;}
+	void 							set_target_pixelformat(std::uint8_t pixelformat)		{m_target_pixelformat = pixelformat;}
 
 	std::uint32_t 		get_pixel(int x, int y) const
 										{
-											return data[(y * (width + offset)) + x];
+											return m_source_data[(y * (m_width)) + x];
 										}
 
-	SourceImage 			duplicate_subimage(int x, int y, int width, int height)
+	std::unique_ptr<SourceImage>	duplicate_subimage(int x, int y, int width, int height)
 										{
-											SourceImage image;
 											// TODO:
-											return image;
+											return nullptr;
 										}
+
+	void							create_target_data(bool big_endian = false);
 };
 
 //=============================================================================
 //	Target Image Data
 //=============================================================================
+/*
 struct TargetImage
 {
-	std::vector<std::uint32_t>	data;
+	std::vector<std::uint8_t>		data;
 	Palette											palette;													// Palette if a palettized image
+	std::uint32_t								chunk_offset				= 0;
 	int													width 							= 0;
 	int													height 							= 0;
 	std::uint8_t 								pixelformat					= 0;
@@ -174,6 +193,7 @@ struct TargetImage
 		{}
 
 };
+*/
 
 //=============================================================================
 //	Image - Describes image region. References Source Image
@@ -190,8 +210,8 @@ struct Image
 
 
 
-SourceImage			load(const std::string & filename,gap::FileSystem & filesystem);
-TargetImage			CreateTargetImage(const SourceImage & source);
+std::unique_ptr<SourceImage>			load(const std::string & filename,gap::FileSystem & filesystem);
+//TargetImage			CreateTargetImage(const SourceImage & source,bool big_endian);
 
 } // namespace gap::image
 
