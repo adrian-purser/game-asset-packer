@@ -58,7 +58,8 @@ Application::run()
 
 //	std::cout << source << std::endl;
 	p_assets->dump();
-	
+	p_assets->create_target_image_data(m_config.b_big_endian);
+
 	export_assets(*(p_assets.get()),m_config);
 
 	

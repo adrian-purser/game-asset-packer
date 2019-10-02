@@ -118,6 +118,28 @@ Assets::enumerate_source_images(std::function<bool (const gap::image::SourceImag
 			break;
 }
 
+void
+Assets::create_target_image_data(bool big_endian)
+{
+	std::cout << "Creating Target Image Data..." << std::endl;
+
+	int index = 0;
+	for(auto & image : m_source_images)
+	{
+		image->create_target_data(big_endian);
+		std::cout << "IMAGE:" << index << ":  size = " << std::hex << image->target_data_size() << std::dec << std::endl;
+		++index;
+	}
+}	
+
+std::uint32_t 	
+Assets::get_target_image_offset(int index, int x,int y) const
+{
+	if((index<0) || (index>=m_source_images.size()))
+		return 0;
+
+	return gap::image::pixelformat::image_pixel_offset(m_source_images[index]->target_pixelformat(),x,y,m_source_images[index]->width());
+}
 
 } // namespace gap::assets
 

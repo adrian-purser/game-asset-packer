@@ -80,6 +80,25 @@ constexpr int	image_data_size(const std::uint8_t	pixel_format, int width, int he
 								return 0;
 							}
 
+constexpr
+std::uint32_t 		
+image_pixel_offset(const std::uint8_t	pixel_format,int x,int y,int width)
+{
+	switch(pixel_format)
+	{
+		case gap::image::pixelformat::L4 :
+		case gap::image::pixelformat::A4 :
+			return ((width * y) + x) / 2;	
+			break;
+
+		default :
+			break; 
+	}
+
+	return ((width * y) + x) * bytes_per_pixel(pixel_format);
+}
+
+
 
 } // namespace pixelformat
 
@@ -149,13 +168,15 @@ public:
 	SourceImage(int width,int height,const std::uint32_t * p_data = nullptr,int line_offset = 0);
 	SourceImage(int width,int height,const std::uint8_t * p_data = nullptr,int line_offset = 0);
 	
-	int 							width() const 								{return m_width;}
-	int 							height() const 								{return m_height;}
-	std::uint8_t 			source_pixelformat() const 		{m_source_pixelformat;}
-	std::uint8_t 			target_pixelformat() const 		{m_target_pixelformat;}
+	int 															width() const 								{return m_width;}
+	int 															height() const 								{return m_height;}
+	std::uint8_t 											source_pixelformat() const 		{return m_source_pixelformat;}
+	std::uint8_t 											target_pixelformat() const 		{return m_target_pixelformat;}
+	int																target_data_size() const 			{return m_target_data.size();}
+	const std::vector<std::uint8_t> &	target_data() const 					{return m_target_data;}
 
-	void 							set_source_pixelformat(std::uint8_t pixelformat)		{m_source_pixelformat = pixelformat;}
-	void 							set_target_pixelformat(std::uint8_t pixelformat)		{m_target_pixelformat = pixelformat;}
+	void 															set_source_pixelformat(std::uint8_t pixelformat)		{m_source_pixelformat = pixelformat;}
+	void 															set_target_pixelformat(std::uint8_t pixelformat)		{m_target_pixelformat = pixelformat;}
 
 	std::uint32_t 		get_pixel(int x, int y) const
 										{
@@ -168,7 +189,7 @@ public:
 											return nullptr;
 										}
 
-	void							create_target_data(bool big_endian = false);
+	void							create_target_data(bool big_endian);
 };
 
 //=============================================================================

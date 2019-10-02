@@ -107,6 +107,23 @@ load(const std::string & filename,gap::FileSystem & filesystem)
 	return p_image;
 }
 
+SourceImage::SourceImage(int width,int height,const std::uint32_t * p_data,int line_offset)
+	: m_width(width)
+	, m_height(height)
+{
+	m_source_data.assign(p_data,p_data + ((width + line_offset) * height));
+}
+
+SourceImage::SourceImage(int width,int height,const std::uint8_t * p_data,int line_offset)
+	: m_width(width)
+	, m_height(height)
+{
+	m_source_data.reserve(width*height);
+	int i=0;
+	for(int y=0;y<height;++y,p_data+=line_offset*4)
+		for(int x=0;x<width;++x,++i,p_data += 4) 	
+			m_source_data.push_back(p_data[0] | (p_data[1]<<8) | (p_data[2]<<16) | (p_data[3]<<24));
+}
 
 void
 SourceImage::create_target_data(bool big_endian)
@@ -308,23 +325,6 @@ SourceImage::create_target_data(bool big_endian)
 	}
 }
 
-SourceImage::SourceImage(int width,int height,const std::uint32_t * p_data,int line_offset)
-	: m_width(width)
-	, m_height(height)
-{
-	m_source_data.assign(p_data,p_data + ((width + line_offset) * height));
-}
-
-SourceImage::SourceImage(int width,int height,const std::uint8_t * p_data,int line_offset)
-	: m_width(width)
-	, m_height(height)
-{
-	m_source_data.reserve(width*height);
-	int i=0;
-	for(int y=0;y<height;++y,p_data+=line_offset*4)
-		for(int x=0;x<width;++x,++i,p_data += 4) 	
-			m_source_data.push_back(p_data[0] | (p_data[1]<<8) | (p_data[2]<<16) | (p_data[3]<<24));
-}
 
 
 } // namespace gap::image

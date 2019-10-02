@@ -26,7 +26,6 @@ private:
 		int																current_index = 0;
 	};
 
-
 	static const int 																				m_max_image_groups = 16;
 	std::vector<std::unique_ptr<gap::image::SourceImage>>		m_source_images;
 	std::array<ImageGroup,m_max_image_groups>								m_image_groups;
@@ -41,8 +40,10 @@ public:
 
 	int							source_image_count() const noexcept			{return m_source_images.size();}
 	void						enumerate_source_images(std::function<bool (const gap::image::SourceImage &)> callback);
-	
+	void						create_target_image_data(bool big_endian = false);	
 	void						dump();
+
+	std::uint32_t 	get_target_image_offset(int index, int x,int y) const;
 
 };
 
