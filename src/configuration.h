@@ -28,7 +28,6 @@ struct MountPoint
 struct Configuration
 {
 	std::string										input_file			= "assets.gap";
-	std::string										output_file			= "assets.bin";												// Overrides the filename from the input_file if non-empty.
 	bool													b_big_endian		= false;
 	std::vector<MountPoint>				mount_points;
 };

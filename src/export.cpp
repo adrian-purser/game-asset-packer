@@ -13,33 +13,49 @@
 #include "export.h"
 #include <utility/hexdump.h>
 
-namespace gap
+namespace gap::exporter
 {
 
 int		
-export_assets(const gap::assets::Assets & assets,const gap::Configuration & config)
+export_assets(const gap::assets::Assets & assets,const gap::exporter::ExportInfo & exportinfo,const gap::Configuration & config)
 {
 
-	// TODO: Select encoder to match output format (when more outputs are available)
-	std::vector<std::uint8_t>	blob = gap::encode_gbin(assets,config);
-
-	// TODO: Select output type (eg, binary, C Source etc)
+	std::vector<std::uint8_t>	blob;
+	
+	switch(exportinfo.type)
+	{
+		case gap::exporter::TYPE_GBIN :		blob = gap::encode_gbin(assets,config); break;
+		default :
+			std::cerr << "Unknown or unsupported export type! (" << exportinfo.filename << ')' << std::endl;
+			return -1;
+	} 
 
 	std::cout << "=============================================================================\n\n"; 
 	std::cout << ade::hexdump(blob.data(),blob.size());
 
 
-	std::ofstream outfile(config.output_file,std::ios_base::binary | std::ios_base::out);
-	if(outfile.fail())
+	switch(exportinfo.format)
 	{
-		std::cerr << "Failed to create output file " << config.output_file << std::endl;
-		return -1;
+		case gap::exporter::FORMAT_BINARY :
+			{
+				std::ofstream outfile(exportinfo.filename,std::ios_base::binary | std::ios_base::out);
+				if(outfile.fail())
+				{
+					std::cerr << "Failed to create output file " << exportinfo.filename << std::endl;
+					return -1;
+				}
+				outfile.write((const char *)blob.data(),blob.size());
+			}
+			break;
+
+		default :
+			std::cerr << "Unknown or unsupported export format! (" << exportinfo.filename << ')' << std::endl;
+			return -1;
 	}
 
-	outfile.write((const char *)blob.data(),blob.size());
 	
 	return 0;
 }
 
-} // namespace gap
+} // namespace gap::exporter
 

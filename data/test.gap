@@ -1,5 +1,7 @@
 # Test GAP file
+export,filename=assets.bin,type=gbin,format=binary
 loadimage,src="/sunnyland/tileset.png",format=ARGB1555
+
 imagegroup,group=4
 image,x=16,y=16,width=16,height=16,name=TILE_01
 image,x=48,y=16,width=16,height=16

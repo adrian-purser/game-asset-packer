@@ -19,6 +19,7 @@
 #define GAPCMD_LOADIMAGE				"loadimage"
 #define GAPCMD_IMAGE						"image"
 #define GAPCMD_IMAGEGROUP				"imagegroup"
+#define GAPCMD_EXPORT						"export"
 
 namespace gap
 {
@@ -185,7 +186,7 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_LOADIMAGE) :	result = command_loadimage(line_number,cmd); 		break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEGROUP) :	result = command_imagegroup(line_number,cmd); 	break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :			result = command_image(line_number,cmd); 				break;
-
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_EXPORT) :			result = command_export(line_number,cmd); 			break;
 		default : 
 			std::cerr << "GAP: Unknown command '" << cmd.command << "'\n";
 			result = -1;
@@ -195,7 +196,13 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 	return result;
 }
 
-
+void
+ParserGAP::enumerate_exports(std::function<bool(const gap::exporter::ExportInfo &)> callback)
+{
+	for(const auto & exportinfo : m_export_info)
+		if(!callback(exportinfo))
+			break;
+}
 
 int 
 ParserGAP::command_loadimage(int line_number, const CommandLine & command)
@@ -277,6 +284,56 @@ ParserGAP::command_image(int line_number, const CommandLine & command)
 	return 0;
 }
 
+int 
+ParserGAP::command_export(int line_number, const CommandLine & command)
+{
+	gap::exporter::ExportInfo exportinfo;
+
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("filename") :	
+			case ade::hash::hash_ascii_string_as_lower("path") :		
+				exportinfo.filename = value;	
+				break;
+
+			case ade::hash::hash_ascii_string_as_lower("type") 			:		
+				{
+					auto valhash = ade::hash::hash_ascii_string_as_lower(value.c_str(),value.size());
+					switch(valhash)
+					{
+						case ade::hash::hash_ascii_string_as_lower("gbin") :	exportinfo.type = gap::exporter::TYPE_GBIN; break;
+						default :																							return on_error(line_number,std::string("Unknown export type! - ") + value);
+					}
+				}
+				break;
+
+			case ade::hash::hash_ascii_string_as_lower("format") 			:		
+				{
+					auto valhash = ade::hash::hash_ascii_string_as_lower(value.c_str(),value.size());
+					switch(valhash)
+					{
+						case ade::hash::hash_ascii_string_as_lower("binary") :				exportinfo.format = gap::exporter::FORMAT_BINARY; 			break;
+						case ade::hash::hash_ascii_string_as_lower("c_array") :				exportinfo.format = gap::exporter::FORMAT_C_ARRAY; 			break;
+						case ade::hash::hash_ascii_string_as_lower("cpp_vector") :		exportinfo.format = gap::exporter::FORMAT_CPP_VECTOR; 	break;
+						case ade::hash::hash_ascii_string_as_lower("cpp_stdarray") :	exportinfo.format = gap::exporter::FORMAT_CPP_STDARRAY; break;
+						default :																											return on_error(line_number,std::string("Unknown export format! - ") + value);
+					}
+				}
+				break;
+
+			default : 
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
+
+	m_export_info.push_back(exportinfo);
+
+	return 0;
+}
 
 } // namespace gap
 

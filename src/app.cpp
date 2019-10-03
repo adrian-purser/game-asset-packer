@@ -60,9 +60,15 @@ Application::run()
 	p_assets->dump();
 	p_assets->create_target_image_data(m_config.b_big_endian);
 
-	export_assets(*(p_assets.get()),m_config);
+	parser.enumerate_exports([&](const auto & exportinfo)->bool
+		{
+			std::cout << "EXPORT: " << exportinfo.filename << " type:" << exportinfo.type << " format:" << exportinfo.format << std::endl;
+			export_assets(*(p_assets.get()),exportinfo,m_config);
+			return true;
+		});
 
 	
+	std::cout << "Finished\n";
 	return 0;
 }
 

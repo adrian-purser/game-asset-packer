@@ -16,11 +16,33 @@
 #include "assets.h"
 #include "configuration.h"
 
-namespace gap
+namespace gap::exporter
 {
 
-int		export_assets(const gap::assets::Assets & assets,const gap::Configuration & config);
+enum
+{
+	TYPE_UNKNOWN,
+	TYPE_GBIN
+};
 
-} // namespace gap
+enum
+{
+	FORMAT_UNKNOWN,
+	FORMAT_BINARY,
+	FORMAT_C_ARRAY,
+	FORMAT_CPP_VECTOR,
+	FORMAT_CPP_STDARRAY
+};
+
+struct ExportInfo
+{
+	std::string			filename;
+	int							type;
+	int							format;
+};
+
+int		export_assets(const gap::assets::Assets & assets,const gap::exporter::ExportInfo & info,const gap::Configuration & config);
+
+} // namespace gap::exporter
 
 #endif // ! defined GUARD_ADE_GAMES_ASSET_PACKER_EXPORT_H

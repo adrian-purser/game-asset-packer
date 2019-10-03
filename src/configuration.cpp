@@ -25,7 +25,6 @@ parse_command_line(int argc,char ** argv,Configuration & out_config)
 	program_options::OptionGroup grp_general;
 	grp_general.add_option("help","Display help message");
 	grp_general.add_option("version","Display version information");
-	grp_general.add_option("output,o","Output filename","Filename");
 	grp_general.add_option("mount,m","Mount Package","<Path>,<MountPoint>");
 
 	program_options::Parser parser;
@@ -51,8 +50,6 @@ parse_command_line(int argc,char ** argv,Configuration & out_config)
 	//-------------------------------------------------------------------------
 	//	Process the options.
 	//-------------------------------------------------------------------------
-	if(values.options.count("output"))	out_config.output_file = values.options["output"].back();
-
 	if(values.options.count("mount"))
 	{
 		for(const auto & str : values.options["mount"])
