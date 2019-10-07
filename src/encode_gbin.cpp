@@ -111,7 +111,7 @@ encode_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets &
 			endian_append(data,image.height(),2,config.b_big_endian);
 			endian_append(data,image_offset,4,config.b_big_endian);
 			data.push_back(image.target_pixelformat());
-			data.resize(data.size() + 7,0);
+			data.resize(data.size() + 3,0);
 			image_offset += data_size; 
 			return true;
 		});
