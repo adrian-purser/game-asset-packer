@@ -118,6 +118,21 @@ encode_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets &
 
 	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
 
+	//---------------------------------------------------------------------------
+	//	Images
+	//---------------------------------------------------------------------------
+	chunk_offset = data.size();
+	fourcc_append("SIMG",data);
+	fourcc_append("size",data);
+
+	assets.enumerate_images([&](int group_index,int image_index,const gap::image::Image & image)->bool
+		{
+			#error Finish this
+			return true;
+		});
+
+	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
 }
 
 std::vector<std::uint8_t>		

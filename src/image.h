@@ -227,6 +227,8 @@ struct Image
 	int								y								=	0;
 	int								width						= 0;
 	int								height					= 0;
+	int								x_origin				= 0;
+	int								y_origin				= 0;
 };
 
 

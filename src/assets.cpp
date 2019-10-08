@@ -120,6 +120,22 @@ Assets::enumerate_source_images(std::function<bool (int image_index,const gap::i
 }
 
 void
+Assets::enumerate_images(std::function<bool (int group,int image_index,const gap::image::Image &)> callback) const
+{
+	int group_index = 0;
+	for(const auto & group : m_image_groups)
+	{
+		int image_index = 0;
+
+		for(const auto & image : group.images)
+			if(!callback(group_index,image_index++,image))
+				return;
+
+		++group_index;
+	}
+}
+
+void
 Assets::create_target_image_data(bool big_endian)
 {
 	std::cout << "Creating Target Image Data..." << std::endl;

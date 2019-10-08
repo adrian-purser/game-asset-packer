@@ -265,12 +265,17 @@ ParserGAP::command_image(int line_number, const CommandLine & command)
 		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
 		switch(hash)
 		{
-			case ade::hash::hash_ascii_string_as_lower("x") 			:	image.x 			= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("y") 			:	image.y 			= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("x") 			:	image.x 				= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("y") 			:	image.y 				= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("w") 			:	
-			case ade::hash::hash_ascii_string_as_lower("width") 	:	image.width		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("width") 	:	image.width			= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("h") 			:	
-			case ade::hash::hash_ascii_string_as_lower("height")	:	image.height	= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("height")	:	image.height		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("xo") 			:	
+			case ade::hash::hash_ascii_string_as_lower("xorigin")	:	image.x_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("yo") 			:	
+			case ade::hash::hash_ascii_string_as_lower("yorigin")	:	image.y_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
+
 			case ade::hash::hash_ascii_string_as_lower("name") 		:	image.name 		= value; break;
 			default : 
 				// TODO: Warning - unknown arg
