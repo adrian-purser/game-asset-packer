@@ -45,6 +45,8 @@ public:
 	void						dump();
 
 	std::uint32_t 	get_target_image_offset(int index, int x,int y) const;
+	std::uint32_t 	get_target_line_stride(int index) const;
+	std::uint8_t 		get_target_pixelformat(int index) const;
 
 };
 

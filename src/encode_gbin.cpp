@@ -99,6 +99,8 @@ encode_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets &
 	//---------------------------------------------------------------------------
 	//	Source Image Metadata
 	//---------------------------------------------------------------------------
+	std::vector<std::uint32_t>	image_offsets;
+
 	chunk_offset = data.size();
 	fourcc_append("SIMG",data);
 	fourcc_append("size",data);
@@ -106,12 +108,15 @@ encode_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets &
 	image_offset = 0;
 	assets.enumerate_source_images([&](int image_index,const gap::image::SourceImage & image)->bool
 		{
+			image_offsets.push_back(image_offset);
 			auto data_size = (image.target_data_size() + 0x0F) & ~0x0F;
 			endian_append(data,image.width(),2,config.b_big_endian);
 			endian_append(data,image.height(),2,config.b_big_endian);
 			endian_append(data,image_offset,4,config.b_big_endian);
 			data.push_back(image.target_pixelformat());
-			data.resize(data.size() + 3,0);
+			data.push_back(0);
+			data.push_back(0);
+			data.push_back(0);
 			image_offset += data_size; 
 			return true;
 		});
@@ -122,12 +127,19 @@ encode_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets &
 	//	Images
 	//---------------------------------------------------------------------------
 	chunk_offset = data.size();
-	fourcc_append("SIMG",data);
+	fourcc_append("IMAG",data);
 	fourcc_append("size",data);
 
 	assets.enumerate_images([&](int group_index,int image_index,const gap::image::Image & image)->bool
 		{
-			#error Finish this
+			endian_append(data,image.width,2,config.b_big_endian);
+			endian_append(data,image.height,2,config.b_big_endian);
+			endian_append(data,assets.get_target_line_stride(image.source_image)-image.width,2,config.b_big_endian);
+			data.push_back(assets.get_target_pixelformat(image.source_image));
+			data.push_back(0); // Flags
+			endian_append(data,image.x_origin,2,config.b_big_endian);
+			endian_append(data,image.y_origin,2,config.b_big_endian);
+			endian_append(data,image_offsets[image.source_image] + assets.get_target_image_offset(image.source_image,image.x,image.y),4,config.b_big_endian);
 			return true;
 		});
 

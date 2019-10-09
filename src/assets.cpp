@@ -158,5 +158,23 @@ Assets::get_target_image_offset(int index, int x,int y) const
 	return gap::image::pixelformat::image_pixel_offset(m_source_images[index]->target_pixelformat(),x,y,m_source_images[index]->width());
 }
 
+std::uint32_t 	
+Assets::get_target_line_stride(int index) const
+{
+	if((index<0) || (index>=m_source_images.size()))
+		return 0;
+
+	return m_source_images[index]->width();
+}
+
+std::uint8_t 		
+Assets::get_target_pixelformat(int index) const
+{
+	if((index<0) || (index>=m_source_images.size()))
+		return 0;
+
+	return m_source_images[index]->target_pixelformat();
+}
+
 } // namespace gap::assets
 
