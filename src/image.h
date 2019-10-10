@@ -82,20 +82,20 @@ constexpr int	image_data_size(const std::uint8_t	pixel_format, int width, int he
 
 constexpr
 std::uint32_t 		
-image_pixel_offset(const std::uint8_t	pixel_format,int x,int y,int width)
+image_pixel_offset(const std::uint8_t	pixel_format,int x,int y,int stride)
 {
 	switch(pixel_format)
 	{
 		case gap::image::pixelformat::L4 :
 		case gap::image::pixelformat::A4 :
-			return ((width * y) + x) / 2;	
+			return ((stride * y) + x) / 2;	
 			break;
 
 		default :
 			break; 
 	}
 
-	return ((width * y) + x) * bytes_per_pixel(pixel_format);
+	return ((stride * y) + x) * bytes_per_pixel(pixel_format);
 }
 
 
@@ -189,7 +189,8 @@ public:
 											return nullptr;
 										}
 
-	void							create_target_data(bool big_endian);
+	void									create_target_data(bool big_endian);
+	std::vector<uint8_t>	create_sub_target_data(int x, int y, int width, int height, bool big_endian);
 };
 
 //=============================================================================

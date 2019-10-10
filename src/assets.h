@@ -35,18 +35,20 @@ public:
 	Assets(const Assets &) = delete;
 	Assets & operator=(const Assets &) = delete;
 
-	int							add_source_image(std::unique_ptr<gap::image::SourceImage> p_image);
-	int							add_image(int group,gap::image::Image & image);
+	int										add_source_image(std::unique_ptr<gap::image::SourceImage> p_image);
+	int										add_image(int group,gap::image::Image & image);
 
-	int							source_image_count() const noexcept			{return m_source_images.size();}
-	void						enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;
-	void						enumerate_images(std::function<bool (int group,int image_index,const gap::image::Image &)> callback) const;
-	void						create_target_image_data(bool big_endian = false);	
-	void						dump();
+	int										source_image_count() const noexcept			{return m_source_images.size();}
+	void									enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;
+	void									enumerate_images(std::function<bool (int group,int image_index,const gap::image::Image &)> callback) const;
+	void									create_target_image_data(bool big_endian = false);	
+	void									dump();
 
-	std::uint32_t 	get_target_image_offset(int index, int x,int y) const;
-	std::uint32_t 	get_target_line_stride(int index) const;
-	std::uint8_t 		get_target_pixelformat(int index) const;
+	uint32_t 							get_target_image_offset(int index, int x,int y) const;
+	uint32_t 							get_target_line_stride(int index) const;
+	uint8_t 							get_target_pixelformat(int index) const;
+
+	std::vector<uint8_t>	get_target_subimage(int index, int x, int y, int width, int height, bool big_endian) const;
 
 };
 

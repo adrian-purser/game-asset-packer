@@ -176,5 +176,19 @@ Assets::get_target_pixelformat(int index) const
 	return m_source_images[index]->target_pixelformat();
 }
 
+
+std::vector<uint8_t>	
+Assets::get_target_subimage(int index, int x, int y, int width, int height, bool big_endian) const
+{
+	if((index<0) || (index>=m_source_images.size()))
+ 		return {};
+
+	return m_source_images[index]->create_sub_target_data(x, y, width, height, big_endian);
+
+}
+
+
+
+
 } // namespace gap::assets
 

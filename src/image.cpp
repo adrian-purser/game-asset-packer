@@ -325,6 +325,28 @@ SourceImage::create_target_data(bool big_endian)
 	}
 }
 
+std::vector<uint8_t>	
+SourceImage::create_sub_target_data(int x, int y, int width, int height, bool big_endian)
+{
+	auto & data = m_target_data;
+	int iout = 0;
+	std::vector<uint8_t>	subimage;
+
+	const int datasize 			= gap::image::pixelformat::image_data_size(m_target_pixelformat,width,height);
+	int 			src_offset 		= gap::image::pixelformat::image_pixel_offset(m_target_pixelformat,x,y,m_width);
+	const int src_linesize 	= gap::image::pixelformat::image_data_size(m_target_pixelformat,m_width,1);
+	const int dest_linesize = gap::image::pixelformat::image_data_size(m_target_pixelformat,width,1);
+
+//	subimage.resize(gap::image::pixelformat::image_data_size(m_target_pixelformat,width,height));
+
+	for(int iy=0;iy<height;++iy)
+	{
+		subimage.insert(end(subimage),begin(data)+src_offset,end(data)+src_offset+dest_linesize);
+		src_offset += src_linesize;
+	}
+
+	return subimage;
+}
 
 
 } // namespace gap::image

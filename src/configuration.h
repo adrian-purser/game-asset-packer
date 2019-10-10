@@ -27,8 +27,9 @@ struct MountPoint
 
 struct Configuration
 {
-	std::string										input_file			= "assets.gap";
-	bool													b_big_endian		= false;
+	std::string										input_file														= "assets.gap";
+	bool													b_big_endian													= false;
+	bool													b_retain_original_source_images				= false;
 	std::vector<MountPoint>				mount_points;
 };
 

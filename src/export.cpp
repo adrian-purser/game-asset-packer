@@ -31,7 +31,7 @@ export_assets(const gap::assets::Assets & assets,const gap::exporter::ExportInfo
 	} 
 
 	std::cout << "=============================================================================\n\n"; 
-	std::cout << ade::hexdump(blob.data(),blob.size());
+	// std::cout << ade::hexdump(blob.data(),blob.size());
 
 
 	switch(exportinfo.format)
