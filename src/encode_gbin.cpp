@@ -109,6 +109,7 @@ static
 void		
 encode_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & assets,const gap::Configuration & config)
 {
+	/*
 	//---------------------------------------------------------------------------
 	//	Image Data Chunk
 	//---------------------------------------------------------------------------
@@ -182,7 +183,7 @@ encode_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets &
 		});
 
 	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
-
+*/
 }
 
 /*IMAG Chunk
@@ -233,14 +234,16 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 			imag.x_origin						= image.x_origin;
 			imag.y_origin						= image.y_origin;
 			imag.line_offset				= assets.get_target_line_stride(image.source_image)-image.width;
-			imag.pixel_format				= assets.get_target_pixelformat(image.source_image);
+			imag.pixel_format				= image.pixel_format;
 			imag.palette						= 0;  //TODO: Get the palette index
 			imag.image_data_offset	=	image_offset;
 
-			auto imgdata = assets.get_target_subimage(image.source_image,image.x,image.y,image.width,image.height,config.b_big_endian);
+			images.push_back(imag);
 
-			std::cout << "get_target_subimage(x:" << image.x << ",y:" << image.y << ",w:" << image.width << ",h:" << image.height << ") = " << imgdata.size() << " bytes\n";
-			
+			auto imgdata = assets.get_target_subimage(image.source_image,image.x,image.y,image.width,image.height,image.pixel_format,config.b_big_endian);
+
+			std::cout << "get_target_subimage(x:" << image.x << ",y:" << image.y << ",w:" << image.width << ",h:" << image.height << ",pf: " << image.pixel_format << ") = " << imgdata.size() << " bytes\n";
+
 			data.insert(end(data),begin(imgdata),end(imgdata));
 			auto sz = (data.size() + 3) & ~3;
 			if(sz > data.size())
@@ -258,20 +261,21 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	chunk_offset = data.size();
 	fourcc_append("IMAG",data);
 	fourcc_append("size",data);
-/*
-	assets.enumerate_images([&](int group_index,int image_index,const gap::image::Image & image)->bool
-		{
-			endian_append(data,image.width,2,config.b_big_endian);
-			endian_append(data,image.height,2,config.b_big_endian);
-			endian_append(data,assets.get_target_line_stride(image.source_image)-image.width,2,config.b_big_endian);
-			data.push_back(assets.get_target_pixelformat(image.source_image));
-			data.push_back(0); // Flags
-			endian_append(data,image.x_origin,2,config.b_big_endian);
-			endian_append(data,image.y_origin,2,config.b_big_endian);
-			endian_append(data,image_offsets[image.source_image] + assets.get_target_image_offset(image.source_image,image.x,image.y),4,config.b_big_endian);
-			return true;
-		});
-*/
+
+	data.reserve(chunk_offset + (sizeof(IMAGChunkEntry) * images.size()));
+
+	for(const auto & image : images)
+	{
+		endian_append(data,image.width,2,config.b_big_endian);
+		endian_append(data,image.height,2,config.b_big_endian);
+		endian_append(data,0,2,config.b_big_endian);
+		data.push_back(image.pixel_format);
+		data.push_back(image.palette);
+		endian_append(data,image.x_origin,2,config.b_big_endian);
+		endian_append(data,image.y_origin,2,config.b_big_endian);
+		endian_append(data,image.image_data_offset,4,config.b_big_endian);
+	}
+
 	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
 
 }

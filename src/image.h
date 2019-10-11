@@ -80,6 +80,29 @@ constexpr int	image_data_size(const std::uint8_t	pixel_format, int width, int he
 								return 0;
 							}
 
+constexpr uint32_t
+encode_pixel(uint32_t colour,uint8_t pixel_format)
+{
+	switch(pixel_format)
+	{
+		case gap::image::pixelformat::ARGB8888 :		return colour;
+		case gap::image::pixelformat::RGB888 :			return colour & 0x0FFFFFF;
+		case gap::image::pixelformat::RGB565 :			return ((colour >> 8) & 0x0F800) | ((colour >> 5) & 0x07E0) | ((colour >> 3) & 0x01F);
+		case gap::image::pixelformat::ARGB1555 :		return ((colour >> 16) & 0x08000) | ((colour >> 9) & 0x7C00) | ((colour >> 6) & 0x03E0) | ((colour >> 3) & 0x01F);
+		case gap::image::pixelformat::ARGB4444 :		return ((colour >> 16) & 0x0F000) | ((colour >> 12) & 0x0F00) | ((colour >> 8) & 0x0F0) | ((colour >> 4) & 0x0F);
+		case gap::image::pixelformat::AL88 :				return ((colour >> 16) & 0x0FF00) | (( ((colour >> 16) & 0x0FF) + ((colour >> 8) & 0x0FF) + (colour & 0x0FF) ) / 3);
+		case gap::image::pixelformat::L8 :					return (((colour >> 16) & 0x0FF) + ((colour >> 8) & 0x0FF) + (colour & 0x0FF) ) / 3;
+		case gap::image::pixelformat::AL44 :				return ((colour >> 24) & 0x0F0) | ((( ((colour >> 16) & 0x0FF) + ((colour >> 8) & 0x0FF) + (colour & 0x0FF) ) / 3) >> 4);
+		case gap::image::pixelformat::A8 :					return ((colour >> 24) & 0x0FF00);
+		case gap::image::pixelformat::I8 :					return 0;
+		case gap::image::pixelformat::L4 :					return ((((colour >> 16) & 0x0FF) + ((colour >> 8) & 0x0FF) + (colour & 0x0FF) ) / 3) >> 4;
+		case gap::image::pixelformat::A4 :					return ((colour >> 28) & 0x0F);
+
+		default : break;
+	}
+	return 0;
+}
+
 constexpr
 std::uint32_t 		
 image_pixel_offset(const std::uint8_t	pixel_format,int x,int y,int stride)
@@ -153,7 +176,6 @@ SourceImage
 {
 private:
 	std::vector<std::uint32_t>	m_source_data;
-	std::vector<std::uint8_t>		m_target_data;
 	Palette											m_palette;													// Palette if a palettized image
 	int													m_width 							= 0;
 	int													m_height 							= 0;
@@ -172,8 +194,8 @@ public:
 	int 															height() const 								{return m_height;}
 	std::uint8_t 											source_pixelformat() const 		{return m_source_pixelformat;}
 	std::uint8_t 											target_pixelformat() const 		{return m_target_pixelformat;}
-	int																target_data_size() const 			{return m_target_data.size();}
-	const std::vector<std::uint8_t> &	target_data() const 					{return m_target_data;}
+//	int																target_data_size() const 			{return m_target_data.size();}
+//	const std::vector<std::uint8_t> &	target_data() const 					{return m_target_data;}
 
 	void 															set_source_pixelformat(std::uint8_t pixelformat)		{m_source_pixelformat = pixelformat;}
 	void 															set_target_pixelformat(std::uint8_t pixelformat)		{m_target_pixelformat = pixelformat;}
@@ -189,8 +211,8 @@ public:
 											return nullptr;
 										}
 
-	void									create_target_data(bool big_endian);
-	std::vector<uint8_t>	create_sub_target_data(int x, int y, int width, int height, bool big_endian);
+//	void									create_target_data(bool big_endian);
+	std::vector<uint8_t>	create_sub_target_data(int x, int y, int width, int height, uint8_t pixel_format, bool big_endian);
 };
 
 //=============================================================================
@@ -230,6 +252,7 @@ struct Image
 	int								height					= 0;
 	int								x_origin				= 0;
 	int								y_origin				= 0;
+	int								pixel_format		= 0;
 };
 
 

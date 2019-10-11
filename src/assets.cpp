@@ -135,20 +135,6 @@ Assets::enumerate_images(std::function<bool (int group,int image_index,const gap
 	}
 }
 
-void
-Assets::create_target_image_data(bool big_endian)
-{
-	std::cout << "Creating Target Image Data..." << std::endl;
-
-	int index = 0;
-	for(auto & image : m_source_images)
-	{
-		image->create_target_data(big_endian);
-		std::cout << "IMAGE:" << index << ":  size = " << std::hex << image->target_data_size() << std::dec << std::endl;
-		++index;
-	}
-}	
-
 std::uint32_t 	
 Assets::get_target_image_offset(int index, int x,int y) const
 {
@@ -178,12 +164,15 @@ Assets::get_target_pixelformat(int index) const
 
 
 std::vector<uint8_t>	
-Assets::get_target_subimage(int index, int x, int y, int width, int height, bool big_endian) const
+Assets::get_target_subimage(int index, int x, int y, int width, int height, uint8_t pixel_format, bool big_endian) const
 {
 	if((index<0) || (index>=m_source_images.size()))
+	{
+		std::cerr << "get_target_subimage: Unknown Image: " << index << std::endl;
  		return {};
-
-	return m_source_images[index]->create_sub_target_data(x, y, width, height, big_endian);
+	}
+	
+	return m_source_images[index]->create_sub_target_data(x, y, width, height, pixel_format, big_endian);
 
 }
 
