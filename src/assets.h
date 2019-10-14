@@ -41,6 +41,9 @@ public:
 	int										source_image_count() const noexcept			{return m_source_images.size();}
 	void									enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;
 	void									enumerate_images(std::function<bool (int group,int image_index,const gap::image::Image &)> callback) const;
+	void									enumerate_image_groups(std::function<bool(uint32_t group_number)> callback) const;
+	void 									enumerate_group_images(int group_number,std::function<bool(int image_index,const gap::image::Image & image)> callback) const;
+	
 	void									dump();
 
 	uint32_t 							get_target_image_offset(int index, int x,int y) const;

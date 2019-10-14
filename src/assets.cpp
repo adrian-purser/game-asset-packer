@@ -135,6 +135,35 @@ Assets::enumerate_images(std::function<bool (int group,int image_index,const gap
 	}
 }
 
+void
+Assets::enumerate_image_groups(std::function<bool(uint32_t group_number)> callback) const
+{
+	int group_index = 0;
+	for(const auto & group : m_image_groups)
+	{
+		if(!group.images.empty())
+			if(!callback(group_index))
+				return;
+		++group_index;
+	}	
+}
+
+void
+Assets::enumerate_group_images(int group_number,std::function<bool(int image_index,const gap::image::Image & image)> callback) const
+{
+	std::cout << "Enumerating group images: group = " << group_number << '\n';
+
+	if((group_number>=0) && (group_number < m_image_groups.size()))
+	{
+		const auto & group = m_image_groups[group_number];
+		int image_index = 0;
+
+		for(const auto & image : group.images)
+			if(!callback(image_index++,image))
+				return;
+	}
+}
+
 std::uint32_t 	
 Assets::get_target_image_offset(int index, int x,int y) const
 {

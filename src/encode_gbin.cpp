@@ -213,51 +213,67 @@ static
 void		
 encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & assets,const gap::Configuration & config)
 {
+	struct ImageGroup
+	{
+		uint32_t 	base;			// The value of the first image in the group.
+		uint32_t	index;		// The index of the first image in the group.
+	};
 
-	std::vector<IMAGChunkEntry>	images;
+	std::vector<IMAGChunkEntry>		images;
+	std::map<uint32_t,ImageGroup>	groups;
 
 	//---------------------------------------------------------------------------
-	//	Image Data Chunk
+	//	Image Data Chunk [IMGD]
 	//---------------------------------------------------------------------------
 	uint32_t chunk_offset = data.size();
 	uint32_t image_offset = 0;
+	
+	std::cout << "Encoding Chunk IMGD\n";
 
 	fourcc_append("IMGD",data);
 	fourcc_append("size",data);
 
-	assets.enumerate_images([&](int group_index,int image_index,const gap::image::Image & image)->bool
+	assets.enumerate_image_groups([&](uint32_t group_number)->bool
 		{
-			IMAGChunkEntry imag;
+			groups[group_number].index = images.size();
 
-			imag.width							= image.width;
-			imag.height							= image.height;
-			imag.x_origin						= image.x_origin;
-			imag.y_origin						= image.y_origin;
-			imag.line_offset				= assets.get_target_line_stride(image.source_image)-image.width;
-			imag.pixel_format				= image.pixel_format;
-			imag.palette						= 0;  //TODO: Get the palette index
-			imag.image_data_offset	=	image_offset;
+			assets.enumerate_group_images(group_number,[&](int image_index,const gap::image::Image & image)->bool
+			{
+				IMAGChunkEntry imag;
 
-			images.push_back(imag);
+				imag.width							= image.width;
+				imag.height							= image.height;
+				imag.x_origin						= image.x_origin;
+				imag.y_origin						= image.y_origin;
+				imag.line_offset				= assets.get_target_line_stride(image.source_image)-image.width;
+				imag.pixel_format				= image.pixel_format;
+				imag.palette						= 0;  //TODO: Get the palette index
+				imag.image_data_offset	=	image_offset;
 
-			auto imgdata = assets.get_target_subimage(image.source_image,image.x,image.y,image.width,image.height,image.pixel_format,config.b_big_endian);
+				images.push_back(imag);
 
-			std::cout << "get_target_subimage(x:" << image.x << ",y:" << image.y << ",w:" << image.width << ",h:" << image.height << ",pf: " << image.pixel_format << ") = " << imgdata.size() << " bytes\n";
+				auto imgdata = assets.get_target_subimage(image.source_image,image.x,image.y,image.width,image.height,image.pixel_format,config.b_big_endian);
 
-			data.insert(end(data),begin(imgdata),end(imgdata));
-			auto sz = (data.size() + 3) & ~3;
-			if(sz > data.size())
-				data.resize(sz);
+				std::cout << "get_target_subimage(x:" << image.x << ",y:" << image.y << ",w:" << image.width << ",h:" << image.height << ",pf: " << image.pixel_format << ") = " << imgdata.size() << " bytes\n";
 
-			image_offset = data.size() - (chunk_offset+8);
+				data.insert(end(data),begin(imgdata),end(imgdata));
+				auto sz = (data.size() + 3) & ~3;
+				if(sz > data.size())
+					data.resize(sz);
+
+				image_offset = data.size() - (chunk_offset+8);
+				return true;
+			});
 			return true;
 		});
 
 	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
 
 	//---------------------------------------------------------------------------
-	//	Images
+	//	Image Chunk [IMAG]
 	//---------------------------------------------------------------------------
+	std::cout << "Encoding Chunk IMAG\n";
+
 	chunk_offset = data.size();
 	fourcc_append("IMAG",data);
 	fourcc_append("size",data);
@@ -274,6 +290,26 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 		endian_append(data,image.x_origin,2,config.b_big_endian);
 		endian_append(data,image.y_origin,2,config.b_big_endian);
 		endian_append(data,image.image_data_offset,4,config.b_big_endian);
+	}
+
+	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+	//---------------------------------------------------------------------------
+	//	Image Groups [IGRP]
+	//---------------------------------------------------------------------------
+	std::cout << "Encoding Chunk IGRP\n";
+
+	chunk_offset = data.size();
+	fourcc_append("IGRP",data);
+	fourcc_append("size",data);
+
+	data.reserve(chunk_offset + (8 * groups.size()));
+
+	for(const auto & [group_index,group] : groups)
+	{
+		endian_append(data,group_index,2,config.b_big_endian);
+		endian_append(data,group.base,2,config.b_big_endian);
+		endian_append(data,group.index,4,config.b_big_endian);
 	}
 
 	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
