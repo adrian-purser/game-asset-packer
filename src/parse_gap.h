@@ -58,6 +58,7 @@ private:
 	int 								command_loadimage(int line_number,const CommandLine & args);
 	int 								command_imagegroup(int line_number,const CommandLine & args);
 	int 								command_image(int line_number,const CommandLine & args);
+	int 								command_imagearray(int line_number,const CommandLine & args);
 	int 								command_export(int line_number,const CommandLine & args);
 
 };

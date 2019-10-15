@@ -1,10 +1,17 @@
 # Test GAP file
 export,filename=assets.gbin,type=gbin,format=binary
-loadimage,src="/sunnyland/tileset.png",format=RGB565
 
+loadimage,src="/fonts/arcade.png"
+imagegroup,group=0,base=33
+imagearray,width=8,height=8,xcount=93,ycount=1,format=ARGB1555
+
+loadimage,src="/sunnyland/tileset.png",format=RGB565
 imagegroup,group=4,base=32
 image,x=16,y=16,width=16,height=16,name=TILE_01
 image,x=48,y=16,width=16,height=16,format=ARGB8888
+
+
+
 
 #image,x=80,y=16,width=16,height=16
 #image,x=96,y=16,width=16,height=16

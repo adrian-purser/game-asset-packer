@@ -19,6 +19,7 @@
 #define GAPCMD_LOADIMAGE				"loadimage"
 #define GAPCMD_IMAGE						"image"
 #define GAPCMD_IMAGEGROUP				"imagegroup"
+#define GAPCMD_IMAGEARRAY				"imagearray"
 #define GAPCMD_EXPORT						"export"
 
 namespace gap
@@ -186,7 +187,9 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_LOADIMAGE) :	result = command_loadimage(line_number,cmd); 		break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEGROUP) :	result = command_imagegroup(line_number,cmd); 	break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :			result = command_image(line_number,cmd); 				break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEARRAY) :	result = command_imagearray(line_number,cmd); 	break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_EXPORT) :			result = command_export(line_number,cmd); 			break;
+
 		default : 
 			std::cerr << "GAP: Unknown command '" << cmd.command << "'\n";
 			result = -1;
@@ -314,6 +317,72 @@ ParserGAP::command_image(int line_number, const CommandLine & command)
 
 	return 0;
 }
+
+int 
+ParserGAP::command_imagearray(int line_number, const CommandLine & command)
+{
+	int 		x 			= 0;
+	int 		y 			= 0;
+	int 		width 	= 0;
+	int 		height 	= 0;
+	int 		xcount 	= 0;
+	int 		ycount 	= 0;
+	int 		xorigin	= 0;
+	int 		yorigin	= 0;
+	uint8_t format 	= 0;
+
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("x") 			:	x 				= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("y") 			:	y 				= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("w") 			:	
+			case ade::hash::hash_ascii_string_as_lower("width") 	:	width			= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("h") 			:	
+			case ade::hash::hash_ascii_string_as_lower("height")	:	height		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("xc") 			:	
+			case ade::hash::hash_ascii_string_as_lower("xcount")	:	xcount		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("yc") 			:	
+			case ade::hash::hash_ascii_string_as_lower("ycount")	:	ycount		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("xo") 			:	
+			case ade::hash::hash_ascii_string_as_lower("xorigin")	:	xorigin		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("yo") 			:	
+			case ade::hash::hash_ascii_string_as_lower("yorigin")	:	yorigin		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("pf") 			:	
+			case ade::hash::hash_ascii_string_as_lower("format")	:	format 		= gap::image::parse_pixelformat_name(value); break;
+			default : 
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
+
+	if(xcount <= 0) 	return on_error(line_number,std::string("Invalid/Missing 'xcount' parameter!"));
+	if(ycount <= 0) 	return on_error(line_number,std::string("Invalid/Missing 'ycount' parameter!"));
+	if(width <= 0) 		return on_error(line_number,std::string("Invalid/Missing 'width' parameter!"));
+	if(height <= 0) 	return on_error(line_number,std::string("Invalid/Missing 'height' parameter!"));
+
+	for(int yi = 0;yi < ycount;++yi)
+	{
+		for(int xi = 0;xi < xcount;++xi)
+		{
+			gap::image::Image	image;
+			image.x 						= xi * width;
+			image.y 						= yi * height;
+			image.x_origin			= xorigin;
+			image.y_origin			= yorigin;
+			image.width					= width;
+			image.height 				= height;
+			image.pixel_format	= format;
+			image.source_image	= m_current_source_image;
+			m_p_assets->add_image(m_current_image_group,image);
+		}
+	}
+
+	return 0;
+}
+
 
 int 
 ParserGAP::command_export(int line_number, const CommandLine & command)
