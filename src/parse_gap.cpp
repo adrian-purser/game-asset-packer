@@ -250,8 +250,29 @@ int
 ParserGAP::command_imagegroup(int line_number, const CommandLine & command)
 {
 
-	// TODO :
+	int group = -1;
+	int base = 0;
+
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("group") 	:	group	= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("base") 		:	base	= std::strtol(value.c_str(),nullptr,10); 	break;
+			default : 
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
 	
+	if(group >= 0)
+	{
+		m_current_image_group = group;
+		if(base > 0)
+			m_p_assets->set_group_base(group,base);
+	}
 	return 0;
 }
 

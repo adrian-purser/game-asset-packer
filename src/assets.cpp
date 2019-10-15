@@ -136,13 +136,13 @@ Assets::enumerate_images(std::function<bool (int group,int image_index,const gap
 }
 
 void
-Assets::enumerate_image_groups(std::function<bool(uint32_t group_number)> callback) const
+Assets::enumerate_image_groups(std::function<bool(uint32_t group_number,uint16_t base)> callback) const
 {
 	int group_index = 0;
 	for(const auto & group : m_image_groups)
 	{
 		if(!group.images.empty())
-			if(!callback(group_index))
+			if(!callback(group_index,group.base))
 				return;
 		++group_index;
 	}	

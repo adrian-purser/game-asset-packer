@@ -32,14 +32,14 @@ struct CommandLine
 class ParserGAP
 {
 private:
-	gap::FileSystem &											m_filesystem;
-	std::unique_ptr<gap::assets::Assets>	m_p_assets;
-	std::mutex														m_mutex;
+	gap::FileSystem &												m_filesystem;
+	std::unique_ptr<gap::assets::Assets>		m_p_assets;
+	std::mutex															m_mutex;
 
 	std::vector<gap::exporter::ExportInfo>	m_export_info;
 
-	int																		m_current_source_image				= -1;
-	int 																	m_current_image_group					= 0;
+	int																			m_current_source_image				= -1;
+	int 																		m_current_image_group					= 0;
 	
 public:
 	ParserGAP(gap::FileSystem & filesystem);

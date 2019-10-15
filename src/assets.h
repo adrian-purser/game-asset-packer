@@ -24,6 +24,7 @@ private:
 	{
 		std::vector<gap::image::Image>		images;
 		int																current_index = 0;
+		uint16_t													base = 0;
 	};
 
 	static const int 																				m_max_image_groups = 16;
@@ -41,9 +42,11 @@ public:
 	int										source_image_count() const noexcept			{return m_source_images.size();}
 	void									enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;
 	void									enumerate_images(std::function<bool (int group,int image_index,const gap::image::Image &)> callback) const;
-	void									enumerate_image_groups(std::function<bool(uint32_t group_number)> callback) const;
+	void									enumerate_image_groups(std::function<bool(uint32_t group_number,uint16_t base)> callback) const;
 	void 									enumerate_group_images(int group_number,std::function<bool(int image_index,const gap::image::Image & image)> callback) const;
 	
+	void 									set_group_base(int group,uint16_t base)		{if((group >= 0) && (group < m_max_image_groups)) m_image_groups[group].base = base;}
+
 	void									dump();
 
 	uint32_t 							get_target_image_offset(int index, int x,int y) const;

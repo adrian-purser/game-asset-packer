@@ -215,7 +215,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 {
 	struct ImageGroup
 	{
-		uint32_t 	base;			// The value of the first image in the group.
+		uint16_t 	base;			// The value of the first image in the group.
 		uint32_t	index;		// The index of the first image in the group.
 	};
 
@@ -233,9 +233,10 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	fourcc_append("IMGD",data);
 	fourcc_append("size",data);
 
-	assets.enumerate_image_groups([&](uint32_t group_number)->bool
+	assets.enumerate_image_groups([&](uint32_t group_number,uint16_t base)->bool
 		{
 			groups[group_number].index = images.size();
+			groups[group_number].base = base;
 
 			assets.enumerate_group_images(group_number,[&](int image_index,const gap::image::Image & image)->bool
 			{
@@ -307,6 +308,8 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 
 	for(const auto & [group_index,group] : groups)
 	{
+		std::cout << "  GROUP: " << group_index << " BASE: " << group.base << " INDEX: " << group.index << '\n';
+		
 		endian_append(data,group_index,2,config.b_big_endian);
 		endian_append(data,group.base,2,config.b_big_endian);
 		endian_append(data,group.index,4,config.b_big_endian);

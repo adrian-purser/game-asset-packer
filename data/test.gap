@@ -2,7 +2,7 @@
 export,filename=assets.gbin,type=gbin,format=binary
 loadimage,src="/sunnyland/tileset.png",format=RGB565
 
-imagegroup,group=4
+imagegroup,group=4,base=32
 image,x=16,y=16,width=16,height=16,name=TILE_01
 image,x=48,y=16,width=16,height=16,format=ARGB8888
 
