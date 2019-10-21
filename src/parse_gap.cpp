@@ -368,8 +368,8 @@ ParserGAP::command_imagearray(int line_number, const CommandLine & command)
 		for(int xi = 0;xi < xcount;++xi)
 		{
 			gap::image::Image	image;
-			image.x 						= xi * width;
-			image.y 						= yi * height;
+			image.x 						= x + (xi * width);
+			image.y 						= y + (yi * height);
 			image.x_origin			= xorigin;
 			image.y_origin			= yorigin;
 			image.width					= width;
