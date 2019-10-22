@@ -141,8 +141,8 @@ IGRP Chunk
 $00 |   I    |   G    |   R    |   P    |    FourCC defines chunk type - 4 Bytes
     +--------+--------+--------+--------+
 $04 |               SIZE                |    Chunk Size - 4 Bytes
-    +========+========+=================+    Image Group - 16 bytes
-$08 |   Group Number  |    Group Base   |
+    +========+========+=================+    Image Group - 8 bytes
+$08 |   Group Base    |    Reserved     |
     +-----------------+-----------------+
     |            Image Index            |
     +===================================+

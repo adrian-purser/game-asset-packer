@@ -215,12 +215,13 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 {
 	struct ImageGroup
 	{
-		uint16_t 	base;			// The value of the first image in the group.
-		uint32_t	index;		// The index of the first image in the group.
+		uint16_t 	base		= 0;			// The value of the first image in the group.
+		uint32_t	index		= 0;			// The index of the first image in the group.
 	};
 
 	std::vector<IMAGChunkEntry>		images;
-	std::map<uint32_t,ImageGroup>	groups;
+	std::array<ImageGroup,256>		groups;
+	uint32_t max_group = 0;
 
 	//---------------------------------------------------------------------------
 	//	Image Data Chunk [IMGD]
@@ -235,8 +236,13 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 
 	assets.enumerate_image_groups([&](uint32_t group_number,uint16_t base)->bool
 		{
-			groups[group_number].index = images.size();
-			groups[group_number].base = base;
+			std::cout << "  GROUP: " << group_number << " BASE: " << base << " INDEX: " << images.size() << '\n';
+
+			groups[group_number].index 	= images.size();
+			groups[group_number].base 	= base;
+
+			if(group_number > max_group)
+				max_group = group_number;
 
 			assets.enumerate_group_images(group_number,[&](int image_index,const gap::image::Image & image)->bool
 			{
@@ -304,14 +310,15 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	fourcc_append("IGRP",data);
 	fourcc_append("size",data);
 
-	data.reserve(chunk_offset + (8 * groups.size()));
+	data.reserve(chunk_offset + (8 * (max_group+1)));
 
-	for(const auto & [group_index,group] : groups)
+	for(int i=0;i<=max_group;++i)
 	{
-		std::cout << "  GROUP: " << group_index << " BASE: " << group.base << " INDEX: " << group.index << '\n';
+		const auto & group = groups[i];
+		std::cout << "  GROUP: " << i << " BASE: " << group.base << " INDEX: " << group.index << '\n';
 		
-		endian_append(data,group_index,2,config.b_big_endian);
 		endian_append(data,group.base,2,config.b_big_endian);
+		endian_append(data,0,2,config.b_big_endian);
 		endian_append(data,group.index,4,config.b_big_endian);
 	}
 
