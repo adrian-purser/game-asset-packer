@@ -10,5 +10,8 @@ imagegroup,group=4
 imagearray,width=16,height=16,xcount=3,ycount=3,format=ARGB1555
 imagearray,width=16,height=16,xcount=3,ycount=1,format=ARGB1555,x=0,y=64
 
+imagegroup,group=5
+image,width=16,height=16,x=16,y=16,xorigin=8,yorigin=8,format=ARGB1555
+
 #image,x=16,y=16,width=16,height=16,name=TILE_01
 #image,x=48,y=16,width=16,height=16,format=ARGB8888
