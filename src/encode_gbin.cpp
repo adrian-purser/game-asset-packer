@@ -15,44 +15,6 @@
 #define HEADER_SIZE		16
 #define VERSION "01"
 
-
-/*IMAG Chunk
-----------
-
-          -------------------->
-        0        1        2        3
-    +--------+--------+--------+--------+
-$00 |   I    |   M    |   A    |   G    |    FourCC defines chunk type - 4 Bytes
-    +--------+--------+--------+--------+
-$04 |               SIZE                |    Chunk Size - 4 Bytes
-    +=================+=================+    Image - 16 bytes
-$08 |      WIDTH      |     HEIGHT      |
-    +-----------------+--------+--------+
-    |   LINE OFFSET   | PixFmt | Palette|
-    +-----------------+--------+--------+
-		|     X-Origin    |     Y-Origin    |
-    +-----------------+-----------------+
-		|         IMAGE DATA OFFSET         |
-    +=================+=================+
-    :                 .                 :
-		:                 .                 :
-		|                 .                 |
-    +-----------------------------------+
-*/
-
-struct IMAGChunkEntry
-{
-	uint16_t				width;
-	uint16_t				height;
-	uint16_t				line_offset;
-	uint8_t 				pixel_format;
-	uint8_t					palette;
-	uint16_t				x_origin;
-	uint16_t				y_origin;
-	uint32_t				image_data_offset;
-};
-
-
 enum
 {
 	HEADER_FLAG_BIG_ENDIAN
@@ -186,7 +148,8 @@ encode_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets &
 */
 }
 
-/*IMAG Chunk
+/*
+IMAG Chunk
 ----------
 
           -------------------->
@@ -195,20 +158,33 @@ encode_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets &
 $00 |   I    |   M    |   A    |   G    |    FourCC defines chunk type - 4 Bytes
     +--------+--------+--------+--------+
 $04 |               SIZE                |    Chunk Size - 4 Bytes
-    +=================+=================+    Image - 16 bytes
-$08 |      WIDTH      |     HEIGHT      |
+    +========+========+========+========+    Image - 12 bytes
+$08 | WIDTH  | HEIGHT |X-Origin|Y-Origin|
+    +--------+--------+--------+--------+
+    |   LINE OFFSET   | PixFmt |Pallete |
     +-----------------+--------+--------+
-    |   LINE OFFSET   | PixFmt | Palette|
-    +-----------------+--------+--------+
-		|     X-Origin    |     Y-Origin    |
-    +-----------------+-----------------+
 		|         IMAGE DATA OFFSET         |
     +=================+=================+
     :                 .                 :
 		:                 .                 :
 		|                 .                 |
     +-----------------------------------+
+
 */
+
+struct IMAGChunkEntry
+{
+	uint8_t				width;
+	uint8_t				height;
+	uint8_t				x_origin;
+	uint8_t				y_origin;	
+	uint16_t			line_offset;
+	uint8_t 			pixel_format;
+	uint8_t				palette;
+	uint32_t			image_data_offset;
+};
+
+
 static
 void		
 encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & assets,const gap::Configuration & config)
@@ -289,13 +265,13 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 
 	for(const auto & image : images)
 	{
-		endian_append(data,image.width,2,config.b_big_endian);
-		endian_append(data,image.height,2,config.b_big_endian);
+		data.push_back(image.width);
+		data.push_back(image.height);
+		data.push_back(image.x_origin);
+		data.push_back(image.y_origin);
 		endian_append(data,0,2,config.b_big_endian);
 		data.push_back(image.pixel_format);
 		data.push_back(image.palette);
-		endian_append(data,image.x_origin,2,config.b_big_endian);
-		endian_append(data,image.y_origin,2,config.b_big_endian);
 		endian_append(data,image.image_data_offset,4,config.b_big_endian);
 	}
 

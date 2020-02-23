@@ -71,16 +71,18 @@ CHUNK TYPES
 +------+----------------------------------------------------------------------+
 | IMGD | Image Data                                                           |
 +------+----------------------------------------------------------------------+
-| SIMG | Source Images - Dimensions, Pixel Format, Data Offset ...            |
+| SIMG | Source Images [optional] - Dimensions, Pixel Format, Data Offset ... |
 |      | Defines the layout of the image data. This is different to the       |
-|      | sub images used to draw sprites and tilemaps etc.                    |
+|      | sub images used to draw sprites etc.                                 |
 +------+----------------------------------------------------------------------+
 | IMAG | Images - Dimensions, Pixel Format, Data Offset ...                   |
-|      | Defines individual image frames used to draw sprites and tilemaps etc|
+|      | Defines individual image frames used to draw sprites etc.            |
 +------+----------------------------------------------------------------------+
 | CMAP | Colour Map - Used with indexed mode images                           |
 +------+----------------------------------------------------------------------+
 | IGRP | Image Groups                                                         |
++------+----------------------------------------------------------------------+
+| TSET | Tile Set - A group of images that share the same dimensions and pf.  |
 +------+----------------------------------------------------------------------+
 |      |                                                                      |
 
@@ -117,13 +119,11 @@ IMAG Chunk
 $00 |   I    |   M    |   A    |   G    |    FourCC defines chunk type - 4 Bytes
     +--------+--------+--------+--------+
 $04 |               SIZE                |    Chunk Size - 4 Bytes
-    +=================+=================+    Image - 16 bytes
-$08 |      WIDTH      |     HEIGHT      |
+    +========+========+========+========+    Image - 12 bytes
+$08 | WIDTH  | HEIGHT |X-Origin|Y-Origin|
+    +--------+--------+--------+--------+
+    |   LINE OFFSET   | PixFmt |Pallete |
     +-----------------+--------+--------+
-    |   LINE OFFSET   | PixFmt | Flags  |
-    +-----------------+--------+--------+
-		|     X-Origin    |     Y-Origin    |
-    +-----------------+-----------------+
 		|         IMAGE DATA OFFSET         |
     +=================+=================+
     :                 .                 :
@@ -151,3 +151,27 @@ $08 |   Group Base    |    Reserved     |
 		|                 .                 |
     +-----------------------------------+
 
+
+TSET Chunk - Tile Set
+---------------------
+
+A tileset is a group of images that all have the same dimensions and 
+pixelformat. The tile images are all contiguous in the image data chunk.
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   T    |   S    |   E    |   T    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +========+========+========+========+    Image - 12 bytes
+$08 |  WIDTH | HEIGHT | PixFmt | Flags  |
+    +-----------------+--------+--------+
+$0C	|    TILE COUNT   |   TILE SET ID   |
+		+-----------------+-----------------+
+$10	|         IMAGE DATA OFFSET         |
+    +===================================+
+    :                 .                 :
+		:                 .                 :
+		|                 .                 |
+    +-----------------------------------+
