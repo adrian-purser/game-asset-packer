@@ -1,4 +1,6 @@
 # Test GAP file
+# src/gap --mount="/home/ade/source/pixelart" --mount="./data" space.gap
+
 export,filename=assets.gbin,type=gbin,format=binary
 
 loadimage,src="/sprites/ship1.png"
