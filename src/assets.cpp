@@ -41,6 +41,13 @@ Assets::add_image(int group_index,gap::image::Image & image)
 	return index;
 }
 
+void
+Assets::add_tile(int tileset, const gap::tileset::Tile & tile)
+{
+	for(auto & ts : m_tilesets)
+		if(ts.id == tileset)
+			ts.tiles.push_back(tile);
+}
 
 void
 Assets::dump()
@@ -107,6 +114,22 @@ Assets::dump()
 		++group_index;
 	}
 
+	std::cout << "-----------------------------------------------------------------------------\n";
+	std::cout << "Tile Sets\n";
+	std::cout << "-----------------------------------------------------------------------------\n";	
+	index = 0;
+	for(const auto & tileset : m_tilesets)
+	{
+		auto str = std::to_string(tileset.id) + ':';
+		str.resize(8,' ');
+		str.append(tileset.name);
+		str.resize(8+16);
+		str.append(std::to_string(tileset.tile_width));
+		str.push_back('x');
+		str.append(std::to_string(tileset.tile_height));
+
+		std::cout << str << '\n';
+	}
 }
 
 

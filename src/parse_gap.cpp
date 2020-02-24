@@ -20,6 +20,7 @@
 #define GAPCMD_IMAGE						"image"
 #define GAPCMD_IMAGEGROUP				"imagegroup"
 #define GAPCMD_IMAGEARRAY				"imagearray"
+#define GAPCMD_TILESET					"tileset"
 #define GAPCMD_EXPORT						"export"
 
 namespace gap
@@ -188,6 +189,7 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEGROUP) :	result = command_imagegroup(line_number,cmd); 	break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :			result = command_image(line_number,cmd); 				break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEARRAY) :	result = command_imagearray(line_number,cmd); 	break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILESET) :		result = command_tileset(line_number,cmd); 			break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_EXPORT) :			result = command_export(line_number,cmd); 			break;
 
 		default : 
@@ -379,6 +381,92 @@ ParserGAP::command_imagearray(int line_number, const CommandLine & command)
 			m_p_assets->add_image(m_current_image_group,image);
 		}
 	}
+
+	return 0;
+}
+
+int 
+ParserGAP::command_tileset(int line_number, const CommandLine & command)
+{
+	gap::tileset::TileSet	tileset;
+
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("w") 			:	
+			case ade::hash::hash_ascii_string_as_lower("width") 	:	tileset.tile_width		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("h") 			:	
+			case ade::hash::hash_ascii_string_as_lower("height")	:	tileset.tile_height		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("id")			:	tileset.id						= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("pf") 			:	
+			case ade::hash::hash_ascii_string_as_lower("format")	:	tileset.pixel_format 	= gap::image::parse_pixelformat_name(value); break;
+			case ade::hash::hash_ascii_string_as_lower("name") 		:	tileset.name 					= value; break;
+			default : 
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
+
+	if(tileset.id < 0)	return on_error(line_number,std::string("Invalid/Missing 'id' parameter!"));
+
+	// If the width and height are specified then add the tileset, otherwise just make the tileset current.
+	if((tileset.tile_width <= 0) || (tileset.tile_height <= 0))
+	{
+		if(tileset.tile_width <= 0)			return on_error(line_number,std::string("Invalid/Missing 'width' parameter!"));
+		if(tileset.tile_height <= 0)		return on_error(line_number,std::string("Invalid/Missing 'height' parameter!"));
+
+		if(tileset.pixel_format == 0)
+			tileset.pixel_format = m_p_assets->get_target_pixelformat(m_current_source_image);
+		
+		m_p_assets->add_tileset(tileset);
+	}
+
+	m_current_tileset = tileset.id;
+
+	return 0;
+}
+
+int 
+ParserGAP::command_tile(int line_number, const CommandLine & command)
+{
+	if(m_current_tileset < 0)	return on_error(line_number,std::string("No active tileset! The tile command requires an active tileset."));
+	
+	gap::tileset::Tile tile;
+
+	tile.source_image = m_current_source_image;
+
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("x") 				:	tile.x		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("y")					:	tile.y		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("hflip")			:	tile.transform |= gap::tileset::FLIP_HORZ; 	break;
+			case ade::hash::hash_ascii_string_as_lower("vflip")			:	tile.transform |= gap::tileset::FLIP_VERT; 	break;
+			case ade::hash::hash_ascii_string_as_lower("rotate")		:
+			case ade::hash::hash_ascii_string_as_lower("rotation")	:	
+				{
+					switch(std::strtol(value.c_str(),nullptr,10))
+					{
+						case 0 :		break;
+						case 90 : 	tile.transform |= gap::tileset::ROTATE_90; break;	
+						case 180 : 	tile.transform |= gap::tileset::ROTATE_180; break;	
+						case 270 : 	tile.transform |= gap::tileset::ROTATE_270; break;	
+						default : 	return on_error(line_number,std::string("Invalid 'rotation' parameter! Must be one of 0, 90, 180 or 270."));
+					}
+				}
+				break;
+
+			default : 
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
+
+	m_p_assets->add_tile(m_current_tileset,tile);
 
 	return 0;
 }

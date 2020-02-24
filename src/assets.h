@@ -13,6 +13,7 @@
 
 #include <vector>
 #include "image.h"
+#include "tileset.h"
 
 namespace gap::assets
 {
@@ -30,6 +31,7 @@ private:
 	static const int 																				m_max_image_groups = 16;
 	std::vector<std::unique_ptr<gap::image::SourceImage>>		m_source_images;
 	std::array<ImageGroup,m_max_image_groups>								m_image_groups;
+	std::vector<gap::tileset::TileSet>											m_tilesets;
 
 public:
 	Assets() = default;
@@ -38,6 +40,9 @@ public:
 
 	int										add_source_image(std::unique_ptr<gap::image::SourceImage> p_image);
 	int										add_image(int group,gap::image::Image & image);
+
+	void									add_tileset(const gap::tileset::TileSet & tileset)	{m_tilesets.push_back(tileset);}
+	void									add_tile(int tileset, const gap::tileset::Tile & tile);
 
 	int										source_image_count() const noexcept			{return m_source_images.size();}
 	void									enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;

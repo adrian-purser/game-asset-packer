@@ -40,7 +40,8 @@ private:
 
 	int																			m_current_source_image				= -1;
 	int 																		m_current_image_group					= 0;
-	
+	int																			m_current_tileset							= -1;
+
 public:
 	ParserGAP(gap::FileSystem & filesystem);
 	~ParserGAP() = default;
@@ -60,7 +61,9 @@ private:
 	int 								command_image(int line_number,const CommandLine & args);
 	int 								command_imagearray(int line_number,const CommandLine & args);
 	int 								command_export(int line_number,const CommandLine & args);
-
+	int 								command_tileset(int line_number,const CommandLine & args);
+	int 								command_tile(int line_number,const CommandLine & args);
+	
 };
 
 
