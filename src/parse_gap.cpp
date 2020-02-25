@@ -21,6 +21,8 @@
 #define GAPCMD_IMAGEGROUP				"imagegroup"
 #define GAPCMD_IMAGEARRAY				"imagearray"
 #define GAPCMD_TILESET					"tileset"
+#define GAPCMD_TILE							"tile"
+#define GAPCMD_TILEARRAY				"tilearray"
 #define GAPCMD_EXPORT						"export"
 
 namespace gap
@@ -190,6 +192,8 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :			result = command_image(line_number,cmd); 				break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEARRAY) :	result = command_imagearray(line_number,cmd); 	break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILESET) :		result = command_tileset(line_number,cmd); 			break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILE) :				result = command_tile(line_number,cmd); 				break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILEARRAY) :	result = command_tilearray(line_number,cmd); 		break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_EXPORT) :			result = command_export(line_number,cmd); 			break;
 
 		default : 
@@ -412,7 +416,7 @@ ParserGAP::command_tileset(int line_number, const CommandLine & command)
 	if(tileset.id < 0)	return on_error(line_number,std::string("Invalid/Missing 'id' parameter!"));
 
 	// If the width and height are specified then add the tileset, otherwise just make the tileset current.
-	if((tileset.tile_width <= 0) || (tileset.tile_height <= 0))
+	if((tileset.tile_width > 0) || (tileset.tile_height > 0))
 	{
 		if(tileset.tile_width <= 0)			return on_error(line_number,std::string("Invalid/Missing 'width' parameter!"));
 		if(tileset.tile_height <= 0)		return on_error(line_number,std::string("Invalid/Missing 'height' parameter!"));
@@ -422,7 +426,7 @@ ParserGAP::command_tileset(int line_number, const CommandLine & command)
 		
 		m_p_assets->add_tileset(tileset);
 	}
-
+	
 	m_current_tileset = tileset.id;
 
 	return 0;
@@ -471,6 +475,79 @@ ParserGAP::command_tile(int line_number, const CommandLine & command)
 	return 0;
 }
 
+int 
+ParserGAP::command_tilearray(int line_number, const CommandLine & command)
+{
+	if(m_current_tileset < 0)	return on_error(line_number,std::string("No active tileset! The tilearray command requires an active tileset."));
+	
+	gap::tileset::Tile tile;
+
+	//---------------------------------------------------------------------------
+	//	Parse Parameters
+	//---------------------------------------------------------------------------
+	uint32_t x = 0;
+	uint32_t y = 0;
+	uint32_t tiles_wide = 0;
+	uint32_t tiles_high = 0;
+	uint32_t transform = 0;
+
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("x") 					:	x						= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("y")						:	y						= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("width")				:	
+			case ade::hash::hash_ascii_string_as_lower("tw")					:	
+			case ade::hash::hash_ascii_string_as_lower("tiles-wide")	:	tiles_wide 	= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("height")			:	
+			case ade::hash::hash_ascii_string_as_lower("th")					:	
+			case ade::hash::hash_ascii_string_as_lower("tiles-high")	:	tiles_high 	= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("hflip")				:	transform |= gap::tileset::FLIP_HORZ; 	break;
+			case ade::hash::hash_ascii_string_as_lower("vflip")				:	transform |= gap::tileset::FLIP_VERT; 	break;
+			case ade::hash::hash_ascii_string_as_lower("rotate")		:
+			case ade::hash::hash_ascii_string_as_lower("rotation")	:	
+				{
+					switch(std::strtol(value.c_str(),nullptr,10))
+					{
+						case 0 :		break;
+						case 90 : 	transform |= gap::tileset::ROTATE_90; break;	
+						case 180 : 	transform |= gap::tileset::ROTATE_180; break;	
+						case 270 : 	transform |= gap::tileset::ROTATE_270; break;	
+						default : 	return on_error(line_number,std::string("Invalid 'rotation' parameter! Must be one of 0, 90, 180 or 270."));
+					}
+				}
+				break;
+
+			default : 
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
+
+	//---------------------------------------------------------------------------
+	//	Generate tiles.
+	//---------------------------------------------------------------------------
+	const uint32_t tw = m_p_assets->tileset_width(m_current_tileset);
+	const uint32_t th = m_p_assets->tileset_height(m_current_tileset);
+
+	if((tw == 0) || (th == 0))	return on_error(line_number,std::string("tilearray: Unable to retrieve the tileset width/height."));
+
+	for(int v=0;v<tiles_high;++v)
+	{
+		for(int h=0;h<tiles_wide;++h)
+		{
+			gap::tileset::Tile tile;
+			tile.x 						= x + (h*tw);
+			tile.y 						= y + (v*th);
+			tile.transform 		= transform;
+			tile.source_image	= m_current_source_image;
+			m_p_assets->add_tile(m_current_tileset,tile);
+		}
+	}
+	return 0;
+}
 
 int 
 ParserGAP::command_export(int line_number, const CommandLine & command)

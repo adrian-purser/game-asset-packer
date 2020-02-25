@@ -43,6 +43,9 @@ public:
 
 	void									add_tileset(const gap::tileset::TileSet & tileset)	{m_tilesets.push_back(tileset);}
 	void									add_tile(int tileset, const gap::tileset::Tile & tile);
+	uint32_t 							tileset_width(int id)		{	if(auto p_tileset = get_tileset(id))	return p_tileset->tile_width; return 0; }
+	uint32_t 							tileset_height(int id)	{	if(auto p_tileset = get_tileset(id))	return p_tileset->tile_width; return 0; }
+
 
 	int										source_image_count() const noexcept			{return m_source_images.size();}
 	void									enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;
@@ -59,6 +62,9 @@ public:
 	uint8_t 							get_target_pixelformat(int index) const;
 
 	std::vector<uint8_t>	get_target_subimage(int index, int x, int y, int width, int height, uint8_t pixel_format, bool big_endian) const;
+
+private:
+	gap::tileset::TileSet * 	get_tileset(int id);
 
 };
 
