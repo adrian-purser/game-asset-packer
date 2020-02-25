@@ -52,7 +52,8 @@ public:
 	void									enumerate_images(std::function<bool (int group,int image_index,const gap::image::Image &)> callback) const;
 	void									enumerate_image_groups(std::function<bool(uint32_t group_number,uint16_t base)> callback) const;
 	void 									enumerate_group_images(int group_number,std::function<bool(int image_index,const gap::image::Image & image)> callback) const;
-	
+	void									enumerate_tilesets(std::function<bool(const gap::tileset::TileSet & tileset)> callback) const;
+
 	void 									set_group_base(int group,uint16_t base)		{if((group >= 0) && (group < m_max_image_groups)) m_image_groups[group].base = base;}
 
 	void									dump();

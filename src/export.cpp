@@ -17,7 +17,7 @@ namespace gap::exporter
 {
 
 int		
-export_assets(const gap::assets::Assets & assets,const gap::exporter::ExportInfo & exportinfo,const gap::Configuration & config)
+export_assets(gap::assets::Assets & assets,const gap::exporter::ExportInfo & exportinfo,const gap::Configuration & config)
 {
 
 	std::vector<std::uint8_t>	blob;

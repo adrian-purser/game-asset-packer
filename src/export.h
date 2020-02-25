@@ -41,7 +41,7 @@ struct ExportInfo
 	int							format;
 };
 
-int		export_assets(const gap::assets::Assets & assets,const gap::exporter::ExportInfo & info,const gap::Configuration & config);
+int		export_assets(gap::assets::Assets & assets,const gap::exporter::ExportInfo & info,const gap::Configuration & config);
 
 } // namespace gap::exporter
 

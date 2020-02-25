@@ -165,7 +165,7 @@ $00 |   T    |   S    |   E    |   T    |    FourCC defines chunk type - 4 Bytes
     +--------+--------+--------+--------+
 $04 |               SIZE                |    Chunk Size - 4 Bytes
     +========+========+========+========+    Image - 12 bytes
-$08 |  WIDTH | HEIGHT | PixFmt | Flags  |
+$08 |  WIDTH | HEIGHT | PixFmt | Palette|
     +-----------------+--------+--------+
 $0C	|    TILE COUNT   |   TILE SET ID   |
 		+-----------------+-----------------+

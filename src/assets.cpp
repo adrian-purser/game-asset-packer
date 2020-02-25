@@ -199,6 +199,15 @@ Assets::enumerate_group_images(int group_number,std::function<bool(int image_ind
 	}
 }
 
+void
+Assets::enumerate_tilesets(std::function<bool(const gap::tileset::TileSet & tileset)> callback) const
+{
+	for(auto & tileset : m_tilesets)
+		if(!callback(tileset))
+			break;
+}
+
+
 std::uint32_t 	
 Assets::get_target_image_offset(int index, int x,int y) const
 {

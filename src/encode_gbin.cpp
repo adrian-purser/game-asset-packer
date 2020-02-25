@@ -184,6 +184,18 @@ struct IMAGChunkEntry
 	uint32_t			image_data_offset;
 };
 
+struct TSETChunkEntry
+{
+	uint8_t 			width;
+	uint8_t				height;
+	uint8_t				pixel_format;
+	uint8_t				palette;
+	uint16_t			tile_count;
+	uint16_t			id;
+	uint32_t 			image_data_offset;
+};
+
+static const uint32_t TSET_SHUNK_SIZE = 12;
 
 static
 void		
@@ -196,6 +208,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	};
 
 	std::vector<IMAGChunkEntry>		images;
+	std::vector<TSETChunkEntry>		tilesets;
 	std::array<ImageGroup,256>		groups;
 	uint32_t max_group = 0;
 
@@ -220,6 +233,9 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 			if(group_number > max_group)
 				max_group = group_number;
 
+			//-----------------------------------------------------------------------
+			//	IMAGES
+			//-----------------------------------------------------------------------
 			assets.enumerate_group_images(group_number,[&](int image_index,const gap::image::Image & image)->bool
 			{
 				IMAGChunkEntry imag;
@@ -247,6 +263,39 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 				image_offset = data.size() - (chunk_offset+8);
 				return true;
 			});
+
+			//-----------------------------------------------------------------------
+			//	TILESETS
+			//-----------------------------------------------------------------------
+			assets.enumerate_tilesets( [&](const gap::tileset::TileSet & tileset)->bool
+			{
+				TSETChunkEntry tset;
+				tset.width							= tileset.tile_width;
+				tset.height							= tileset.tile_height;
+				tset.pixel_format				= tileset.pixel_format;
+				tset.palette						= 0;
+				tset.tile_count					= tileset.tiles.size();
+				tset.id									= tileset.id;
+				tset.image_data_offset 	= image_offset;
+
+				tilesets.push_back(tset);
+
+				for(const auto & tile : tileset.tiles)
+				{
+					// TODO: Handle image transform (flip, rotate etc)
+					auto imgdata = assets.get_target_subimage(tile.source_image,tile.x,tile.y,tileset.tile_width,tileset.tile_height,tileset.pixel_format,config.b_big_endian);
+					data.insert(end(data),begin(imgdata),end(imgdata));
+				}
+				
+				auto sz = (data.size() + 3) & ~3;
+				if(sz > data.size())
+					data.resize(sz);
+
+				image_offset = data.size() - (chunk_offset+8);
+
+				return true;
+			});
+
 			return true;
 		});
 
@@ -296,6 +345,28 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 		endian_append(data,group.base,2,config.b_big_endian);
 		endian_append(data,0,2,config.b_big_endian);
 		endian_append(data,group.index,4,config.b_big_endian);
+	}
+
+	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+	//---------------------------------------------------------------------------
+	//	Tilesets [TSET]
+	//---------------------------------------------------------------------------
+	chunk_offset = data.size();
+	fourcc_append("TSET",data);
+	fourcc_append("size",data);
+
+	data.reserve(chunk_offset + (TSET_SHUNK_SIZE * tilesets.size()));
+
+	for(const auto & tileset : tilesets)
+	{
+		data.push_back(tileset.width);
+		data.push_back(tileset.height);
+		data.push_back(tileset.pixel_format);
+		data.push_back(tileset.palette);
+		endian_append(data,tileset.tile_count,2,config.b_big_endian);
+		endian_append(data,tileset.id,2,config.b_big_endian);
+		endian_append(data,tileset.image_data_offset,4,config.b_big_endian);
 	}
 
 	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
