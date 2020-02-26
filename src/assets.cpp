@@ -249,7 +249,17 @@ Assets::get_target_subimage(int index, int x, int y, int width, int height, uint
 
 }
 
-
+std::unique_ptr<gap::image::SourceImage>
+Assets::get_source_subimage(int index, int x, int y, int width, int height) const 
+{
+	if((index<0) || (index>=m_source_images.size()))
+	{
+		std::cerr << "get_source_subimage: Unknown Image: " << index << std::endl;
+ 		return nullptr;
+	}
+	
+	return m_source_images[index]->duplicate_subimage(x, y, width, height);
+}
 
 
 } // namespace gap::assets

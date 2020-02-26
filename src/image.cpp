@@ -111,7 +111,10 @@ SourceImage::SourceImage(int width,int height,const std::uint32_t * p_data,int l
 	: m_width(width)
 	, m_height(height)
 {
-	m_source_data.assign(p_data,p_data + ((width + line_offset) * height));
+	m_source_data.reserve(width*height);
+	for(int y=0;y<height;++y,p_data+=line_offset)
+		for(int x=0;x<width;++x) 	
+			m_source_data.push_back(*p_data++);
 }
 
 SourceImage::SourceImage(int width,int height,const std::uint8_t * p_data,int line_offset)
@@ -218,8 +221,49 @@ SourceImage::create_sub_target_data(int x, int y, int width, int height, uint8_t
 			break;		
 */
 
+std::unique_ptr<SourceImage>	
+SourceImage::duplicate_subimage(int x, int y, int width, int height)
+{
+	return std::make_unique<SourceImage>(width,height,get_pixel_address(x,y),m_width-width);
+}
 
+void
+SourceImage::rotate_90()
+{
+	std::vector<uint32_t>		buffer;
+	buffer.reserve(m_source_data.size());
 
+	for(int x=0;x<m_width;++x)
+		for(int y=m_height-1;y>=0;--y)
+			buffer.push_back(get_pixel(x,y));
+
+	std::swap(m_source_data,buffer);
+	std::swap(m_width,m_height);
+}
+
+void
+SourceImage::rotate_180()
+{
+
+}
+
+void
+SourceImage::rotate_270()
+{
+
+}
+
+void
+SourceImage::horizontal_flip()
+{
+
+}
+
+void
+SourceImage::vertical_flip()
+{
+
+}
 
 } // namespace gap::image
 

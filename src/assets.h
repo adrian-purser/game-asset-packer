@@ -62,7 +62,8 @@ public:
 	uint32_t 							get_target_line_stride(int index) const;
 	uint8_t 							get_target_pixelformat(int index) const;
 
-	std::vector<uint8_t>	get_target_subimage(int index, int x, int y, int width, int height, uint8_t pixel_format, bool big_endian) const;
+	std::vector<uint8_t>											get_target_subimage(int index, int x, int y, int width, int height, uint8_t pixel_format, bool big_endian) const;
+	std::unique_ptr<gap::image::SourceImage>	get_source_subimage(int index, int x, int y, int width, int height) const;
 
 private:
 	gap::tileset::TileSet * 	get_tileset(int id);

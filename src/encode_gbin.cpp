@@ -283,7 +283,18 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 				for(const auto & tile : tileset.tiles)
 				{
 					// TODO: Handle image transform (flip, rotate etc)
-					auto imgdata = assets.get_target_subimage(tile.source_image,tile.x,tile.y,tileset.tile_width,tileset.tile_height,tileset.pixel_format,config.b_big_endian);
+					auto p_image = assets.get_source_subimage(tile.source_image,tile.x,tile.y,tileset.tile_width,tileset.tile_height);
+
+					switch(tile.transform & 0x03)
+					{
+						case gap::tileset::ROTATE_90 	: p_image->rotate_90(); break;
+						case gap::tileset::ROTATE_180	: p_image->rotate_180(); break;
+						case gap::tileset::ROTATE_270	: p_image->rotate_270(); break;
+					}
+
+					auto imgdata = p_image->create_sub_target_data(0,0,tileset.tile_width,tileset.tile_height,tileset.pixel_format,config.b_big_endian);
+
+//					auto imgdata = assets.get_target_subimage(tile.source_image,tile.x,tile.y,tileset.tile_width,tileset.tile_height,tileset.pixel_format,config.b_big_endian);
 					data.insert(end(data),begin(imgdata),end(imgdata));
 				}
 				
