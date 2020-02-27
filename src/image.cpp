@@ -244,13 +244,28 @@ SourceImage::rotate_90()
 void
 SourceImage::rotate_180()
 {
+	std::vector<uint32_t>		buffer;
+	buffer.reserve(m_source_data.size());
 
+	for(int y=m_height-1;y>=0;--y)
+		for(int x=m_width-1;x>=0;--x)
+			buffer.push_back(get_pixel(x,y));
+
+	std::swap(m_source_data,buffer);
 }
 
 void
 SourceImage::rotate_270()
 {
+	std::vector<uint32_t>		buffer;
+	buffer.reserve(m_source_data.size());
 
+	for(int x=m_width-1;x>=0;--x)
+		for(int y=0;y<m_height;++y)
+			buffer.push_back(get_pixel(x,y));
+
+	std::swap(m_source_data,buffer);
+	std::swap(m_width,m_height);
 }
 
 void

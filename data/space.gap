@@ -13,5 +13,5 @@ loadimage,src="/fonts/major-title.png"
 tileset,id=1,name="font1-horz",width=8,height=8,format=ARGB1555
 tilearray,width=95,height=1
 tileset,id=2,name="font1-vert",width=8,height=8,format=ARGB1555
-tilearray,width=95,height=1,rotate=90
+tilearray,width=95,height=1,rotate=270
 
