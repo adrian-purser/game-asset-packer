@@ -305,6 +305,9 @@ ParserGAP::command_image(int line_number, const CommandLine & command)
 			case ade::hash::hash_ascii_string_as_lower("xorigin")	:	image.x_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("yo") 			:	
 			case ade::hash::hash_ascii_string_as_lower("yorigin")	:	image.y_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("angle") 	:	
+			case ade::hash::hash_ascii_string_as_lower("rotate")	:	image.angle			= std::strtof(value.c_str(),nullptr); 	break;
+
 			case ade::hash::hash_ascii_string_as_lower("pf") 			:	
 			case ade::hash::hash_ascii_string_as_lower("format")	:	image.pixel_format = gap::image::parse_pixelformat_name(value); break;
 			case ade::hash::hash_ascii_string_as_lower("name") 		:	image.name 		= value; break;

@@ -9,6 +9,7 @@
 //	CREATED:				25-SEP-2019 Adrian Purser <ade@arcadestuff.com>
 //=============================================================================
 #include <iostream>
+#include <cmath>
 #include "image.h"
 #include "adepng/adepng.h"
 
@@ -225,6 +226,76 @@ std::unique_ptr<SourceImage>
 SourceImage::duplicate_subimage(int x, int y, int width, int height)
 {
 	return std::make_unique<SourceImage>(width,height,get_pixel_address(x,y),m_width-width);
+}
+
+void
+SourceImage::rotate(float angle,int & originx, int & originy)
+{
+	if(angle == 0.0f)
+		return;
+
+//	if(angle == 90.0f)				rotate_90();		// TODO: Update Origin
+//	else if(angle == 180.0f)	rotate_180();		// TODO: Update Origin
+//	else if(angle == 270.0f)	rotate_270();		// TODO: Update Origin
+//	else
+	{
+		const float rad 	= (180.0f - angle) * (M_PI / 180.0f);
+		const float s			= sin(rad);
+		const float c			= cos(rad);
+
+		const int 	side 	= (std::max(m_width,m_height) * 3);
+		const int 	half 	= side/2;
+
+		std::vector<uint32_t> buffer;
+		buffer.reserve((side*3) * (side*3));
+		int minx = side-1;
+		int maxx = 0;
+		int miny = side-1;
+		int maxy = 0;
+
+		std::cout << "ROTATE: angle = " << angle << " xorigin = " << originx << " yorigin = " << originy << '\n';
+
+		for(int y=0;y<side;++y)
+		{
+			for(int x=0;x<side;++x)
+			{
+				const float xx = (float)(half-x);
+				const float yy = (float)(half-y);
+				const float xr = (xx*c) - (yy*s);
+				const float yr = (xx*s) + (yy*c);
+				int xi = (int)xr + originx;
+				int yi = (int)yr + originy;
+				if((xi<0) || (yi<0) || (xi>=m_width) || (yi>=m_height))
+					buffer.push_back(0);
+				else
+				{
+					auto colour = get_pixel(xi,yi);
+					buffer.push_back(colour);
+					if(colour != 0)
+					{
+						if(x > maxx)		maxx = x;
+						if(x < minx)		minx = x;
+						if(y > maxy)		maxy = y;
+						if(y < miny)		miny = y;
+					}
+				}
+			}
+		}
+
+		originx = half-minx;
+		originy = half-miny;
+
+		m_width 	= (maxx - minx) + 1;
+		m_height 	= (maxy - miny) + 1;
+
+		m_source_data.clear();
+		m_source_data.reserve(m_width * m_height);
+		
+		for(int y=miny;y<=maxy;++y)
+			for(int x=minx;x<=maxx;++x)
+				m_source_data.push_back(buffer[(y*side) + x]);
+	}
+	
 }
 
 void

@@ -211,6 +211,7 @@ public:
 	std::vector<uint8_t>	create_sub_target_data(int x, int y, int width, int height, uint8_t pixel_format, bool big_endian);
 	const uint32_t * 			get_pixel_address(int x,int y)		{return m_source_data.data() + (y*m_width) + x;}
 
+	void									rotate(float angle,int & originx, int & originy);
 	void									rotate_90();
 	void									rotate_180();
 	void									rotate_270();
@@ -257,6 +258,7 @@ struct Image
 	int								x_origin				= 0;
 	int								y_origin				= 0;
 	int								pixel_format		= 0;
+	float							angle						= 0.0f;
 };
 
 

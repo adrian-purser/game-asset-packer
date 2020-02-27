@@ -238,22 +238,28 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 			//-----------------------------------------------------------------------
 			assets.enumerate_group_images(group_number,[&](int image_index,const gap::image::Image & image)->bool
 			{
+				auto p_image = assets.get_source_subimage(image.source_image,image.x,image.y,image.width,image.height);
+				int ox = image.x_origin;
+				int oy = image.y_origin;
+				p_image->rotate(image.angle,ox,oy);
+
 				IMAGChunkEntry imag;
 
-				imag.width							= image.width;
-				imag.height							= image.height;
-				imag.x_origin						= image.x_origin;
-				imag.y_origin						= image.y_origin;
+				imag.width							= p_image->width();
+				imag.height							= p_image->height();
+				imag.x_origin						= ox;
+				imag.y_origin						= oy;
 				imag.line_offset				= assets.get_target_line_stride(image.source_image)-image.width;
 				imag.pixel_format				= image.pixel_format;
 				imag.palette						= 0;  //TODO: Get the palette index
 				imag.image_data_offset	=	image_offset;
 
 				images.push_back(imag);
+				
+				auto imgdata = p_image->create_sub_target_data(0,0,imag.width,imag.height,image.pixel_format,config.b_big_endian);
+				//auto imgdata = assets.get_target_subimage(image.source_image,image.x,image.y,image.width,image.height,image.pixel_format,config.b_big_endian);
 
-				auto imgdata = assets.get_target_subimage(image.source_image,image.x,image.y,image.width,image.height,image.pixel_format,config.b_big_endian);
-
-				std::cout << "get_target_subimage(x:" << image.x << ",y:" << image.y << ",w:" << image.width << ",h:" << image.height << ",pf: " << image.pixel_format << ") = " << imgdata.size() << " bytes\n";
+				std::cout << "get_target_subimage(x:0,y:0,w:" << (int)imag.width << ",h:" << (int)imag.height << ",pf: " << image.pixel_format << ") = " << imgdata.size() << " bytes\n";
 
 				data.insert(end(data),begin(imgdata),end(imgdata));
 				auto sz = (data.size() + 3) & ~3;
