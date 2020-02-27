@@ -221,14 +221,19 @@ public:
 											return m_source_data[(y * (m_width)) + x];
 										}
 
-	std::unique_ptr<SourceImage>	duplicate_subimage(int x, int y, int width, int height)
-										{
-											// TODO:
-											return nullptr;
-										}
+	std::unique_ptr<SourceImage>	duplicate_subimage(int x, int y, int width, int height);
 
 //	void									create_target_data(bool big_endian);
 	std::vector<uint8_t>	create_sub_target_data(int x, int y, int width, int height, uint8_t pixel_format, bool big_endian);
+	const uint32_t * 			get_pixel_address(int x,int y)		{return m_source_data.data() + (y*m_width) + x;}
+
+	void									rotate(float angle,int & originx, int & originy);
+	void									rotate_90();
+	void									rotate_180();
+	void									rotate_270();
+	void									horizontal_flip();
+	void									vertical_flip();
+
 };
 
 //=============================================================================
@@ -269,6 +274,7 @@ struct Image
 	int								x_origin				= 0;
 	int								y_origin				= 0;
 	int								pixel_format		= 0;
+	float							angle						= 0.0f;
 };
 
 

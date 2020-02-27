@@ -9,6 +9,7 @@
 //	CREATED:				25-SEP-2019 Adrian Purser <ade@arcadestuff.com>
 //=============================================================================
 #include <iostream>
+#include <cmath>
 #include "image.h"
 #include "adepng/adepng.h"
 
@@ -111,7 +112,10 @@ SourceImage::SourceImage(int width,int height,const std::uint32_t * p_data,int l
 	: m_width(width)
 	, m_height(height)
 {
-	m_source_data.assign(p_data,p_data + ((width + line_offset) * height));
+	m_source_data.reserve(width*height);
+	for(int y=0;y<height;++y,p_data+=line_offset)
+		for(int x=0;x<width;++x) 	
+			m_source_data.push_back(*p_data++);
 }
 
 SourceImage::SourceImage(int width,int height,const std::uint8_t * p_data,int line_offset)
@@ -218,8 +222,134 @@ SourceImage::create_sub_target_data(int x, int y, int width, int height, uint8_t
 			break;		
 */
 
+std::unique_ptr<SourceImage>	
+SourceImage::duplicate_subimage(int x, int y, int width, int height)
+{
+	return std::make_unique<SourceImage>(width,height,get_pixel_address(x,y),m_width-width);
+}
 
+void
+SourceImage::rotate(float angle,int & originx, int & originy)
+{
+	if(angle == 0.0f)
+		return;
 
+//	if(angle == 90.0f)				rotate_90();		// TODO: Update Origin
+//	else if(angle == 180.0f)	rotate_180();		// TODO: Update Origin
+//	else if(angle == 270.0f)	rotate_270();		// TODO: Update Origin
+//	else
+	{
+		const float rad 	= (180.0f - angle) * (M_PI / 180.0f);
+		const float s			= sin(rad);
+		const float c			= cos(rad);
+
+		const int 	side 	= (std::max(m_width,m_height) * 3);
+		const int 	half 	= side/2;
+
+		std::vector<uint32_t> buffer;
+		buffer.reserve((side*3) * (side*3));
+		int minx = side-1;
+		int maxx = 0;
+		int miny = side-1;
+		int maxy = 0;
+
+		std::cout << "ROTATE: angle = " << angle << " xorigin = " << originx << " yorigin = " << originy << '\n';
+
+		for(int y=0;y<side;++y)
+		{
+			for(int x=0;x<side;++x)
+			{
+				const float xx = (float)(half-x);
+				const float yy = (float)(half-y);
+				const float xr = (xx*c) - (yy*s);
+				const float yr = (xx*s) + (yy*c);
+				int xi = (int)xr + originx;
+				int yi = (int)yr + originy;
+				if((xi<0) || (yi<0) || (xi>=m_width) || (yi>=m_height))
+					buffer.push_back(0);
+				else
+				{
+					auto colour = get_pixel(xi,yi);
+					buffer.push_back(colour);
+					if(colour != 0)
+					{
+						if(x > maxx)		maxx = x;
+						if(x < minx)		minx = x;
+						if(y > maxy)		maxy = y;
+						if(y < miny)		miny = y;
+					}
+				}
+			}
+		}
+
+		originx = half-minx;
+		originy = half-miny;
+
+		m_width 	= (maxx - minx) + 1;
+		m_height 	= (maxy - miny) + 1;
+
+		m_source_data.clear();
+		m_source_data.reserve(m_width * m_height);
+		
+		for(int y=miny;y<=maxy;++y)
+			for(int x=minx;x<=maxx;++x)
+				m_source_data.push_back(buffer[(y*side) + x]);
+	}
+	
+}
+
+void
+SourceImage::rotate_90()
+{
+	std::vector<uint32_t>		buffer;
+	buffer.reserve(m_source_data.size());
+
+	for(int x=0;x<m_width;++x)
+		for(int y=m_height-1;y>=0;--y)
+			buffer.push_back(get_pixel(x,y));
+
+	std::swap(m_source_data,buffer);
+	std::swap(m_width,m_height);
+}
+
+void
+SourceImage::rotate_180()
+{
+	std::vector<uint32_t>		buffer;
+	buffer.reserve(m_source_data.size());
+
+	for(int y=m_height-1;y>=0;--y)
+		for(int x=m_width-1;x>=0;--x)
+			buffer.push_back(get_pixel(x,y));
+
+	std::swap(m_source_data,buffer);
+}
+
+void
+SourceImage::rotate_270()
+{
+	std::vector<uint32_t>		buffer;
+	buffer.reserve(m_source_data.size());
+
+	for(int x=m_width-1;x>=0;--x)
+		for(int y=0;y<m_height;++y)
+			buffer.push_back(get_pixel(x,y));
+
+	std::swap(m_source_data,buffer);
+	std::swap(m_width,m_height);
+}
+
+void
+SourceImage::horizontal_flip()
+{
+
+}
+
+void
+SourceImage::vertical_flip()
+{
+
+}
 
 } // namespace gap::image
 
