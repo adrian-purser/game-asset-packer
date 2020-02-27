@@ -22,10 +22,26 @@ namespace gap::image
 
 namespace pixelformat
 {
+/*
+enum
+{
+	DMA2D_ARGB8888						=	0x00U,
+	DMA2D_RGB888							=	0x01U,
+	DMA2D_RGB565							=	0x02U,
+	DMA2D_ARGB1555						=	0x03U,
+	DMA2D_ARGB4444						=	0x04U,
+	DMA2D_L8									=	0x05U,
+	DMA2D_AL44								=	0x06U,
+	DMA2D_AL88								=	0x07U,
+	DMA2D_L4									=	0x08U,
+	DMA2D_A8									=	0x09U,
+	DMA2D_A4									=	0x0AU
+};
+*/
 
 enum
 {
-	ARGB8888 = 1,
+	ARGB8888,
 	RGB888,
 	RGB565,
 	ARGB1555,
