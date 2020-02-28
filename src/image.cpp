@@ -256,8 +256,6 @@ SourceImage::rotate(float angle,int & originx, int & originy)
 		int miny = side-1;
 		int maxy = 0;
 
-		std::cout << "ROTATE: angle = " << angle << " xorigin = " << originx << " yorigin = " << originy << '\n';
-
 		for(int y=0;y<side;++y)
 		{
 			for(int x=0;x<side;++x)
