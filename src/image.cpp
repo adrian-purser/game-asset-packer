@@ -234,10 +234,13 @@ SourceImage::rotate(float angle,int & originx, int & originy)
 	if(angle == 0.0f)
 		return;
 
-//	if(angle == 90.0f)				rotate_90();		// TODO: Update Origin
-//	else if(angle == 180.0f)	rotate_180();		// TODO: Update Origin
-//	else if(angle == 270.0f)	rotate_270();		// TODO: Update Origin
-//	else
+	const int ox = originx;
+	const int oy = originy;
+
+	if(angle == 90.0f)				{rotate_90(); 	originx = m_width-oy; 	originy = ox;}	
+	else if(angle == 180.0f)	{rotate_180();	originx = m_width-ox; 	originy = m_height-oy;}
+	else if(angle == 270.0f)	{rotate_270();	originx = oy; 					originy = m_height-ox;}
+	else
 	{
 		const float rad 	= (180.0f - angle) * (M_PI / 180.0f);
 		const float s			= sin(rad);
@@ -265,11 +268,14 @@ SourceImage::rotate(float angle,int & originx, int & originy)
 				const float yr = (xx*s) + (yy*c);
 				int xi = (int)xr + originx;
 				int yi = (int)yr + originy;
+				float xf = xr + (float)originx;
+				float yf = yr + (float)originy;
+
 				if((xi<0) || (yi<0) || (xi>=m_width) || (yi>=m_height))
 					buffer.push_back(0);
 				else
 				{
-					auto colour = get_pixel(xi,yi);
+					auto colour = get_pixel(xf,yf);
 					buffer.push_back(colour);
 					if(colour != 0)
 					{

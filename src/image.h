@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <cmath>
 #include "filesystem.h"
 #include "utility/hash.h"
 
@@ -200,9 +201,61 @@ public:
 	void 															set_source_pixelformat(std::uint8_t pixelformat)		{m_source_pixelformat = pixelformat;}
 	void 															set_target_pixelformat(std::uint8_t pixelformat)		{m_target_pixelformat = pixelformat;}
 
-	std::uint32_t 		get_pixel(int x, int y) const
+	uint32_t 					mix_colour(uint32_t c1, uint32_t c2, uint32_t mix) const
 										{
+											if((c1==0) && (c2==0))
+												return 0;
+										//	if(c1 == 0)	return c2;
+										//	if(c2 == 0)	return c1;
+
+											const uint32_t a1 = (c1>>24) & 0x0FF;
+											const uint32_t a2 = (c2>>24) & 0x0FF;
+											const uint32_t r1 = (c1>>16) & 0x0FF;
+											const uint32_t r2 = (c2>>16) & 0x0FF;
+											const uint32_t g1 = (c1>>8) & 0x0FF;
+											const uint32_t g2 = (c2>>8) & 0x0FF;
+											const uint32_t b1 = c1 & 0x0FF;
+											const uint32_t b2 = c2 & 0x0FF;
+
+											const uint32_t a = ((a1 * mix)/255) + ((a2 * (255-mix))/255);
+											const uint32_t r = ((r1 * mix)/255) + ((r2 * (255-mix))/255);
+											const uint32_t g = ((g1 * mix)/255) + ((g2 * (255-mix))/255);
+											const uint32_t b = ((b1 * mix)/255) + ((b2 * (255-mix))/255);
+
+											return ((a & 0x0FF) << 24) | ((r & 0x0FF) << 16) | ((g & 0x0FF) << 8) | (b & 0x0FF);
+										}
+
+	uint32_t 					get_pixel(int x, int y) const
+										{
+											x = std::max(0,std::min(x,m_width-1));
+											y = std::max(0,std::min(y,m_height-1));
 											return m_source_data[(y * (m_width)) + x];
+										}
+
+	uint32_t 					get_pixel(float x, float y) const
+										{
+											double dx,dy;
+											float fx = modf(x,&dx);
+											float fy = modf(y,&dy);
+											const int ix = (int)dx;
+											const int iy = (int)dy;
+
+											int x2,y2;
+											if(fx < 0.5f) {x2 = ix-1;fx +=0.5f;}
+											else					{x2 = ix+1;fx = 1.5f-fx;}
+											if(fy < 0.5f) {y2 = iy-1;fy +=0.5f;}
+											else					{y2 = iy+1;fy = 1.5f-fy;}
+
+											const auto c1a = get_pixel(ix,iy);
+											const auto c1b = get_pixel(x2,iy);
+											const auto c2a = get_pixel(ix,iy);
+											const auto c2b = get_pixel(x2,iy);
+
+											const auto c1 = mix_colour(c1a,c1b,(uint32_t)(fx*255.0f));
+											const auto c2 = mix_colour(c2a,c2b,(uint32_t)(fx*255.0f));
+											auto c3 = mix_colour(c1,c2,(uint32_t)(fy*255.0f));
+											
+											return c3;
 										}
 
 	std::unique_ptr<SourceImage>	duplicate_subimage(int x, int y, int width, int height);
