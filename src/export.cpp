@@ -24,7 +24,7 @@ export_assets(gap::assets::Assets & assets,const gap::exporter::ExportInfo & exp
 	
 	switch(exportinfo.type)
 	{
-		case gap::exporter::TYPE_GBIN :		blob = gap::encode_gbin(assets,config); break;
+		case gap::exporter::TYPE_GBIN :		blob = gap::encode_gbin(exportinfo.name,assets,config); break;
 		default :
 			std::cerr << "Unknown or unsupported export type! (" << exportinfo.filename << ')' << std::endl;
 			return -1;

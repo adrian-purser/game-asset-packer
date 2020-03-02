@@ -12,7 +12,7 @@
 #include <iostream>
 #include "encode_gbin.h"
 
-#define HEADER_SIZE		16
+#define HEADER_SIZE		32
 #define VERSION "01"
 
 enum
@@ -53,7 +53,7 @@ namespace gap
 
 static
 void	
-encode_header(std::vector<std::uint8_t> & data,const gap::Configuration & config)
+encode_header(std::vector<std::uint8_t> & data,std::string_view name,const gap::Configuration & config)
 {
 	data.reserve(data.size()+HEADER_SIZE);	
 
@@ -63,6 +63,11 @@ encode_header(std::vector<std::uint8_t> & data,const gap::Configuration & config
 	data.push_back(VERSION[0]);
 	data.push_back(VERSION[1]);
 	fourcc_append("CRC-",data);
+
+	for(int i=0;i<12;++i)
+		data.push_back(i < name.size() ? name[i] : 0);
+
+	fourcc_append("xxxx",data);
 	fourcc_append("xxxx",data);
 
 }
@@ -391,14 +396,20 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 }
 
 std::vector<std::uint8_t>		
-encode_gbin(const gap::assets::Assets & assets,const gap::Configuration & config)
+encode_gbin(std::string_view name, const gap::assets::Assets & assets,const gap::Configuration & config)
 {
 
 	std::vector<std::uint8_t> data;
 
-	encode_header(data,config);
+	encode_header(data,name,config);
 	//encode_image_chunks(data,assets,config);
 	encode_packed_image_chunks(data,assets,config);
+
+	//---------------------------------------------------------------------------
+	//	End [ENDC]
+	//---------------------------------------------------------------------------
+	fourcc_append("ENDC",data);
+	endian_append(data,0,4,config.b_big_endian);
 
 	std::uint32_t crc32 = 0; // TODO: Calculate the crc from all of the chunks.
 

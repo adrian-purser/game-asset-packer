@@ -567,6 +567,10 @@ ParserGAP::command_export(int line_number, const CommandLine & command)
 				exportinfo.filename = value;	
 				break;
 
+			case ade::hash::hash_ascii_string_as_lower("name") :	
+				exportinfo.name = value;	
+				break;
+
 			case ade::hash::hash_ascii_string_as_lower("type") 			:		
 				{
 					auto valhash = ade::hash::hash_ascii_string_as_lower(value.c_str(),value.size());

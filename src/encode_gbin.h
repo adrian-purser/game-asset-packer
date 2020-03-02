@@ -19,7 +19,7 @@
 namespace gap
 {
 
-std::vector<std::uint8_t>		encode_gbin(const gap::assets::Assets & assets,const gap::Configuration & config);
+std::vector<std::uint8_t>		encode_gbin(std::string_view name, const gap::assets::Assets & assets,const gap::Configuration & config);
 
 } // namespace gap
 

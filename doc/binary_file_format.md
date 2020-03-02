@@ -28,12 +28,20 @@ $00 |   G    |   B    |   I    |   N    |			FourCC 'GBIN' (Game-Assets Binary) -
 $04 | SIZE   | FLAGS  | Version Number  |			Flags - 1 Byte. Size - 1 Byte. Version Number - 2 Bytes (ASCII Characters)
     +--------+--------+-----------------+
 $08 |               CRC32               |			CRC32 of ALL data after the header - 4 Bytes 
+    +-----------------------------------+	
+$0C |              NAME                 |			12 Bytes  - Name of package
     +-----------------------------------+
-$0C |              RESERVED             |			4 Bytes 
+$10 |              NAME (Cont.)         |	
+    +-----------------------------------+
+$14 |              NAME (Cont.)         |
+    +-----------------------------------+
+$18 |              RESERVED             |			4 Bytes 
+    +-----------------------------------+
+$1C |              RESERVED             |			4 Bytes 
     +-----------------------------------+
 
     +--------+--------+--------+--------+
-$10 |   x    |   x    |   x    |   x    |			First Chunk
+$20 |   x    |   x    |   x    |   x    |			First Chunk
     +--------+--------+--------+--------+
 
 
@@ -69,6 +77,8 @@ CHUNK TYPES
 -----------
 
 +------+----------------------------------------------------------------------+
+| ENDC | End Chunk. Signifies the end of the package                          |
++------+----------------------------------------------------------------------+
 | IMGD | Image Data                                                           |
 +------+----------------------------------------------------------------------+
 | SIMG | Source Images [optional] - Dimensions, Pixel Format, Data Offset ... |
@@ -84,6 +94,7 @@ CHUNK TYPES
 +------+----------------------------------------------------------------------+
 | TSET | Tile Set - A group of images that share the same dimensions and pf.  |
 +------+----------------------------------------------------------------------+
+| TMAP | Tile Map - TODO                                                      |
 |      |                                                                      |
 
 

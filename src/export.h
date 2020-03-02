@@ -37,6 +37,7 @@ enum
 struct ExportInfo
 {
 	std::string			filename;
+	std::string			name;
 	int							type;
 	int							format;
 };

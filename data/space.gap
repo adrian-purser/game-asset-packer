@@ -2,7 +2,7 @@
 # src/gap --mount="/home/ade/source/pixelart" --mount="./data" space.gap
 # src/gap --mount="~/source/pixelart" --mount="./data" space.gap
 
-export,filename=assets.gbin,type=gbin,format=binary
+export,name=space,filename=assets.gbin,type=gbin,format=binary
 
 imagegroup,group=0
 
@@ -32,8 +32,8 @@ image,width=32,height=32,x=0,y=0,xorigin=16,yorigin=16,format=ARGB1555,rotate=31
 image,width=32,height=32,x=0,y=0,xorigin=16,yorigin=16,format=ARGB1555,rotate=330
 image,width=32,height=32,x=0,y=0,xorigin=16,yorigin=16,format=ARGB1555,rotate=345
 
-loadimage,src="/sprites/test32x32.png"
-image,width=32,height=32,x=0,y=0,xorigin=24,yorigin=0,format=ARGB1555
+#loadimage,src="/sprites/test32x32.png"
+#image,width=32,height=32,x=0,y=0,xorigin=24,yorigin=0,format=ARGB1555
 #image,width=32,height=32,x=0,y=0,xorigin=24,yorigin=16,format=ARGB1555,rotate=90
 
 loadimage,src="/fonts/major-title.png"
