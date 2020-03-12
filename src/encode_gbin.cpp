@@ -274,52 +274,52 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 				image_offset = data.size() - (chunk_offset+8);
 				return true;
 			});
+			return true;
+		});
 
-			//-----------------------------------------------------------------------
-			//	TILESETS
-			//-----------------------------------------------------------------------
-			assets.enumerate_tilesets( [&](const gap::tileset::TileSet & tileset)->bool
+	//-----------------------------------------------------------------------
+	//	TILESETS
+	//-----------------------------------------------------------------------
+	assets.enumerate_tilesets( [&](const gap::tileset::TileSet & tileset)->bool
+		{
+			TSETChunkEntry tset;
+			tset.width							= tileset.tile_width;
+			tset.height							= tileset.tile_height;
+			tset.pixel_format				= tileset.pixel_format;
+			tset.palette						= 0;
+			tset.tile_count					= tileset.tiles.size();
+			tset.id									= tileset.id;
+			tset.image_data_offset 	= image_offset;
+
+			tilesets.push_back(tset);
+
+			for(const auto & tile : tileset.tiles)
 			{
-				TSETChunkEntry tset;
-				tset.width							= tileset.tile_width;
-				tset.height							= tileset.tile_height;
-				tset.pixel_format				= tileset.pixel_format;
-				tset.palette						= 0;
-				tset.tile_count					= tileset.tiles.size();
-				tset.id									= tileset.id;
-				tset.image_data_offset 	= image_offset;
+				// TODO: Handle image transform (flip, rotate etc)
+				auto p_image = assets.get_source_subimage(tile.source_image,tile.x,tile.y,tileset.tile_width,tileset.tile_height);
 
-				tilesets.push_back(tset);
-
-				for(const auto & tile : tileset.tiles)
+				switch(tile.transform & 0x03)
 				{
-					// TODO: Handle image transform (flip, rotate etc)
-					auto p_image = assets.get_source_subimage(tile.source_image,tile.x,tile.y,tileset.tile_width,tileset.tile_height);
-
-					switch(tile.transform & 0x03)
-					{
-						case gap::tileset::ROTATE_90 	: p_image->rotate_90(); break;
-						case gap::tileset::ROTATE_180	: p_image->rotate_180(); break;
-						case gap::tileset::ROTATE_270	: p_image->rotate_270(); break;
-					}
-
-					auto imgdata = p_image->create_sub_target_data(0,0,tileset.tile_width,tileset.tile_height,tileset.pixel_format,config.b_big_endian);
-
-//					auto imgdata = assets.get_target_subimage(tile.source_image,tile.x,tile.y,tileset.tile_width,tileset.tile_height,tileset.pixel_format,config.b_big_endian);
-					data.insert(end(data),begin(imgdata),end(imgdata));
+					case gap::tileset::ROTATE_90 	: p_image->rotate_90(); break;
+					case gap::tileset::ROTATE_180	: p_image->rotate_180(); break;
+					case gap::tileset::ROTATE_270	: p_image->rotate_270(); break;
 				}
-				
-				auto sz = (data.size() + 3) & ~3;
-				if(sz > data.size())
-					data.resize(sz);
 
-				image_offset = data.size() - (chunk_offset+8);
+				auto imgdata = p_image->create_sub_target_data(0,0,tileset.tile_width,tileset.tile_height,tileset.pixel_format,config.b_big_endian);
 
-				return true;
-			});
+	//					auto imgdata = assets.get_target_subimage(tile.source_image,tile.x,tile.y,tileset.tile_width,tileset.tile_height,tileset.pixel_format,config.b_big_endian);
+				data.insert(end(data),begin(imgdata),end(imgdata));
+			}
+			
+			auto sz = (data.size() + 3) & ~3;
+			if(sz > data.size())
+				data.resize(sz);
+
+			image_offset = data.size() - (chunk_offset+8);
 
 			return true;
 		});
+
 
 	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
 
