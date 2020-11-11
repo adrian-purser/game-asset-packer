@@ -10,6 +10,8 @@
 //=============================================================================
 
 #include <iostream>
+#include <gsl/span>
+#include <string_view>
 #include "encode_gbin.h"
 
 #define HEADER_SIZE		32
@@ -395,15 +397,79 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 
 }
 
+
+struct FILEChunkEntry
+{
+	uint8_t 			type[4];
+	uint8_t				compression;
+	uint8_t				padding;
+	uint8_t				filler;
+	uint8_t				name_size;	
+};
+
+static
+int		
+encode_file_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & assets,const gap::Configuration & config)
+{
+	std::cout << "Encoding FILE Chunks...\n";
+	assets.enumerate_files([&](const gap::assets::FileInfo & fileinfo)->bool
+		{
+			std::cout << "  Encoding File - '" << fileinfo.source_path << "' as '" << fileinfo.name 
+								<< "' size: " << fileinfo.data.size()
+								<< '\n';
+		
+			auto chunk_offset = data.size();
+			fourcc_append("FILE",data);
+			fourcc_append("size",data);
+
+			const uint8_t 	namesize 	= fileinfo.name.size();
+			const uint32_t 	datasize 	= ((fileinfo.data.size()+3) & ~0x03);
+			const uint8_t 	padding 	= datasize - fileinfo.data.size();
+
+			data.reserve(chunk_offset + (sizeof(FILEChunkEntry) + ((namesize+3) & ~0x03) ) + datasize );
+
+			for(int i=3;i>=0;--i) data.push_back((fileinfo.type >> (i*8)) & 0x0FF);
+			data.push_back(0); // compression
+			data.push_back(padding);
+			data.push_back(0); // reserved/filler
+			data.push_back(namesize);
+
+			// Filename
+			data.insert(end(data),begin(fileinfo.name),end(fileinfo.name));
+			{
+				auto sz = (data.size() + 3) & ~3;
+				if(sz > data.size())
+					data.resize(sz);
+			}
+			
+			// Filedata
+			data.insert(end(data),begin(fileinfo.data),end(fileinfo.data));
+			{
+				auto sz = (data.size() + 3) & ~3;
+				if(sz > data.size())
+					data.resize(sz);
+			}
+
+			endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+			return false;
+		});
+
+	return 0;
+}
+
+
 std::vector<std::uint8_t>		
 encode_gbin(std::string_view name, const gap::assets::Assets & assets,const gap::Configuration & config)
 {
 
 	std::vector<std::uint8_t> data;
+	int errors = 0;
 
 	encode_header(data,name,config);
 	//encode_image_chunks(data,assets,config);
 	encode_packed_image_chunks(data,assets,config);
+	errors += encode_file_chunks(data,assets,config);
 
 	//---------------------------------------------------------------------------
 	//	End [ENDC]

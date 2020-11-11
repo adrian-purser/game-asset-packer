@@ -41,6 +41,14 @@ Assets::add_image(int group_index,gap::image::Image & image)
 	return index;
 }
 
+int
+Assets::add_file(FileInfo && file)
+{
+	m_files.emplace_back(std::forward<FileInfo>(file));
+	return 0;
+}
+
+
 void
 Assets::add_tile(int id, const gap::tileset::Tile & tile)
 {
@@ -207,6 +215,13 @@ Assets::enumerate_tilesets(std::function<bool(const gap::tileset::TileSet & tile
 			break;
 }
 
+void
+Assets::enumerate_files(std::function<bool(const gap::assets::FileInfo & fileinfo)> callback) const
+{
+	for(auto & fileinfo : m_files)
+		if(!callback(fileinfo))
+			break;
+}
 
 std::uint32_t 	
 Assets::get_target_image_offset(int index, int x,int y) const

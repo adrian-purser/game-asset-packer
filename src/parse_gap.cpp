@@ -12,6 +12,7 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include <string_view>
 #include <algorithm>
 #include "parse_gap.h"
 #include "utility/hash.h"
@@ -24,9 +25,13 @@
 #define GAPCMD_TILE							"tile"
 #define GAPCMD_TILEARRAY				"tilearray"
 #define GAPCMD_EXPORT						"export"
+#define GAPCMD_FILE							"file"
+
+using namespace std::literals::string_literals;
 
 namespace gap
 {
+
 
 ParserGAP::ParserGAP(gap::FileSystem & filesystem)
  : m_filesystem(filesystem)
@@ -195,6 +200,7 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILE) :				result = command_tile(line_number,cmd); 				break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILEARRAY) :	result = command_tilearray(line_number,cmd); 		break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_EXPORT) :			result = command_export(line_number,cmd); 			break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_FILE) :				result = command_file(line_number,cmd); 				break;
 
 		default : 
 			std::cerr << "GAP: Unknown command '" << cmd.command << "'\n";
@@ -606,6 +612,57 @@ ParserGAP::command_export(int line_number, const CommandLine & command)
 
 	return 0;
 }
+
+int 
+ParserGAP::command_file(int line_number, const CommandLine & command)
+{
+	gap::assets::FileInfo fileinfo;
+
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("src") 	:	fileinfo.source_path 	= value; break;
+			case ade::hash::hash_ascii_string_as_lower("name") 	:	fileinfo.name 				= value; break;
+			case ade::hash::hash_ascii_string_as_lower("type") 	:	fileinfo.type 				= ade::hash::fourcc(value.c_str(),value.size()); break;
+			default : 
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
+
+	if(fileinfo.source_path.empty())
+		return on_error(line_number,"Missing file path!");
+
+	if(fileinfo.name.empty())
+		fileinfo.name = fileinfo.source_path;
+
+	fileinfo.data = m_filesystem.load(fileinfo.source_path);
+	if(fileinfo.data.empty())
+		return on_error(line_number,"Failed to load file '"s + fileinfo.source_path + "'!"s);
+
+	//---------------------------------------------------------------------------
+	//	Determine file type
+	//---------------------------------------------------------------------------
+	if(fileinfo.type == 0)
+	{
+		auto pos = fileinfo.source_path.find_last_of('.');
+		if(pos != std::string::npos)
+		{
+			std::string ext(fileinfo.source_path.substr(pos+1));
+			std::transform(begin(ext),end(ext),begin(ext),::toupper);
+			if(!ext.empty() && (ext.size() <= 4))
+				fileinfo.type = ade::hash::fourcc(ext.c_str(),ext.size());
+		}
+	}
+
+	m_p_assets->add_file(std::move(fileinfo));
+		
+	return 0;
+}
+
+
 
 } // namespace gap
 

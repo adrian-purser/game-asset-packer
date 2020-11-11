@@ -18,3 +18,4 @@ loadimage,src="tilesets/test-tileset.png"
 tileset,id=3,name="tiles",width=16,height=16,format=ARGB1555
 tilearray,width=64,height=1
 
+file,src="/testfiles/hello.py",name="main.py"

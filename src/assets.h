@@ -18,6 +18,15 @@
 namespace gap::assets
 {
 
+struct FileInfo
+{
+	std::string									source_path;
+	std::string 								name;
+	std::vector<std::uint8_t>		data;
+	int													compression 	= 0;
+	uint32_t										type 					= 0;						// Allow file type override.
+};
+
 class Assets
 {
 private:
@@ -32,6 +41,7 @@ private:
 	std::vector<std::unique_ptr<gap::image::SourceImage>>		m_source_images;
 	std::array<ImageGroup,m_max_image_groups>								m_image_groups;
 	std::vector<gap::tileset::TileSet>											m_tilesets;
+	std::vector<FileInfo>																		m_files;
 
 public:
 	Assets() = default;
@@ -40,6 +50,7 @@ public:
 
 	int										add_source_image(std::unique_ptr<gap::image::SourceImage> p_image);
 	int										add_image(int group,gap::image::Image & image);
+	int										add_file(FileInfo && file);
 
 	void									add_tileset(const gap::tileset::TileSet & tileset)	{m_tilesets.push_back(tileset);}
 	void									add_tile(int tileset, const gap::tileset::Tile & tile);
@@ -53,7 +64,8 @@ public:
 	void									enumerate_image_groups(std::function<bool(uint32_t group_number,uint16_t base)> callback) const;
 	void 									enumerate_group_images(int group_number,std::function<bool(int image_index,const gap::image::Image & image)> callback) const;
 	void									enumerate_tilesets(std::function<bool(const gap::tileset::TileSet & tileset)> callback) const;
-
+	void									enumerate_files(std::function<bool(const gap::assets::FileInfo & fileinfo)> callback) const;
+	
 	void 									set_group_base(int group,uint16_t base)		{if((group >= 0) && (group < m_max_image_groups)) m_image_groups[group].base = base;}
 
 	void									dump();
@@ -74,3 +86,4 @@ private:
 } // namespace gap::assets
 
 #endif // ! defined GUARD_ADE_GAMES_ASSET_PACKER_ASSETS_H
+

@@ -42,3 +42,5 @@ tilearray,width=95,height=1
 tileset,id=2,name="font1-vert",width=8,height=8,format=ARGB1555
 tilearray,width=95,height=1,rotate=270
 
+file,src="/testfiles/hello.py",name="main.py"
+ 

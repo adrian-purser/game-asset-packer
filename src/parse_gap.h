@@ -61,6 +61,7 @@ private:
 	int 								command_image(int line_number,const CommandLine & args);
 	int 								command_imagearray(int line_number,const CommandLine & args);
 	int 								command_export(int line_number,const CommandLine & args);
+	int 								command_file(int line_number,const CommandLine & args);
 	int 								command_tileset(int line_number,const CommandLine & args);
 	int 								command_tile(int line_number,const CommandLine & args);
 	int 								command_tilearray(int line_number,const CommandLine & args);	

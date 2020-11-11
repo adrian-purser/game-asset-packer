@@ -72,7 +72,11 @@
 			"valarray": "cpp",
 			"variant": "cpp",
 			"regex": "cpp",
-			"shared_mutex": "cpp"
+			"shared_mutex": "cpp",
+			"compare": "cpp",
+			"concepts": "cpp",
+			"ranges": "cpp",
+			"stop_token": "cpp"
 		}
 	}
 }
