@@ -1,0 +1,20 @@
+//=============================================================================
+//	FILE:					config.h
+//	SYSTEM:				
+//	DESCRIPTION:
+//-----------------------------------------------------------------------------
+//  COPYRIGHT:		(C) Copyright 2021 Adrian Purser. All Rights Reserved.
+//	LICENCE:			MIT - See LICENSE file for details
+//	MAINTAINER:		Adrian Purser <ade@adrianpurser.co.uk>
+//	CREATED:			27-OCT-2021 Adrian Purser <ade@adrianpurser.co.uk>
+//=============================================================================
+#ifndef GUARD_ADE_GAP_CONFIG_H
+#define GUARD_ADE_GAP_CONFIG_H
+
+#define PROJECT_NAME 					"@PROJECT_NAME@"
+#define PROJECT_VERSION  			"@PROJECT_VERSION@"
+#define PROJECT_VERSION_MAJOR "@PROJECT_VERSION_MAJOR@"
+#define PROJECT_VERSION_MINOR "@PROJECT_VERSION_MINOR@"
+#define PTOJECT_VERSION_PATCH "@PROJECT_VERSION_PATCH@"
+
+#endif // ! defined GUARD_ADE_GAP_CONFIG_H

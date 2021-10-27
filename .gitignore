@@ -167,7 +167,6 @@ missing
 compile
 .deps
 config.h
-config.h.in
 stamp-h1
 *.la
 *.lo
@@ -192,6 +191,5 @@ vgcore.*
 # =============================================================================
 # Ignore Project Specific files
 # =============================================================================
-src/gap
 assets.bin
 *.gbin

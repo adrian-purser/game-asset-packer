@@ -43,7 +43,7 @@ parse_command_line(int argc,char ** argv,Configuration & out_config)
 	}
 	else if(values.options.count("version"))
 	{
-		std::clog << PACKAGE_STRING << std::endl;
+		std::cout << PROJECT_NAME << ' ' << PROJECT_VERSION << std::endl;
 		return 1;
 	}
 
