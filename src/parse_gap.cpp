@@ -262,7 +262,7 @@ ParserGAP::command_loadimage(int line_number, const CommandLine & command)
 }
 
 int 
-ParserGAP::command_imagegroup(int line_number, const CommandLine & command)
+ParserGAP::command_imagegroup(int /*line_number*/, const CommandLine & command)
 {
 
 	int group = -1;
@@ -292,7 +292,7 @@ ParserGAP::command_imagegroup(int line_number, const CommandLine & command)
 }
 
 int 
-ParserGAP::command_image(int line_number, const CommandLine & command)
+ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 {
 	gap::image::Image	image;
 
@@ -543,9 +543,9 @@ ParserGAP::command_tilearray(int line_number, const CommandLine & command)
 
 	if((tw == 0) || (th == 0))	return on_error(line_number,std::string("tilearray: Unable to retrieve the tileset width/height."));
 
-	for(int v=0;v<tiles_high;++v)
+	for(uint32_t v=0;v<tiles_high;++v)
 	{
-		for(int h=0;h<tiles_wide;++h)
+		for(uint32_t h=0;h<tiles_wide;++h)
 		{
 			gap::tileset::Tile tile;
 			tile.x 						= x + (h*tw);

@@ -9,6 +9,7 @@
 //	CREATED:			25-SEP-2019 Adrian Purser <ade&arcadestuff.com>
 //=============================================================================
 #include <iostream>
+#include <utility>
 #include "assets.h"
 #include "utility/format.h"
 
@@ -33,7 +34,7 @@ Assets::add_image(int group_index,gap::image::Image & image)
 	auto & group = m_image_groups[group_index];
 	int index = group.current_index;
 
-	if(group.current_index >= group.images.size())
+	if( std::cmp_greater_equal(group.current_index, group.images.size()))
 		group.images.resize(group.current_index+1);
 
 	group.images[group.current_index++] = image;
@@ -196,7 +197,7 @@ Assets::enumerate_group_images(int group_number,std::function<bool(int image_ind
 {
 	std::cout << "Enumerating group images: group = " << group_number << '\n';
 
-	if((group_number>=0) && (group_number < m_image_groups.size()))
+	if((group_number>=0) && ( std::cmp_less(group_number, m_image_groups.size())))
 	{
 		const auto & group = m_image_groups[group_number];
 		int image_index = 0;
@@ -226,7 +227,7 @@ Assets::enumerate_files(std::function<bool(const gap::assets::FileInfo & fileinf
 std::uint32_t 	
 Assets::get_target_image_offset(int index, int x,int y) const
 {
-	if((index<0) || (index>=m_source_images.size()))
+	if((index<0) || ( std::cmp_greater_equal(index,m_source_images.size())))
 		return 0;
 
 	return gap::image::pixelformat::image_pixel_offset(m_source_images[index]->target_pixelformat(),x,y,m_source_images[index]->width());
@@ -235,7 +236,7 @@ Assets::get_target_image_offset(int index, int x,int y) const
 std::uint32_t 	
 Assets::get_target_line_stride(int index) const
 {
-	if((index<0) || (index>=m_source_images.size()))
+	if((index<0) || (std::cmp_greater_equal(index,m_source_images.size())))
 		return 0;
 
 	return m_source_images[index]->width();
@@ -244,7 +245,7 @@ Assets::get_target_line_stride(int index) const
 std::uint8_t 		
 Assets::get_target_pixelformat(int index) const
 {
-	if((index<0) || (index>=m_source_images.size()))
+	if((index<0) || ( std::cmp_greater_equal(index, m_source_images.size())))
 		return 0;
 
 	return m_source_images[index]->target_pixelformat();
@@ -254,7 +255,7 @@ Assets::get_target_pixelformat(int index) const
 std::vector<uint8_t>	
 Assets::get_target_subimage(int index, int x, int y, int width, int height, uint8_t pixel_format, bool big_endian) const
 {
-	if((index<0) || (index>=m_source_images.size()))
+	if((index<0) || ( std::cmp_greater_equal(index, m_source_images.size()) ))
 	{
 		std::cerr << "get_target_subimage: Unknown Image: " << index << std::endl;
  		return {};
@@ -267,7 +268,7 @@ Assets::get_target_subimage(int index, int x, int y, int width, int height, uint
 std::unique_ptr<gap::image::SourceImage>
 Assets::get_source_subimage(int index, int x, int y, int width, int height) const 
 {
-	if((index<0) || (index>=m_source_images.size()))
+	if((index<0) || ( std::cmp_greater_equal(index, m_source_images.size()) ))
 	{
 		std::cerr << "get_source_subimage: Unknown Image: " << index << std::endl;
  		return nullptr;

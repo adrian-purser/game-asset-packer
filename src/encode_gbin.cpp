@@ -12,6 +12,7 @@
 #include <iostream>
 #include <gsl/span>
 #include <string_view>
+#include <utility>
 #include "encode_gbin.h"
 
 #define HEADER_SIZE		32
@@ -35,7 +36,7 @@ template<typename T>
 static void
 endian_insert(std::vector<std::uint8_t> & data,const T & value,int index,int size,bool big_endian)
 {
-	if((index + size) <= data.size())
+	if( std::cmp_less_equal((index + size) , data.size()) )
 	{
 		for(int i=0;i<size;++i)
 			data[index+i] = (big_endian ? value >> (((size-1)-i) * 8) : value >> (i*8)) & 0x0FF;
@@ -67,93 +68,13 @@ encode_header(std::vector<std::uint8_t> & data,std::string_view name,const gap::
 	fourcc_append("CRC-",data);
 
 	for(int i=0;i<12;++i)
-		data.push_back(i < name.size() ? name[i] : 0);
+		data.push_back( std::cmp_less(i, name.size()) ? name[i] : 0);
 
 	fourcc_append("xxxx",data);
 	fourcc_append("xxxx",data);
 
 }
 
-static
-void		
-encode_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & assets,const gap::Configuration & config)
-{
-	/*
-	//---------------------------------------------------------------------------
-	//	Image Data Chunk
-	//---------------------------------------------------------------------------
-	uint32_t chunk_offset = data.size();
-
-	fourcc_append("IMGD",data);
-	fourcc_append("size",data);
-
-	std::uint32_t	image_offset = 0;
-	assets.enumerate_source_images([&](int image_index,const gap::image::SourceImage & image)->bool
-		{
-			auto data_size = (image.target_data_size() + 0x0F) & ~0x0F;
-			const auto & target_data = image.target_data();
-			
-			std::uint32_t index = data.size();
-			data.resize(index+data_size,0);
-			std::copy(begin(target_data),end(target_data),begin(data)+index);
-
-			image_offset += data_size; 
-			//assert(image_offset == (chunk_image_data.size() - 8));
-			return true;
-		});
-
-	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
-
-	//---------------------------------------------------------------------------
-	//	Source Image Metadata
-	//---------------------------------------------------------------------------
-	std::vector<std::uint32_t>	image_offsets;
-
-	chunk_offset = data.size();
-	fourcc_append("SIMG",data);
-	fourcc_append("size",data);
-
-	image_offset = 0;
-	assets.enumerate_source_images([&](int image_index,const gap::image::SourceImage & image)->bool
-		{
-			image_offsets.push_back(image_offset);
-			auto data_size = (image.target_data_size() + 0x0F) & ~0x0F;
-			endian_append(data,image.width(),2,config.b_big_endian);
-			endian_append(data,image.height(),2,config.b_big_endian);
-			endian_append(data,image_offset,4,config.b_big_endian);
-			data.push_back(image.target_pixelformat());
-			data.push_back(0);
-			data.push_back(0);
-			data.push_back(0);
-			image_offset += data_size; 
-			return true;
-		});
-
-	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
-
-	//---------------------------------------------------------------------------
-	//	Images
-	//---------------------------------------------------------------------------
-	chunk_offset = data.size();
-	fourcc_append("IMAG",data);
-	fourcc_append("size",data);
-
-	assets.enumerate_images([&](int group_index,int image_index,const gap::image::Image & image)->bool
-		{
-			endian_append(data,image.width,2,config.b_big_endian);
-			endian_append(data,image.height,2,config.b_big_endian);
-			endian_append(data,assets.get_target_line_stride(image.source_image)-image.width,2,config.b_big_endian);
-			data.push_back(assets.get_target_pixelformat(image.source_image));
-			data.push_back(0); // Flags
-			endian_append(data,image.x_origin,2,config.b_big_endian);
-			endian_append(data,image.y_origin,2,config.b_big_endian);
-			endian_append(data,image_offsets[image.source_image] + assets.get_target_image_offset(image.source_image,image.x,image.y),4,config.b_big_endian);
-			return true;
-		});
-
-	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
-*/
-}
 
 /*
 IMAG Chunk
@@ -243,7 +164,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 			//-----------------------------------------------------------------------
 			//	IMAGES
 			//-----------------------------------------------------------------------
-			assets.enumerate_group_images(group_number,[&](int image_index,const gap::image::Image & image)->bool
+			assets.enumerate_group_images(group_number,[&](int /*image_index*/,const gap::image::Image & image)->bool
 			{
 				auto p_image = assets.get_source_subimage(image.source_image,image.x,image.y,image.width,image.height);
 				int ox = image.x_origin;
@@ -361,7 +282,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 
 	data.reserve(chunk_offset + (8 * (max_group+1)));
 
-	for(int i=0;i<=max_group;++i)
+	for(uint32_t i=0;i<=max_group;++i)
 	{
 		const auto & group = groups[i];
 		std::cout << "  GROUP: " << i << " BASE: " << group.base << " INDEX: " << group.index << '\n';
@@ -477,7 +398,7 @@ encode_gbin(std::string_view name, const gap::assets::Assets & assets,const gap:
 	fourcc_append("ENDC",data);
 	endian_append(data,0,4,config.b_big_endian);
 
-	std::uint32_t crc32 = 0; // TODO: Calculate the crc from all of the chunks.
+//	std::uint32_t crc32 = 0; // TODO: Calculate the crc from all of the chunks.
 
 	return data;
 }

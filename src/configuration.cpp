@@ -10,7 +10,7 @@
 //=============================================================================
 
 #include "config.h"
-#include "programoptions/program_options.h"
+#include "utility/program_options.h"
 #include "configuration.h"
 
 namespace gap

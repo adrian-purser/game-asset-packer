@@ -15,6 +15,7 @@
 #include <vector>
 #include <string>
 #include <cmath>
+#include <utility>
 #include "filesystem.h"
 #include "utility/hash.h"
 
@@ -178,7 +179,7 @@ public:
 									{
 										if(index>=0)
 										{
-											if(index >= m_palette.size())
+											if(std::cmp_greater_equal(index,m_palette.size()))
 												resize(index+1);
 											m_palette[index] = colour; 
 										}
@@ -256,11 +257,11 @@ public:
 											const int ix = (int)dx;
 											const int iy = (int)dy;
 
-											int x2,y2;
+											int x2;//,y2;
 											if(fx < 0.5f) {x2 = ix-1;fx +=0.5f;}
 											else					{x2 = ix+1;fx = 1.5f-fx;}
-											if(fy < 0.5f) {y2 = iy-1;fy +=0.5f;}
-											else					{y2 = iy+1;fy = 1.5f-fy;}
+											if(fy < 0.5f) {/*y2 = iy-1*/;fy +=0.5f;}
+											else					{/*y2 = iy+1*/;fy = 1.5f-fy;}
 
 											const auto c1a = get_pixel(ix,iy);
 											const auto c1b = get_pixel(x2,iy);
