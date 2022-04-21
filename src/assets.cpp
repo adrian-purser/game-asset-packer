@@ -153,6 +153,17 @@ Assets::dump()
 	std::cout << "\n\n";	
 }
 
+int
+Assets::image_group_count() const noexcept
+{
+	int image_group_count = 0;
+	for(const auto & group : m_image_groups)
+		if(!group.images.empty())
+			++image_group_count;
+	return image_group_count;
+}
+
+
 
 void
 Assets::enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const

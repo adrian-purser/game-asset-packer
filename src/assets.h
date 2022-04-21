@@ -57,7 +57,7 @@ public:
 	uint32_t 							tileset_width(int id)		{	if(auto p_tileset = get_tileset(id))	return p_tileset->tile_width; return 0; }
 	uint32_t 							tileset_height(int id)	{	if(auto p_tileset = get_tileset(id))	return p_tileset->tile_width; return 0; }
 
-
+	int										image_group_count() const noexcept;
 	int										source_image_count() const noexcept			{return m_source_images.size();}
 	void									enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;
 	void									enumerate_images(std::function<bool (int group,int image_index,const gap::image::Image &)> callback) const;
