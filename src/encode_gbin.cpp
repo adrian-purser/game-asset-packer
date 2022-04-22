@@ -334,10 +334,8 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 struct FILEChunkEntry
 {
 	uint8_t 			type[4];
-	uint8_t				compression;
-	uint8_t				padding;
-	uint8_t				filler;
-	uint8_t				name_size;	
+	uint8_t				datasize[4];	
+	uint8_t				name[16];
 };
 
 static
@@ -355,26 +353,16 @@ encode_file_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & 
 			fourcc_append("FILE",data);
 			fourcc_append("size",data);
 
-			const uint8_t 	namesize 	= fileinfo.name.size();
-			const uint32_t 	datasize 	= ((fileinfo.data.size()+3) & ~0x03);
-			const uint8_t 	padding 	= datasize - fileinfo.data.size();
+			const uint8_t 	namesize 				= std::min<uint8_t>(fileinfo.name.size(),15);
+			const uint32_t	datasize				= fileinfo.data.size();
+			const uint32_t 	total_datasize 	= ((fileinfo.data.size()+3) & ~0x03);
 
-			data.reserve(chunk_offset + (sizeof(FILEChunkEntry) + ((namesize+3) & ~0x03) ) + datasize );
+			data.reserve(chunk_offset + sizeof(FILEChunkEntry) + total_datasize );
 
 			for(int i=3;i>=0;--i) data.push_back((fileinfo.type >> (i*8)) & 0x0FF);
-			data.push_back(0); // compression
-			data.push_back(padding);
-			data.push_back(0); // reserved/filler
-			data.push_back(namesize);
+			for(int i=0;i<4;++i) 	data.push_back((datasize >> (i*8)) & 0x0FF);
+			for(size_t i=0;i<sizeof(FILEChunkEntry::name);++i)	data.push_back( i<namesize ? fileinfo.name[i] : 0 );
 
-			// Filename
-			data.insert(end(data),begin(fileinfo.name),end(fileinfo.name));
-			{
-				auto sz = (data.size() + 3) & ~3;
-				if(sz > data.size())
-					data.resize(sz);
-			}
-			
 			// Filedata
 			data.insert(end(data),begin(fileinfo.data),end(fileinfo.data));
 			{

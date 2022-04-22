@@ -202,12 +202,18 @@ $00 |   F    |   I    |   L    |   E    |    FourCC defines chunk type - 4 Bytes
 $04 |               SIZE                |    Chunk Size - 4 Bytes
     +===================================+
 $08 |               TYPE                |    FourCC - 4 Bytes
-    +--------+--------+--------+--------+
-$0C |  Comp  | Padding|        | NamSiz |
-    +--------+--------+--------+--------+
-$10 |             Filename              |    NamSiz bytes rounded up to 4 byte boundary
     +-----------------------------------+
-    |             Filedata              |    Data Size = ChunkSize - (FileData Offset + Padding)
+$0C |             FILESIZE              |    FileSize, 32 bits Little Endian byte order.
+    +-----------------------------------+
+$10 |             FILENAME              |    16 Bytes, NULL terminated filename string.
+    + - - - - - - - - - - - - - - - - - |
+    |                                   |
+    + - - - - - - - - - - - - - - - - - |
+		|                                   |
+    + - - - - - - - - - - - - - - - - - |
+		|                                   |
+    +-----------------------------------+
+$20 |             FILEDATA              | 
     +-----------------------------------+
 
 
