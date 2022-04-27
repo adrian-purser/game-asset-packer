@@ -64,17 +64,17 @@ IMAGE
 Add an image to the current imagegroup. The image is taken as a subimage of the current source image if the subimage 
 coordinates are specified, otherwise the whole source image is used.
 
-X                    X coordinate in pixels of the top left of the source region within the parent image
-Y                    Y coordinate in pixels of the top left of the source region within the parent image
-W or WIDTH           Width of the image in pixels
-H or HEIGHT          Height of the image in pixels
-XO or XORIGIN        X Origin of the image in pixels. The image will be rendered with the origin placed at 
-                     the specified coordinate. Rotations will use this as the origin of rotation
-YO or YORIGIN        Y Origin of the image in pixels. The image will be rendered with the origin placed at 
-                     the specified coordinate. Rotations will use this as the origin of rotation
-ANGLE ot ROTATE      Angle in degrees to rotate the image. The image will be rotated around the origin specified by XO,YO
-PF or FORMAT         Pixel format pf the output image. If not specified then the format of the source image will be used.
-NAME                 Name of the image so that it can be found by a search
+X                            X coordinate in pixels of the top left of the source region within the parent image
+Y                            Y coordinate in pixels of the top left of the source region within the parent image
+W or WIDTH                   Width of the image in pixels
+H or HEIGHT                  Height of the image in pixels
+XO or XORIGIN                X Origin of the image in pixels. The image will be rendered with the origin placed at 
+                             the specified coordinate. Rotations will use this as the origin of rotation
+YO or YORIGIN                Y Origin of the image in pixels. The image will be rendered with the origin placed at 
+                             the specified coordinate. Rotations will use this as the origin of rotation
+ANGLE ot ROTATE              Angle in degrees to rotate the image. The image will be rotated around the origin specified by XO,YO
+PF or FORMAT                 Pixel format pf the output image. If not specified then the format of the source image will be used.
+NAME                         Name of the image so that it can be found by a search
 
 
 IMAGEARRAY
@@ -84,19 +84,19 @@ Create a series of images from a square 2 dimensional array within the source im
 dimensions and pixel format.
 
 
-X                    X coordinate in pixels of the top left of the source region within the parent image
-Y                    Y coordinate in pixels of the top left of the source region within the parent image
-W or WIDTH           Width of each image in pixels
-H or HEIGHT          Height of each image in pixels
-XO or XORIGIN        X Origin of each image in pixels. The image will be rendered with the origin placed at the specified 
-                     coordinate. Rotations will use this as the origin of rotation
-YO or YORIGIN        Y Origin of each image in pixels. The image will be rendered with the origin placed at the specified 
-                     coordinate. Rotations will use this as the origin of rotation
-XC or XCOUNT         The width of the image array measured in number of images. This value multiplied by YC will determine 
-                     the total number of images.
-YC or YCOUNT         The height of the image array measured in number of images. This value multiplied by XC will determine 
-                     the total number of images.
-PF or FORMAT         Pixel format pf the output image. If not specified then the format of the source image will be used.
+X                            X coordinate in pixels of the top left of the source region within the parent image
+Y                            Y coordinate in pixels of the top left of the source region within the parent image
+W or WIDTH                   Width of each image in pixels
+H or HEIGHT                  Height of each image in pixels
+XO or XORIGIN                X Origin of each image in pixels. The image will be rendered with the origin placed at the specified 
+                             coordinate. Rotations will use this as the origin of rotation
+YO or YORIGIN                Y Origin of each image in pixels. The image will be rendered with the origin placed at the specified 
+                             coordinate. Rotations will use this as the origin of rotation
+XC or XCOUNT                 The width of the image array measured in number of images. This value multiplied by YC will determine 
+                             the total number of images.
+YC or YCOUNT                 The height of the image array measured in number of images. This value multiplied by XC will determine 
+                             the total number of images.
+PF or FORMAT                 Pixel format pf the output image. If not specified then the format of the source image will be used.
 
 
 IMAGEGROUP
@@ -107,8 +107,8 @@ can be used to specify the index that the following images will start at in the 
 
 IMAGEGROUP [,GROUP=<group-number>] [,BASE=<base>]
 
-GROUP	               Group number
-BASE                 Base index for images added to the group
+GROUP	                       Group number
+BASE                         Base index for images added to the group
 
 
 LOADIMAGE
@@ -117,8 +117,8 @@ LOADIMAGE
 LOADIMAGE [,SRC=<filename>] [,FORMAT=<output pixel format>]
 
 
-SRC                  Filename of the image file
-FORMAT               Desired output pixel format
+SRC                          Filename of the image file
+FORMAT                       Desired output pixel format
 
 
 TILE
@@ -126,11 +126,11 @@ TILE
 
 Add a tile to the current tileset. Use the TILESET command to create or set the current tileset.
 
-X                    X coordinate in pixels of the top left of the tiles source region within the parent image
-Y                    Y coordinate in pixels of the top left of the tiles source region within the parent image
-HFLIP                Flip the tile image horizontally. This parameter does not require a value.
-VFLIP                Flip the tile image vertically. This parameter does not require a value.
-ROTATE or ROTATION   Rotate the tile image. Valid values are 0, 90, 180 & 270 degrees.
+X                            X coordinate in pixels of the top left of the tiles source region within the parent image
+Y                            Y coordinate in pixels of the top left of the tiles source region within the parent image
+HFLIP                        Flip the tile image horizontally. This parameter does not require a value.
+VFLIP                        Flip the tile image vertically. This parameter does not require a value.
+ROTATE or ROTATION           Rotate the tile image. Valid values are 0, 90, 180 & 270 degrees.
 
 
 TILEARRAY
@@ -153,9 +153,9 @@ TILESET
 
 Create an empty tileset or select an existing tileset.
 
-ID                   Numerical identifier of the tileset.
-NAME                 Name of the tileset that can be used for searching.
-W or WIDTH           Width of each tile in pixels.
-H or HEIGHT          Height of each tile in pixels.
-PF or FORMAT         Pixel format pf the timeset image data. If not specified then the format of the source image will be used.
+ID                           Numerical identifier of the tileset.
+NAME                         Name of the tileset that can be used for searching.
+W or WIDTH                   Width of each tile in pixels.
+H or HEIGHT                  Height of each tile in pixels.
+PF or FORMAT                 Pixel format pf the timeset image data. If not specified then the format of the source image will be used.
 
