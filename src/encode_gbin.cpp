@@ -13,6 +13,8 @@
 #include <gsl/span>
 #include <string_view>
 #include <utility>
+#include <fmt/format.h>
+
 #include "encode_gbin.h"
 
 #define HEADER_SIZE		32
@@ -146,10 +148,11 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	uint32_t chunk_offset = data.size();
 	uint32_t image_offset = 0;
 	
-	bool b_have_image_group = false;
-	assets.enumerate_image_groups( [&](uint32_t /*group_number*/,uint16_t /*base*/)->bool	{	b_have_image_group = true; return false; });
+	bool b_have_image_data = false;
+	assets.enumerate_image_groups( [&](uint32_t /*group_number*/,uint16_t /*base*/)->bool	{	b_have_image_data = true; return false; });
+	assets.enumerate_tilesets( [&](const gap::tileset::TileSet & tileset)->bool {	b_have_image_data = true; return false; });
 
-	if(b_have_image_group)
+	if(b_have_image_data)
 	{	
 		std::cout << "Encoding Chunk IMGD\n";
 
@@ -220,6 +223,8 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 			tset.id									= tileset.id;
 			tset.image_data_offset 	= image_offset;
 
+			std::cout << fmt::format("GBIN:TILESET: id={}, name={}, tilesize = {}x{}, {} tiles\n",tileset.id,tileset.name,tileset.tile_width,tileset.tile_height,tileset.tiles.size());
+
 			tilesets.push_back(tset);
 
 			for(const auto & tile : tileset.tiles)
@@ -237,6 +242,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 				auto imgdata = p_image->create_sub_target_data(0,0,tileset.tile_width,tileset.tile_height,tileset.pixel_format,config.b_big_endian);
 
 	//					auto imgdata = assets.get_target_subimage(tile.source_image,tile.x,tile.y,tileset.tile_width,tileset.tile_height,tileset.pixel_format,config.b_big_endian);
+	//			std::cout << fmt::format("  TILE: x:{} y:{} dim:{}x{}, datasize:{}\n",tile.x,tile.y,p_image->width(),p_image->height(),imgdata.size());
 				data.insert(end(data),begin(imgdata),end(imgdata));
 			}
 			
