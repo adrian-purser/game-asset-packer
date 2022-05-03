@@ -1,0 +1,52 @@
+;paint.net Palette File
+;Downloaded from Lospec.com/palette-list
+;Palette Name: Zenith
+;Description: My current main palette. A diverse range of colours with moderate saturation, great for designing videogames or making intricate and colorful artworks.
+;Colors: 47
+FF18143b
+FF31256e
+FF633e8a
+FFa35093
+FFe66a6a
+FFffa480
+FFffd6a1
+FFfffff2
+FFbfffee
+FF82deff
+FF6c9de6
+FF5c63b8
+FF4e3e8a
+FF253870
+FF3e5f8a
+FF50a19d
+FF6ce680
+FFb4ff82
+FFffffa3
+FFffe082
+FFe6a56c
+FFab5b55
+FF8a3e57
+FF662351
+FF3c2b45
+FF664458
+FF8f6b73
+FFb0918f
+FFccc2b8
+FFe6e5dc
+FFdce6e5
+FFb6c3cc
+FF8894a8
+FF6a728f
+FF444566
+FF2f2b45
+FF464599
+FF7053b0
+FFb56ce6
+FFfb82ff
+FFffd4de
+FF432b57
+FF783c78
+FF996394
+FFc7a1b5
+FFebcfcc
+FFfff4e8
