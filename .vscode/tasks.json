@@ -4,13 +4,17 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "make",
+			"label": "cmake-build Debug",
 			"type": "shell",
-			"command": "make -j8",
+			"command": "cmake --build . -- -j10",
+			"options": {
+				"cwd": "${workspaceRoot}/build.debug"
+			},
 			"group": {
 				"kind": "build",
 				"isDefault": true
-			}
+			},
+			"problemMatcher": []
 		}
 	]
 }

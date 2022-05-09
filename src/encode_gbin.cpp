@@ -365,7 +365,8 @@ encode_file_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & 
 
 			data.reserve(chunk_offset + sizeof(FILEChunkEntry) + total_datasize );
 
-			for(int i=3;i>=0;--i) data.push_back((fileinfo.type >> (i*8)) & 0x0FF);
+//			for(int i=3;i>=0;--i) data.push_back((fileinfo.type >> (i*8)) & 0x0FF);
+			endian_append(data,fileinfo.type,4,config.b_big_endian);
 			for(int i=0;i<4;++i) 	data.push_back((datasize >> (i*8)) & 0x0FF);
 			for(size_t i=0;i<sizeof(FILEChunkEntry::name);++i)	data.push_back( i<namesize ? fileinfo.name[i] : 0 );
 
