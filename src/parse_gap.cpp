@@ -15,6 +15,7 @@
 #include <string_view>
 #include <algorithm>
 #include "parse_gap.h"
+#include "parse_colour_map.h"
 #include "utility/hash.h"
 
 #define GAPCMD_LOADIMAGE				"loadimage"
@@ -26,6 +27,7 @@
 #define GAPCMD_TILEARRAY				"tilearray"
 #define GAPCMD_EXPORT						"export"
 #define GAPCMD_FILE							"file"
+#define GAPCMD_COLOURMAP				"colourmap"
 
 using namespace std::literals::string_literals;
 
@@ -201,6 +203,7 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILEARRAY) :	result = command_tilearray(line_number,cmd); 		break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_EXPORT) :			result = command_export(line_number,cmd); 			break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_FILE) :				result = command_file(line_number,cmd); 				break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_COLOURMAP) :	result = command_colourmap(line_number,cmd); 		break;
 
 		default : 
 			std::cerr << "GAP: Unknown command '" << cmd.command << "'\n";
@@ -265,8 +268,9 @@ int
 ParserGAP::command_imagegroup(int /*line_number*/, const CommandLine & command)
 {
 
-	int group = -1;
-	int base = 0;
+	int 					group = -1;
+	int 					base = 0;
+	std::string		name;
 
 	for(const auto & [key,value] : command.args)
 	{
@@ -276,6 +280,8 @@ ParserGAP::command_imagegroup(int /*line_number*/, const CommandLine & command)
 		{
 			case ade::hash::hash_ascii_string_as_lower("group") 	:	group	= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("base") 		:	base	= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("name") 		:	name	= value; 	break;
+
 			default : 
 				// TODO: Warning - unknown arg
 				break;
@@ -287,6 +293,8 @@ ParserGAP::command_imagegroup(int /*line_number*/, const CommandLine & command)
 		m_current_image_group = group;
 		if(base > 0)
 			m_p_assets->set_group_base(group,base);
+		if(!name.empty())
+			m_p_assets->set_group_name(group,name);
 	}
 	return 0;
 }
@@ -296,6 +304,9 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 {
 	gap::image::Image	image;
 
+	bool b_width 	= false;
+	bool b_height	= false;
+
 	for(const auto & [key,value] : command.args)
 	{
 		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
@@ -304,9 +315,9 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 			case ade::hash::hash_ascii_string_as_lower("x") 			:	image.x 				= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("y") 			:	image.y 				= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("w") 			:	
-			case ade::hash::hash_ascii_string_as_lower("width") 	:	image.width			= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("width") 	:	image.width			= std::strtol(value.c_str(),nullptr,10); 	b_width = true; break;
 			case ade::hash::hash_ascii_string_as_lower("h") 			:	
-			case ade::hash::hash_ascii_string_as_lower("height")	:	image.height		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("height")	:	image.height		= std::strtol(value.c_str(),nullptr,10); 	b_height = true; break;
 			case ade::hash::hash_ascii_string_as_lower("xo") 			:	
 			case ade::hash::hash_ascii_string_as_lower("xorigin")	:	image.x_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("yo") 			:	
@@ -323,12 +334,19 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 		}
 	}
 
+	if(!b_width && (image.width == 0))
+		image.width = m_p_assets->source_image_width(m_current_source_image) - image.x;
+
+	if(!b_height && (image.height == 0))
+		image.height = m_p_assets->source_image_height(m_current_source_image) - image.y;
+
 	image.source_image	= m_current_source_image;
 
 	if(image.pixel_format == 0)
 		image.pixel_format = m_p_assets->get_target_pixelformat(m_current_source_image);
 		
-	m_p_assets->add_image(m_current_image_group,image);
+	if((image.width > 0) && (image.height > 0))
+		m_p_assets->add_image(m_current_image_group,image);
 
 	return 0;
 }
@@ -663,6 +681,50 @@ ParserGAP::command_file(int line_number, const CommandLine & command)
 }
 
 
+int 
+ParserGAP::command_colourmap(int line_number, const CommandLine & command)
+{
+
+	std::string src;
+	std::string name;
+
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("src") 	:	src 	= value; break;
+			case ade::hash::hash_ascii_string_as_lower("name") 	:	name	= value; break;
+			default : 
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
+
+	if(name.empty())
+		return on_error(line_number, "Name not specified for colour map!");
+
+	int index = m_p_assets->find_colour_map(name);
+
+	if(index >= 0)
+	{
+		if(src.empty())
+			m_current_colourmap = index;
+		else
+			return on_error(line_number, "Colour map '" + name + "' already exists! Unable to load from file '" + src + "'!");
+	}
+	else
+	{
+		auto colour_map = load_colour_map(src, m_filesystem);
+		if(colour_map.empty())
+			return on_error(line_number,"Failed to load colour map file '" + src + "'!");
+		colour_map.name = name;
+		index = m_p_assets->add_colour_map(colour_map);
+		m_current_colourmap = index;
+	}
+
+	return 0;
+}
 
 } // namespace gap
 

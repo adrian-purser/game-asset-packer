@@ -41,7 +41,8 @@ private:
 	int																			m_current_source_image				= -1;
 	int 																		m_current_image_group					= 0;
 	int																			m_current_tileset							= -1;
-
+	int																			m_current_colourmap						= -1;
+	
 public:
 	ParserGAP(gap::FileSystem & filesystem);
 	~ParserGAP() = default;
@@ -56,6 +57,7 @@ private:
 	int									parse_line(std::string_view line,int line_number);
 	int									on_error(int line_number,const std::string & error_message) {std::cerr << "Line " << line_number << ": " << error_message << '\n';return -1;}
 	
+	int									command_colourmap(int line_number,const CommandLine & args);
 	int 								command_loadimage(int line_number,const CommandLine & args);
 	int 								command_imagegroup(int line_number,const CommandLine & args);
 	int 								command_image(int line_number,const CommandLine & args);

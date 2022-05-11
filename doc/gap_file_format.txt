@@ -22,6 +22,7 @@ Commands
 +-----------------+---------------------------------------------------------------------------------------------+
 | Command         |  Description                                                                                |
 +-----------------+---------------------------------------------------------------------------------------------+
+| COLOURMAP       | Load a colourmap or select an existing colourmap                                            |
 | EXPORT          | Export the data to a file in a specified format                                             |
 | IMAGE           | Add an image to the current image group.                                                    |
 | IMAGEARRAY      | Add a series of images from a 2 dimensional array within the source image.                  | 
@@ -32,7 +33,14 @@ Commands
 | TILESET         | Create an empty tileset or select an existing tileset.                                      |
 +-----------------+---------------------------------------------------------------------------------------------+
 
+COLOURMAP
+---------
 
+Load a colourmap or select an existing one.
+
+SRC                          The filename/path of the colourmap file that should be loaded.
+NAME                         The name of the colourmap. If the SRC is not provided then an existing colourmap 
+                             with this name will be selected.
 
 EXPORT
 ------
@@ -66,15 +74,26 @@ coordinates are specified, otherwise the whole source image is used.
 
 X                            X coordinate in pixels of the top left of the source region within the parent image
 Y                            Y coordinate in pixels of the top left of the source region within the parent image
-W or WIDTH                   Width of the image in pixels
-H or HEIGHT                  Height of the image in pixels
+W or WIDTH                   Width of the image source region in pixels. The output image width may differ if it is rotated or has empty regions removed.
+H or HEIGHT                  Height of the image source region in pixels. The output image height may differ if it is rotated or has empty regions removed.
 XO or XORIGIN                X Origin of the image in pixels. The image will be rendered with the origin placed at 
-                             the specified coordinate. Rotations will use this as the origin of rotation
+                             the specified coordinate. Rotations will use this as the origin of rotation. The final origin coordinate may differ after
+                             any rotations have been applied.
 YO or YORIGIN                Y Origin of the image in pixels. The image will be rendered with the origin placed at 
-                             the specified coordinate. Rotations will use this as the origin of rotation
-ANGLE ot ROTATE              Angle in degrees to rotate the image. The image will be rotated around the origin specified by XO,YO
+                             the specified coordinate. Rotations will use this as the origin of rotation. The final origin coordinate may differ after
+                             any rotations have been applied.
+ANGLE ot ROTATE              Angle in degrees to rotate the image. The image will be rotated around the origin specified by XO,YO. If COUNT and ANGLESTEP
+                             are specified then ANGLE will represent the inition rotation.
+ANGLESTEP *                  If COUNT is more than one, Add this value to the current rotation angle.
+SCALE *                      Scale the image by the specified amount.
+SCALESTE *                   If COUNT is more than one, Add this value to the current scale value.
+HFLIP *                      Horizontal flip. The origin will also be flipped.
+VFLIP *                      Vertical flip. The origin will also be flipped.
 PF or FORMAT                 Pixel format pf the output image. If not specified then the format of the source image will be used.
 NAME                         Name of the image so that it can be found by a search
+COUNT *                      Generate 'COUNT' output images. Each image may be rotated or scaled different if ANGLESTEP and/or SCALESTEP are specified.
+
+* = Not currently implemented
 
 
 IMAGEARRAY
@@ -105,20 +124,24 @@ IMAGEGROUP
 Images are placed into groups. This command selects the group that following images will be inserted into.  The BASE parameter 
 can be used to specify the index that the following images will start at in the group.
 
-IMAGEGROUP [,GROUP=<group-number>] [,BASE=<base>]
+IMAGEGROUP [,GROUP=<group-number>] [,NAME=<group name>] [,BASE=<base>] 
 
-GROUP	                       Group number
-BASE                         Base index for images added to the group
+GROUP	                       Group number. Defaults to 0
+NAME                         Group name. Can be used to search for the group.
+BASE                         Base index for images added to the group. Defaults to 0.
 
 
 LOADIMAGE
 ---------
 
-LOADIMAGE [,SRC=<filename>] [,FORMAT=<output pixel format>]
-
+LOADIMAGE [,SRC=<filename>] [,FORMAT=<output pixel format>] [,COLOURMAP=<colour map name>]
 
 SRC                          Filename of the image file
 FORMAT                       Desired output pixel format
+COLOURMAP                    Use this colour map instead of generating a new one or using the colour map from the source file.
+                             Colours will be mapped in the best way possible to the selected colourmap.
+
+NOTE: If the image format is palettized, a colourmap will be generated and made current.
 
 
 TILE

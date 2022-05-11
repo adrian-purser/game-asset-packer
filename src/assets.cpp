@@ -32,12 +32,15 @@ Assets::add_image(int group_index,gap::image::Image & image)
 		return -1;
 
 	auto & group = m_image_groups[group_index];
-	int index = group.current_index;
+//	int index = group.current_index;
 
-	if( std::cmp_greater_equal(group.current_index, group.images.size()))
-		group.images.resize(group.current_index+1);
+//	if( std::cmp_greater_equal(group.current_index, group.images.size()))
+//		group.images.resize(group.current_index+1);
 
-	group.images[group.current_index++] = image;
+//	group.images[group.current_index++] = image;
+
+	int index = group.images.size();
+	group.images.push_back(image);
 
 	return index;
 }
@@ -191,13 +194,13 @@ Assets::enumerate_images(std::function<bool (int group,int image_index,const gap
 }
 
 void
-Assets::enumerate_image_groups(std::function<bool(uint32_t group_number,uint16_t base)> callback) const
+Assets::enumerate_image_groups(std::function<bool(const std::string & name, uint32_t group_number,uint16_t base, uint16_t size)> callback) const
 {
 	int group_index = 0;
 	for(const auto & group : m_image_groups)
 	{
 		if(!group.images.empty())
-			if(!callback(group_index,group.base))
+			if(!callback(group.name,group_index,group.base, (uint16_t)group.images.size()))
 				return;
 		++group_index;
 	}	
@@ -224,6 +227,14 @@ Assets::enumerate_tilesets(std::function<bool(const gap::tileset::TileSet & tile
 {
 	for(auto & tileset : m_tilesets)
 		if(!callback(tileset))
+			break;
+}
+
+void
+Assets::enumerate_colourmaps(std::function<bool(const gap::assets::ColourMap &)> callback) const
+{
+	for(const auto & cmap : m_colour_maps)
+		if(!callback(cmap))
 			break;
 }
 
@@ -276,6 +287,26 @@ Assets::get_target_subimage(int index, int x, int y, int width, int height, uint
 
 }
 
+int
+Assets::source_image_width(int index) const
+{
+	if((index<0) || ( std::cmp_greater_equal(index, m_source_images.size()) ))
+		return 0;
+
+	return m_source_images[index]->width();		
+}
+
+int
+Assets::source_image_height(int index) const
+{
+	if((index<0) || ( std::cmp_greater_equal(index, m_source_images.size()) ))
+		return 0;
+
+	return m_source_images[index]->height();	
+}
+
+
+
 std::unique_ptr<gap::image::SourceImage>
 Assets::get_source_subimage(int index, int x, int y, int width, int height) const 
 {
@@ -286,6 +317,37 @@ Assets::get_source_subimage(int index, int x, int y, int width, int height) cons
 	}
 	
 	return m_source_images[index]->duplicate_subimage(x, y, width, height);
+}
+
+int
+Assets::find_colour_map(const std::string & name )
+{
+	int index = 0;
+	for(const auto & cmap : m_colour_maps)
+	{
+		if(cmap.name == name)
+			return index;
+		++index;
+	}
+	return -1;
+}
+
+const ColourMap *
+Assets::get_colour_map(int index)
+{
+	return (index < 0) || std::cmp_greater_equal(index,m_colour_maps.size()) ? nullptr : &m_colour_maps[index];
+}
+
+int
+Assets::add_colour_map(const ColourMap & cmap)
+{
+	if(find_colour_map(cmap.name) >= 0)
+		return -1;
+
+	int index = m_colour_maps.size();
+	m_colour_maps.push_back(cmap);
+	return index;
+
 }
 
 

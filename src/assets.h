@@ -27,13 +27,24 @@ struct FileInfo
 	uint32_t										type 					= 0;						// Allow file type override.
 };
 
+struct ColourMap
+{
+	std::string							source;
+	std::string							name;
+	std::vector<uint32_t>		colourmap;
+
+	bool		empty() const noexcept {return colourmap.empty();}
+
+};
+
 class Assets
 {
 private:
 	struct ImageGroup
 	{
+		std::string												name;
 		std::vector<gap::image::Image>		images;
-		int																current_index = 0;
+	//	int																current_index = 0;
 		uint16_t													base = 0;
 	};
 
@@ -42,6 +53,7 @@ private:
 	std::array<ImageGroup,m_max_image_groups>								m_image_groups;
 	std::vector<gap::tileset::TileSet>											m_tilesets;
 	std::vector<FileInfo>																		m_files;
+	std::vector<ColourMap>																	m_colour_maps;
 
 public:
 	Assets() = default;
@@ -61,12 +73,13 @@ public:
 	int										source_image_count() const noexcept			{return m_source_images.size();}
 	void									enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;
 	void									enumerate_images(std::function<bool (int group,int image_index,const gap::image::Image &)> callback) const;
-	void									enumerate_image_groups(std::function<bool(uint32_t group_number,uint16_t base)> callback) const;
+	void									enumerate_image_groups(std::function<bool(const std::string & name,uint32_t group_number,uint16_t base, uint16_t size)> callback) const;
 	void 									enumerate_group_images(int group_number,std::function<bool(int image_index,const gap::image::Image & image)> callback) const;
 	void									enumerate_tilesets(std::function<bool(const gap::tileset::TileSet & tileset)> callback) const;
 	void									enumerate_files(std::function<bool(const gap::assets::FileInfo & fileinfo)> callback) const;
-	
-	void 									set_group_base(int group,uint16_t base)		{if((group >= 0) && (group < m_max_image_groups)) m_image_groups[group].base = base;}
+	void									enumerate_colourmaps(std::function<bool(const gap::assets::ColourMap &)> callback) const;
+	void 									set_group_base(int group,uint16_t base)								{if((group >= 0) && (group < m_max_image_groups)) m_image_groups[group].base = base;}
+	void 									set_group_name(int group,const std::string & name)		{if((group >= 0) && (group < m_max_image_groups)) m_image_groups[group].name = name;}
 
 	void									dump();
 
@@ -74,8 +87,15 @@ public:
 	uint32_t 							get_target_line_stride(int index) const;
 	uint8_t 							get_target_pixelformat(int index) const;
 
+	int										source_image_width(int index) const;
+	int										source_image_height(int index) const;
+
 	std::vector<uint8_t>											get_target_subimage(int index, int x, int y, int width, int height, uint8_t pixel_format, bool big_endian) const;
 	std::unique_ptr<gap::image::SourceImage>	get_source_subimage(int index, int x, int y, int width, int height) const;
+
+	int										find_colour_map(const std::string & name );
+	const ColourMap *			get_colour_map(int index);
+	int										add_colour_map(const ColourMap & cmap);
 
 private:
 	gap::tileset::TileSet * 	get_tileset(int id);

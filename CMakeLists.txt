@@ -34,6 +34,7 @@ set(SOURCES
 	src/export.cpp
 	src/image.cpp
 	src/main.cpp
+	src/parse_colour_map.cpp
 	src/parse_gap.cpp
 )
 

@@ -79,6 +79,8 @@ CHUNK TYPES
 +------+----------------------------------------------------------------------+
 | ENDC | End Chunk. Signifies the end of the package                          |
 +------+----------------------------------------------------------------------+
+| CMAP | Colour Map - Used with indexed mode images                           |
++------+----------------------------------------------------------------------+
 | IMGD | Image Data                                                           |
 +------+----------------------------------------------------------------------+
 | SIMG | Source Images [optional] - Dimensions, Pixel Format, Data Offset ... |
@@ -87,8 +89,6 @@ CHUNK TYPES
 +------+----------------------------------------------------------------------+
 | IMAG | Images - Dimensions, Pixel Format, Data Offset ...                   |
 |      | Defines individual image frames used to draw sprites etc.            |
-+------+----------------------------------------------------------------------+
-| CMAP | Colour Map - Used with indexed mode images                           |
 +------+----------------------------------------------------------------------+
 | IGRP | Image Groups                                                         |
 +------+----------------------------------------------------------------------+
@@ -100,6 +100,28 @@ CHUNK TYPES
 +------+----------------------------------------------------------------------+
 |      |                                                                      |
 
+
+
+CMAP Chunk
+----------
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   C    |   M    |   A    |   P    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +===================================+    
+$08 |               NAME                |    Name of CMAP - 16 Bytes
+		:                 .                 :    Max. 15 Characters name plus
+		|                 .                 |    one zero termination byte.
+    +--------+--------+--------+--------+
+$18	|    B   |   G    |   R    |   A    |    1 or more palette entries 
+    +--------+--------------------------+
+    :                 .                 :
+		:                 .                 :
+		|                 .                 |
+    +-----------------------------------+
 
 
 SIMG Chunk
@@ -156,12 +178,16 @@ $00 |   I    |   G    |   R    |   P    |    FourCC defines chunk type - 4 Bytes
     +--------+--------+--------+--------+
 $04 |               SIZE                |    Chunk Size - 4 Bytes
     +========+========+=================+    Image Group - 8 bytes
-$08 |   Group Base    |    Reserved     |
+$08 |   Group Base    |   Group Size    |
     +-----------------+-----------------+
     |            Image Index            |
+		+-----------------------------------+
+$10 |               NAME                |    Name of group - 16 Bytes
+		:                 .                 :    Max. 15 Characters name plus at
+		|                 .                 |    least one zero termination byte.		
     +===================================+
-    :                 .                 :
-		:                 .                 :
+$20 :                 .                 :
+		:         More Image Groups         :
 		|                 .                 |
     +-----------------------------------+
 

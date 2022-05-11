@@ -133,8 +133,10 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 {
 	struct ImageGroup
 	{
-		uint16_t 	base		= 0;			// The value of the first image in the group.
-		uint32_t	index		= 0;			// The index of the first image in the group.
+		std::string	name;
+		uint16_t 		base		= 0;			// The id of the first image in the group.
+		uint16_t		size		= 0;
+		uint32_t		index		= 0;			// The image index of the first image in the group.
 	};
 
 	std::vector<IMAGChunkEntry>		images;
@@ -149,8 +151,8 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	uint32_t image_offset = 0;
 	
 	bool b_have_image_data = false;
-	assets.enumerate_image_groups( [&](uint32_t /*group_number*/,uint16_t /*base*/)->bool	{	b_have_image_data = true; return false; });
-	assets.enumerate_tilesets( [&](const gap::tileset::TileSet & tileset)->bool {	b_have_image_data = true; return false; });
+	assets.enumerate_image_groups( [&](const std::string & /*name*/ ,uint32_t /*group_number*/,uint16_t /*base*/, uint16_t /*size*/ )->bool	{	b_have_image_data = true; return false; });
+	assets.enumerate_tilesets( [&](const gap::tileset::TileSet & /*tileset*/)->bool {	b_have_image_data = true; return false; });
 
 	if(b_have_image_data)
 	{	
@@ -159,12 +161,14 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 		fourcc_append("IMGD",data);
 		fourcc_append("size",data);
 
-		assets.enumerate_image_groups([&](uint32_t group_number,uint16_t base)->bool
+		assets.enumerate_image_groups([&](const std::string & name,uint32_t group_number,uint16_t base, uint16_t size)->bool
 			{
 				std::cout << "  GROUP: " << group_number << " BASE: " << base << " INDEX: " << images.size() << '\n';
 
+				groups[group_number].name 	= name;
 				groups[group_number].index 	= images.size();
 				groups[group_number].base 	= base;
+				groups[group_number].size 	= size;
 
 				if(group_number > max_group)
 					max_group = group_number;
@@ -295,7 +299,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	fourcc_append("IGRP",data);
 	fourcc_append("size",data);
 
-	data.reserve(chunk_offset + (8 * (max_group+1)));
+	data.reserve(chunk_offset + (24 * (max_group+1)));
 
 	for(uint32_t i=0;i<=max_group;++i)
 	{
@@ -303,8 +307,11 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 		std::cout << "  GROUP: " << i << " BASE: " << group.base << " INDEX: " << group.index << '\n';
 		
 		endian_append(data,group.base,2,config.b_big_endian);
-		endian_append(data,0,2,config.b_big_endian);
+		endian_append(data,group.size,2,config.b_big_endian);
 		endian_append(data,group.index,4,config.b_big_endian);
+
+		for(size_t i=0;i<15;++i)	data.push_back( i<group.name.size() ? group.name[i] : 0 );
+			data.push_back(0);
 	}
 
 	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
@@ -336,6 +343,49 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 
 }
 
+
+//=============================================================================
+//
+//	COLOURMAP CHUNKS
+//
+//=============================================================================
+
+static
+int
+encode_colourmap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & assets,const gap::Configuration & config)
+{
+	std::cout << "Encoding CMAP Chunks...\n";
+
+	assets.enumerate_colourmaps([&](const gap::assets::ColourMap & cmap)->bool
+		{
+			auto chunk_offset = data.size();
+			fourcc_append("CMAP",data);
+			fourcc_append("size",data);
+
+			data.reserve(chunk_offset + 16 + (cmap.colourmap.size() * 4));
+
+			for(size_t i=0;i<15;++i)	data.push_back( i<cmap.name.size() ? cmap.name[i] : 0 );
+			data.push_back(0);
+
+			for(uint32_t colour : cmap.colourmap)
+			{
+				for(int i=0;i<4;++i,colour >>= 8)
+					data.push_back(colour & 0x0FF);	
+			}
+
+			endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+			return true;
+		});
+
+	return 0;
+}
+
+//=============================================================================
+//
+//	FILE CHUNKS
+//
+//=============================================================================
 
 struct FILEChunkEntry
 {
@@ -397,6 +447,7 @@ encode_gbin(std::string_view name, const gap::assets::Assets & assets,const gap:
 	encode_header(data,name,config);
 	//encode_image_chunks(data,assets,config);
 	encode_packed_image_chunks(data,assets,config);
+	errors += encode_colourmap_chunks(data,assets,config);
 	errors += encode_file_chunks(data,assets,config);
 
 	//---------------------------------------------------------------------------
