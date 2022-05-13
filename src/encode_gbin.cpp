@@ -367,6 +367,9 @@ encode_colourmap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Asse
 			for(size_t i=0;i<15;++i)	data.push_back( i<cmap.name.size() ? cmap.name[i] : 0 );
 			data.push_back(0);
 
+			endian_append(data,cmap.colourmap.size(),2,config.b_big_endian);
+			endian_append(data,0,2,config.b_big_endian);
+
 			for(uint32_t colour : cmap.colourmap)
 			{
 				for(int i=0;i<4;++i,colour >>= 8)

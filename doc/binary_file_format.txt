@@ -115,6 +115,8 @@ $04 |               SIZE                |    Chunk Size - 4 Bytes
 $08 |               NAME                |    Name of CMAP - 16 Bytes
 		:                 .                 :    Max. 15 Characters name plus
 		|                 .                 |    one zero termination byte.
+		+-----------------+-----------------+
+		|      SIZE       |    RESERVED     |
     +--------+--------+--------+--------+
 $18	|    B   |   G    |   R    |   A    |    1 or more palette entries 
     +--------+--------------------------+
