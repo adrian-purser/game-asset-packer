@@ -16,3 +16,6 @@
 [submodule "src/utility"]
 	path = src/utility
 	url = git@git.adrianpurser.co.uk:library/utility.git
+[submodule "src/modaudio"]
+	path = src/modaudio
+	url = git@git.adrianpurser.co.uk:library/modaudio.git
