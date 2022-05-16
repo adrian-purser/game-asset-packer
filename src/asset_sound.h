@@ -13,6 +13,7 @@
 
 #include <vector>
 #include <string>
+#include "modaudio/modular_audio.h"
 
 namespace gap::assets
 {
@@ -66,7 +67,9 @@ struct Sound
 namespace sound
 {
 
-int 		get_module_type( const std::string & name );
+modaudio::ModuleType 		get_module_type( const std::string & name );
+int											get_module_param_type(modaudio::ModuleType module, const std::string & param_name);
+int											get_module_input_type(modaudio::ModuleType module, const std::string & input_name);
 
 } // namespace sound
 
