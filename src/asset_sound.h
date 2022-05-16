@@ -70,6 +70,7 @@ namespace sound
 modaudio::ModuleType 		get_module_type( const std::string & name );
 int											get_module_param_type(modaudio::ModuleType module, const std::string & param_name);
 int											get_module_input_type(modaudio::ModuleType module, const std::string & input_name);
+int											get_module_output_type(modaudio::ModuleType module, const std::string & output_name);
 
 } // namespace sound
 

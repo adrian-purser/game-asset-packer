@@ -50,7 +50,6 @@ load_gimp_palette( const std::string & filename, gap::FileSystem & filesystem )
 	const auto data = filesystem.load(filename);
 
 	std::string line;
-	int line_number = 0;
 
 	auto parse_line = [](const std::string & line, gap::assets::ColourMap & cmap)
 		{

@@ -80,24 +80,35 @@ get_module_param_type(modaudio::ModuleType module, const std::string & param_nam
 				case HASH("FREQUENCY") :				return modaudio::ModuleOscillator::PARAM_CARRIER_FREQUENCY;
 				case HASH("CV2") :							return modaudio::ModuleOscillator::PARAM_CV2;
 			}
+			break;
 
 		case modaudio::ModuleType::OSCILLATOR_SINE :
 			switch(param)
 			{
 				case HASH("FREQUENCY") :				return modaudio::ModuleOscillatorSine::PARAM_CARRIER_FREQUENCY;
 			}
+			break;
 
 		case modaudio::ModuleType::OSCILLATOR_TRIANGLE :
 			switch(param)
 			{
 				case HASH("FREQUENCY") :				return modaudio::ModuleOscillatorTriangle::PARAM_CARRIER_FREQUENCY;
 			}
+			break;
 
 		case modaudio::ModuleType::SINGLE_POLE_LOW_PASS_FILTER :
 			switch(param)
 			{
 				case HASH("FILTER") :						return modaudio::ModuleSinglePoleLPF::PARAM_FILTER;
 			}
+			break;
+
+		case modaudio::ModuleType::INVALID :
+		case modaudio::ModuleType::CLOCKED_RANDOM :
+		case modaudio::ModuleType::CONSTANT :
+		case modaudio::ModuleType::MIXER2 :
+		case modaudio::ModuleType::WAVEFORM :
+			break;
 	}
 
 	return -1;
@@ -157,10 +168,69 @@ get_module_input_type(modaudio::ModuleType module, const std::string & input_nam
 				case HASH("IN") : 								return modaudio::ModuleSinglePoleLPF::INPUT_IN;
 			}
 			break;
+
+		case modaudio::ModuleType::INVALID :
+		case modaudio::ModuleType::OSCILLATOR_SINE :
+		case modaudio::ModuleType::OSCILLATOR_TRIANGLE :
+		case modaudio::ModuleType::CONSTANT :
+		case modaudio::ModuleType::CLOCKED_RANDOM :
+		case modaudio::ModuleType::WAVEFORM :
+			break;
 	}
 
 	return -1;
 }
 
+int
+get_module_output_type(modaudio::ModuleType module, const std::string & output_name)
+{
+	auto output = ade::hash::hash_ascii_string_as_lower(output_name.c_str());
+
+	switch(module)
+	{
+		//-------------------------------------------------------------------------
+		case modaudio::ModuleType::ENVELOPE_ADSR :
+		//-------------------------------------------------------------------------
+			switch(output)
+			{
+				case HASH("MAIN") : 						return modaudio::ModuleEnvelopeADSR::OUTPUT_MAIN;
+				case HASH("FINISHED") :					return modaudio::ModuleEnvelopeADSR::OUTPUT_FINISHED;
+			}
+			break;
+
+		//-------------------------------------------------------------------------
+		case modaudio::ModuleType::NOISE :
+		//-------------------------------------------------------------------------
+			switch(output)
+			{
+				case HASH("WHITE_NOISE") : 			return modaudio::ModuleNoise::OUTPUT_WHITE_NOISE;
+				case HASH("PINK_NOISE") : 			return modaudio::ModuleNoise::OUTPUT_PINK_NOISE;
+			}
+			break;
+
+		//-------------------------------------------------------------------------
+		case modaudio::ModuleType::OSCILLATOR :
+		//-------------------------------------------------------------------------
+			switch(output)
+			{
+				case HASH("SINE") : 						return modaudio::ModuleOscillator::OUTPUT_SINE;
+				case HASH("SQUARE") : 					return modaudio::ModuleOscillator::OUTPUT_SQUARE;
+				case HASH("SAWTOOTH") : 				return modaudio::ModuleOscillator::OUTPUT_SAWTOOTH;
+				case HASH("RAMP") : 						return modaudio::ModuleOscillator::OUTPUT_RAMP;
+				case HASH("TRIANGLE") : 				return modaudio::ModuleOscillator::OUTPUT_TRIANGLE;
+			}
+			break;
+
+		//-------------------------------------------------------------------------
+		default :
+		//-------------------------------------------------------------------------
+			switch(output)
+			{
+				case HASH("MAIN") : 						return 0; 
+			}
+			break;		
+	}
+	return -1;
+}
 
 } // namespace gap::assets::sound
