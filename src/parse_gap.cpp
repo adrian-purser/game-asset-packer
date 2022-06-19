@@ -14,6 +14,7 @@
 #include <string>
 #include <string_view>
 #include <algorithm>
+#include <fmt/format.h>
 #include "parse_gap.h"
 #include "parse_colour_map.h"
 #include "utility/hash.h"
@@ -302,10 +303,23 @@ ParserGAP::command_imagegroup(int /*line_number*/, const CommandLine & command)
 int 
 ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 {
+	//TODO: Add 'scale' parameters
+
 	gap::image::Image	image;
 
-	bool b_width 	= false;
-	bool b_height	= false;
+	bool 		b_width 						= false;
+	bool 		b_height						= false;
+	bool		b_have_angle				= false;
+	bool		b_have_angle_step		= false;
+	bool		b_have_angle_from		= false;
+	bool		b_have_angle_to			= false;
+
+	int 		count 							= 1;
+	float		angle_step					= 0.0f;
+	float		angle_from					= 0.0f;
+	float		angle_to						= 0.0f;
+
+
 
 	for(const auto & [key,value] : command.args)
 	{
@@ -322,17 +336,34 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 			case ade::hash::hash_ascii_string_as_lower("xorigin")	:	image.x_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("yo") 			:	
 			case ade::hash::hash_ascii_string_as_lower("yorigin")	:	image.y_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
+
 			case ade::hash::hash_ascii_string_as_lower("angle") 	:	
-			case ade::hash::hash_ascii_string_as_lower("rotate")	:	image.angle			= std::strtof(value.c_str(),nullptr); 	break;
+			case ade::hash::hash_ascii_string_as_lower("rotate")	:	image.angle			= std::strtof(value.c_str(),nullptr); b_have_angle = true;	break;
+
+			case ade::hash::hash_ascii_string_as_lower("angle-step") 	:	
+			case ade::hash::hash_ascii_string_as_lower("rotate-step")	:		angle_step 	= std::strtof(value.c_str(),nullptr); b_have_angle_step=true;	break;
+
+			case ade::hash::hash_ascii_string_as_lower("angle-from") 	:	
+			case ade::hash::hash_ascii_string_as_lower("rotate-from")	:		angle_from	= std::strtof(value.c_str(),nullptr); b_have_angle_from=true;	break;
+
+			case ade::hash::hash_ascii_string_as_lower("angle-to") 	:	
+			case ade::hash::hash_ascii_string_as_lower("rotate-to")	:			angle_to 		= std::strtof(value.c_str(),nullptr); b_have_angle_to=true;	break;
 
 			case ade::hash::hash_ascii_string_as_lower("pf") 			:	
 			case ade::hash::hash_ascii_string_as_lower("format")	:	image.pixel_format = gap::image::parse_pixelformat_name(value); break;
-			case ade::hash::hash_ascii_string_as_lower("name") 		:	image.name 		= value; break;
+			case ade::hash::hash_ascii_string_as_lower("name") 		:	image.name 			= value; break;
+
+			case ade::hash::hash_ascii_string_as_lower("count")		: count						=	std::strtol(value.c_str(),nullptr,10); 	break;
+
 			default : 
 				// TODO: Warning - unknown arg
 				break;
 		}
 	}
+
+	//---------------------------------------------------------------------------
+	//	VALIDATE AND UPDATE PARAMETERS
+	//---------------------------------------------------------------------------
 
 	if(!b_width && (image.width == 0))
 		image.width = m_p_assets->source_image_width(m_current_source_image) - image.x;
@@ -345,8 +376,35 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 	if(image.pixel_format == 0)
 		image.pixel_format = m_p_assets->get_target_pixelformat(m_current_source_image);
 		
-	if((image.width > 0) && (image.height > 0))
+	if((image.width <= 0) || (image.height <= 0))
+		return 0;
+	
+	if(!b_have_angle && b_have_angle_from)
+			image.angle = angle_from;
+
+	//---------------------------------------------------------------------------
+	//	CREATE IMAGE/S
+	//---------------------------------------------------------------------------
+	if(count == 1)
 		m_p_assets->add_image(m_current_image_group,image);
+	else
+	{
+		std::string name = image.name;
+
+		// Calculate angle step
+		if(b_have_angle_from && b_have_angle_to)
+		{
+			image.angle = angle_from;
+			angle_step	= (angle_to - angle_from) / (float)count;
+		}
+
+		for(int i=0;i<count;++i)
+		{
+			image.name = fmt::format("{}-{:03}",name,i);			
+			m_p_assets->add_image(m_current_image_group,image);
+			image.angle += angle_step;
+		}
+	}
 
 	return 0;
 }
