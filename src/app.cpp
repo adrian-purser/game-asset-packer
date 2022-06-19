@@ -28,10 +28,14 @@ Application::Application(const gap::Configuration & config)
 int
 Application::run()
 {
-
-	// Mount Packages
-	for(const auto & mp : m_config.mount_points)
-		m_filesystem.mount(mp.path,mp.mountpoint);
+	// Mount Packages. If there are no mount points then mount the current directory.
+	if(m_config.mount_points.empty())
+		m_filesystem.mount(".","/");
+	else
+	{
+		for(const auto & mp : m_config.mount_points)
+			m_filesystem.mount(mp.path,mp.mountpoint);
+	}
 
 	std::cout << "=============================================================================\n\n"; 
 
