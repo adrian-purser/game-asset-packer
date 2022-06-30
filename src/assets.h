@@ -49,7 +49,7 @@ private:
 		uint16_t													base = 0;
 	};
 
-	static const int 																				m_max_image_groups = 16;
+	static const int 																				m_max_image_groups = 256;
 	std::vector<std::unique_ptr<gap::image::SourceImage>>		m_source_images;
 	std::array<ImageGroup,m_max_image_groups>								m_image_groups;
 	std::vector<gap::tileset::TileSet>											m_tilesets;
