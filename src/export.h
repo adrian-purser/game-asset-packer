@@ -22,7 +22,8 @@ namespace gap::exporter
 enum
 {
 	TYPE_UNKNOWN,
-	TYPE_GBIN
+	TYPE_GBIN,
+	TYPE_DEFINITIONS
 };
 
 enum
@@ -31,7 +32,8 @@ enum
 	FORMAT_BINARY,
 	FORMAT_C_ARRAY,
 	FORMAT_CPP_VECTOR,
-	FORMAT_CPP_STDARRAY
+	FORMAT_CPP_STDARRAY,
+	FORMAT_C_HEADER
 };
 
 struct ExportInfo

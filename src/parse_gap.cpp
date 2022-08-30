@@ -400,7 +400,8 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 
 		for(int i=0;i<count;++i)
 		{
-			image.name = fmt::format("{}-{:03}",name,i);			
+			if(!name.empty())
+				image.name = fmt::format("{}-{:03}",name,i);			
 			m_p_assets->add_image(m_current_image_group,image);
 			image.angle += angle_step;
 		}
@@ -658,8 +659,9 @@ ParserGAP::command_export(int line_number, const CommandLine & command)
 					auto valhash = ade::hash::hash_ascii_string_as_lower(value.c_str(),value.size());
 					switch(valhash)
 					{
-						case ade::hash::hash_ascii_string_as_lower("gbin") :	exportinfo.type = gap::exporter::TYPE_GBIN; break;
-						default :																							return on_error(line_number,std::string("Unknown export type! - ") + value);
+						case ade::hash::hash_ascii_string_as_lower("gbin") :				exportinfo.type = gap::exporter::TYPE_GBIN; break;
+						case ade::hash::hash_ascii_string_as_lower("definitions") :	exportinfo.type = gap::exporter::TYPE_DEFINITIONS; break;
+						default :																										return on_error(line_number,std::string("Unknown export type! - ") + value);
 					}
 				}
 				break;
@@ -670,6 +672,7 @@ ParserGAP::command_export(int line_number, const CommandLine & command)
 					switch(valhash)
 					{
 						case ade::hash::hash_ascii_string_as_lower("binary") :				exportinfo.format = gap::exporter::FORMAT_BINARY; 			break;
+						case ade::hash::hash_ascii_string_as_lower("cheader") :				exportinfo.format = gap::exporter::FORMAT_C_HEADER; 		break;
 						case ade::hash::hash_ascii_string_as_lower("c_array") :				exportinfo.format = gap::exporter::FORMAT_C_ARRAY; 			break;
 						case ade::hash::hash_ascii_string_as_lower("cpp_vector") :		exportinfo.format = gap::exporter::FORMAT_CPP_VECTOR; 	break;
 						case ade::hash::hash_ascii_string_as_lower("cpp_stdarray") :	exportinfo.format = gap::exporter::FORMAT_CPP_STDARRAY; break;

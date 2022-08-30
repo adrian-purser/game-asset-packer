@@ -31,6 +31,7 @@ set(SOURCES
 	src/asset_sound.cpp
 	src/assets.cpp
 	src/configuration.cpp
+	src/encode_definitions.cpp
 	src/encode_gbin.cpp
 	src/export.cpp
 	src/image.cpp

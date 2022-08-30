@@ -82,7 +82,8 @@
 			"cfenv": "cpp",
 			"numbers": "cpp",
 			"semaphore": "cpp",
-			"typeindex": "cpp"
+			"typeindex": "cpp",
+			"span": "cpp"
 		}
 	}
 }
