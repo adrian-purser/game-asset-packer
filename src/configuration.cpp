@@ -26,6 +26,7 @@ parse_command_line(int argc,char ** argv,Configuration & out_config)
 	grp_general.add_option("help","Display help message");
 	grp_general.add_option("version","Display version information");
 	grp_general.add_option("mount,m","Mount Package","<Path>,<MountPoint>");
+	grp_general.add_option("output,o","Output Directory","<Path>");
 
 	program_options::Parser parser;
 	parser.add_group("",grp_general);
@@ -61,6 +62,9 @@ parse_command_line(int argc,char ** argv,Configuration & out_config)
 				out_config.mount_points.push_back({str.substr(0,pos),str.substr(pos+1)});
 		}
 	}
+
+	if(values.options.count("output"))
+		out_config.output_prefix = values.options["output"].back();
 
 	//-------------------------------------------------------------------------
 	//	Process the args.
