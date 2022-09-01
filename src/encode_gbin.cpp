@@ -199,7 +199,9 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 					auto imgdata = p_image->create_sub_target_data(0,0,imag.width,imag.height,image.pixel_format,config.b_big_endian);
 					//auto imgdata = assets.get_target_subimage(image.source_image,image.x,image.y,image.width,image.height,image.pixel_format,config.b_big_endian);
 
-					std::cout << "get_target_subimage(x:0,y:0,w:" << (int)imag.width << ",h:" << (int)imag.height << ",pf: " << image.pixel_format << ") = " << imgdata.size() << " bytes\n";
+					std::cout << "get_target_subimage(x:0,y:0,w:" << (int)imag.width << ",h:" << (int)imag.height 
+										<< ",pf: " << image.pixel_format << ") = " << imgdata.size() << " bytes"
+										<< " name:" << image.name << '\n';
 
 					data.insert(end(data),begin(imgdata),end(imgdata));
 					auto sz = (data.size() + 3) & ~3;
@@ -267,7 +269,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	//---------------------------------------------------------------------------
 	if(!images.empty())
 	{
-		std::cout << "Encoding Chunk IMAG\n";
+		std::cout << "Encoding Chunk IMAG: " << images.size() << " images\n";
 
 		chunk_offset = data.size();
 		fourcc_append("IMAG",data);
