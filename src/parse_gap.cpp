@@ -269,8 +269,8 @@ int
 ParserGAP::command_imagegroup(int /*line_number*/, const CommandLine & command)
 {
 
-	int 					group = -1;
-	int 					base = 0;
+	int 					group = m_current_image_group + 1;
+	int 					base 	= 0;
 	std::string		name;
 
 	for(const auto & [key,value] : command.args)
