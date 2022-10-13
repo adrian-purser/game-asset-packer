@@ -43,9 +43,10 @@ set(SOURCES
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC adefs adepng pthread fmt dl)
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC adeutility adefs adepng pthread fmt dl)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/adefs)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/adepng)
+add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/utility)
 
 install(TARGETS ${CMAKE_PROJECT_NAME} DESTINATION bin)
