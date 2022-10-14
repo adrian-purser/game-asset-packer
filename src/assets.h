@@ -14,7 +14,6 @@
 #include <vector>
 #include "image.h"
 #include "tileset.h"
-#include "asset_sound.h"
 
 namespace gap::assets
 {
@@ -55,7 +54,6 @@ private:
 	std::vector<gap::tileset::TileSet>											m_tilesets;
 	std::vector<FileInfo>																		m_files;
 	std::vector<ColourMap>																	m_colour_maps;
-	std::vector<Sound>																			m_sounds;
 
 
 public:
@@ -66,7 +64,6 @@ public:
 	int										add_source_image(std::unique_ptr<gap::image::SourceImage> p_image);
 	int										add_image(int group,gap::image::Image & image);
 	int										add_file(FileInfo && file);
-	int										add_sound(const gap::assets::Sound & sound);
 	
 	void									add_tileset(const gap::tileset::TileSet & tileset)	{m_tilesets.push_back(tileset);}
 	void									add_tile(int tileset, const gap::tileset::Tile & tile);
@@ -82,7 +79,6 @@ public:
 	void									enumerate_tilesets(std::function<bool(const gap::tileset::TileSet & tileset)> callback) const;
 	void									enumerate_files(std::function<bool(const gap::assets::FileInfo & fileinfo)> callback) const;
 	void									enumerate_colourmaps(std::function<bool(const gap::assets::ColourMap &)> callback) const;
-	void									enumerate_sounds(std::function<bool(const gap::assets::Sound & sound)> callback ) const;
 	void 									set_group_base(int group,uint16_t base)								{if((group >= 0) && (group < m_max_image_groups)) m_image_groups[group].base = base;}
 	void 									set_group_name(int group,const std::string & name)		{if((group >= 0) && (group < m_max_image_groups)) m_image_groups[group].name = name;}
 

@@ -329,6 +329,8 @@ struct Image
 	int								y_origin				= 0;
 	int								pixel_format		= 0;
 	float							angle						= 0.0f;
+	bool							b_hflip					= false;
+	bool							b_vflip					= false;
 };
 
 

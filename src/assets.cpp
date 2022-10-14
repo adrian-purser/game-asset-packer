@@ -52,14 +52,6 @@ Assets::add_file(FileInfo && file)
 	return 0;
 }
 
-int
-Assets::add_sound(const gap::assets::Sound & sound)
-{
-	int index = m_sounds.size();
-	m_sounds.push_back(sound);
-	return index;
-}
-
 void
 Assets::add_tile(int id, const gap::tileset::Tile & tile)
 {
@@ -244,15 +236,6 @@ Assets::enumerate_colourmaps(std::function<bool(const gap::assets::ColourMap &)>
 		if(!callback(cmap))
 			break;
 }
-
-void
-Assets::enumerate_sounds(std::function<bool(const gap::assets::Sound &)> callback ) const
-{
-	for(const auto & sound : m_sounds)
-		if(!callback(sound))
-			break;
-}
-
 
 void
 Assets::enumerate_files(std::function<bool(const gap::assets::FileInfo & fileinfo)> callback) const

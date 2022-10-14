@@ -326,34 +326,40 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
 		switch(hash)
 		{
-			case ade::hash::hash_ascii_string_as_lower("x") 			:	image.x 				= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("y") 			:	image.y 				= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("w") 			:	
-			case ade::hash::hash_ascii_string_as_lower("width") 	:	image.width			= std::strtol(value.c_str(),nullptr,10); 	b_width = true; break;
-			case ade::hash::hash_ascii_string_as_lower("h") 			:	
-			case ade::hash::hash_ascii_string_as_lower("height")	:	image.height		= std::strtol(value.c_str(),nullptr,10); 	b_height = true; break;
-			case ade::hash::hash_ascii_string_as_lower("xo") 			:	
-			case ade::hash::hash_ascii_string_as_lower("xorigin")	:	image.x_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("yo") 			:	
-			case ade::hash::hash_ascii_string_as_lower("yorigin")	:	image.y_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("x") 					:	image.x 				= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("y") 					:	image.y 				= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("w") 					:	
+			case ade::hash::hash_ascii_string_as_lower("width") 			:	image.width			= std::strtol(value.c_str(),nullptr,10); 	b_width = true; break;
+			case ade::hash::hash_ascii_string_as_lower("h") 					:	
+			case ade::hash::hash_ascii_string_as_lower("height")			:	image.height		= std::strtol(value.c_str(),nullptr,10); 	b_height = true; break;
+			case ade::hash::hash_ascii_string_as_lower("xo") 					:	
+			case ade::hash::hash_ascii_string_as_lower("xorigin")			:	image.x_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("yo") 					:	
+			case ade::hash::hash_ascii_string_as_lower("yorigin")			:	image.y_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
 
-			case ade::hash::hash_ascii_string_as_lower("angle") 	:	
-			case ade::hash::hash_ascii_string_as_lower("rotate")	:	image.angle			= std::strtof(value.c_str(),nullptr); b_have_angle = true;	break;
+			case ade::hash::hash_ascii_string_as_lower("hf") 					:	
+			case ade::hash::hash_ascii_string_as_lower("hflip")				:	image.b_hflip		= !!std::strtol(value.c_str(),nullptr,10);	break;
+
+			case ade::hash::hash_ascii_string_as_lower("vf") 					:	
+			case ade::hash::hash_ascii_string_as_lower("vflip")				:	image.b_vflip		= !!std::strtol(value.c_str(),nullptr,10);	break;
+
+			case ade::hash::hash_ascii_string_as_lower("angle") 			:	
+			case ade::hash::hash_ascii_string_as_lower("rotate")			:	image.angle			= std::strtof(value.c_str(),nullptr); b_have_angle = true;	break;
 
 			case ade::hash::hash_ascii_string_as_lower("angle-step") 	:	
-			case ade::hash::hash_ascii_string_as_lower("rotate-step")	:		angle_step 	= std::strtof(value.c_str(),nullptr); b_have_angle_step=true;	break;
+			case ade::hash::hash_ascii_string_as_lower("rotate-step")	:	angle_step 			= std::strtof(value.c_str(),nullptr); b_have_angle_step=true;	break;
 
 			case ade::hash::hash_ascii_string_as_lower("angle-from") 	:	
-			case ade::hash::hash_ascii_string_as_lower("rotate-from")	:		angle_from	= std::strtof(value.c_str(),nullptr); b_have_angle_from=true;	break;
+			case ade::hash::hash_ascii_string_as_lower("rotate-from")	:	angle_from			= std::strtof(value.c_str(),nullptr); b_have_angle_from=true;	break;
 
-			case ade::hash::hash_ascii_string_as_lower("angle-to") 	:	
-			case ade::hash::hash_ascii_string_as_lower("rotate-to")	:			angle_to 		= std::strtof(value.c_str(),nullptr); b_have_angle_to=true;	break;
+			case ade::hash::hash_ascii_string_as_lower("angle-to") 		:	
+			case ade::hash::hash_ascii_string_as_lower("rotate-to")		:	angle_to 				= std::strtof(value.c_str(),nullptr); b_have_angle_to=true;	break;
 
-			case ade::hash::hash_ascii_string_as_lower("pf") 			:	
-			case ade::hash::hash_ascii_string_as_lower("format")	:	image.pixel_format = gap::image::parse_pixelformat_name(value); break;
-			case ade::hash::hash_ascii_string_as_lower("name") 		:	image.name 			= value; break;
+			case ade::hash::hash_ascii_string_as_lower("pf") 					:	
+			case ade::hash::hash_ascii_string_as_lower("format")			:	image.pixel_format = gap::image::parse_pixelformat_name(value); break;
+			case ade::hash::hash_ascii_string_as_lower("name") 				:	image.name 			= value; break;
 
-			case ade::hash::hash_ascii_string_as_lower("count")		: count						=	std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("count")				: count						=	std::strtol(value.c_str(),nullptr,10); 	break;
 
 			default : 
 				// TODO: Warning - unknown arg
@@ -413,15 +419,18 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 int 
 ParserGAP::command_imagearray(int line_number, const CommandLine & command)
 {
-	int 		x 			= 0;
-	int 		y 			= 0;
-	int 		width 	= 0;
-	int 		height 	= 0;
-	int 		xcount 	= 0;
-	int 		ycount 	= 0;
-	int 		xorigin	= 0;
-	int 		yorigin	= 0;
-	uint8_t format 	= 0;
+	int 				x 			= 0;
+	int 				y 			= 0;
+	int 				width 	= 0;
+	int 				height 	= 0;
+	int 				xcount 	= 0;
+	int 				ycount 	= 0;
+	int 				xorigin	= 0;
+	int 				yorigin	= 0;
+	bool				hflip		= false;
+	bool				vflip		= false;
+	uint8_t 		format 	= 0;
+	std::string	name;
 
 	for(const auto & [key,value] : command.args)
 	{
@@ -444,6 +453,13 @@ ParserGAP::command_imagearray(int line_number, const CommandLine & command)
 			case ade::hash::hash_ascii_string_as_lower("yorigin")	:	yorigin		= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("pf") 			:	
 			case ade::hash::hash_ascii_string_as_lower("format")	:	format 		= gap::image::parse_pixelformat_name(value); break;
+			case ade::hash::hash_ascii_string_as_lower("hf") 			:	
+			case ade::hash::hash_ascii_string_as_lower("hmirror") :	
+			case ade::hash::hash_ascii_string_as_lower("hflip")		:	hflip			= !!std::strtol(value.c_str(),nullptr,10);	break;
+			case ade::hash::hash_ascii_string_as_lower("vf") 			:	
+			case ade::hash::hash_ascii_string_as_lower("vmirror") :	
+			case ade::hash::hash_ascii_string_as_lower("vflip")		:	vflip			= !!std::strtol(value.c_str(),nullptr,10);	break;
+			case ade::hash::hash_ascii_string_as_lower("name") 		:	name 			= value; break;
 			default : 
 				// TODO: Warning - unknown arg
 				break;
@@ -467,7 +483,11 @@ ParserGAP::command_imagearray(int line_number, const CommandLine & command)
 			image.width					= width;
 			image.height 				= height;
 			image.pixel_format	= format;
+			image.b_hflip				= hflip;
+			image.b_vflip				= vflip;
 			image.source_image	= m_current_source_image;
+			if(!name.empty())
+				image.name = name + '_' + std::to_string(xi) + '_' + std::to_string(yi);
 			m_p_assets->add_image(m_current_image_group,image);
 		}
 	}
