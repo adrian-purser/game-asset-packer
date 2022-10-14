@@ -310,7 +310,6 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 	bool 		b_width 						= false;
 	bool 		b_height						= false;
 	bool		b_have_angle				= false;
-	bool		b_have_angle_step		= false;
 	bool		b_have_angle_from		= false;
 	bool		b_have_angle_to			= false;
 
@@ -347,7 +346,7 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 			case ade::hash::hash_ascii_string_as_lower("rotate")			:	image.angle			= std::strtof(value.c_str(),nullptr); b_have_angle = true;	break;
 
 			case ade::hash::hash_ascii_string_as_lower("angle-step") 	:	
-			case ade::hash::hash_ascii_string_as_lower("rotate-step")	:	angle_step 			= std::strtof(value.c_str(),nullptr); b_have_angle_step=true;	break;
+			case ade::hash::hash_ascii_string_as_lower("rotate-step")	:	angle_step 			= std::strtof(value.c_str(),nullptr); break;
 
 			case ade::hash::hash_ascii_string_as_lower("angle-from") 	:	
 			case ade::hash::hash_ascii_string_as_lower("rotate-from")	:	angle_from			= std::strtof(value.c_str(),nullptr); b_have_angle_from=true;	break;

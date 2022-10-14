@@ -19,7 +19,8 @@ namespace gap
 std::vector<std::uint8_t>		
 encode_definitions(const gap::exporter::ExportInfo & exportinfo, const gap::assets::Assets & assets,const gap::Configuration & config)
 {
-
+	(void)config;
+	
 	if(exportinfo.format != gap::exporter::FORMAT_C_HEADER)
 		return {};
 
@@ -42,6 +43,9 @@ encode_definitions(const gap::exporter::ExportInfo & exportinfo, const gap::asse
 
 	assets.enumerate_image_groups([&](const std::string & name,uint32_t group_number,uint16_t base, uint16_t size)->bool
 		{
+			(void)base;
+			(void)size;
+
 			if(!name.empty())
 				groups[group_number] = name;
 			return true;
@@ -63,6 +67,9 @@ encode_definitions(const gap::exporter::ExportInfo & exportinfo, const gap::asse
 	//---------------------------------------------------------------------------
 	assets.enumerate_image_groups([&](const std::string & name,uint32_t group_number,uint16_t base, uint16_t size)->bool
 		{
+			(void)base;
+			(void)size;
+
 			std::map<uint32_t,std::string> images;
 			std::string group_name = name.empty() ? fmt::format("GROUP{}",group_number) : name;
 			std::transform(begin(group_name),end(group_name),begin(group_name),::toupper);
