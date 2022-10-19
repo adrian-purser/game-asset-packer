@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(	gap
 					LANGUAGES C CXX 
-					VERSION 0.0.2 )
+					VERSION 0.0.3 )
 
 configure_file(src/config.h.in src/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)
@@ -42,7 +42,7 @@ set(SOURCES
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC adeutility adefs adepng pthread fmt dl)
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC adefs adepng pthread fmt dl)
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/adefs)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/adepng)
