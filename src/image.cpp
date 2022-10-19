@@ -76,7 +76,7 @@ load(const std::string & filename,gap::FileSystem & filesystem)
 
 	
 	adepng::PNGDecode decode;
-	if(decode.decode2(file.data(),file.size(),4))
+	if(decode.decode(file.data(),file.size(),4))
 	{
 		std::cerr << "IMAGE: Failed to decode image!\n";
 		return nullptr;
