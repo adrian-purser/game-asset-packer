@@ -7,9 +7,6 @@
 [submodule "src/canvas2"]
 	path = src/canvas2
 	url = git@git.adrianpurser.co.uk:library/canvas2.git
-[submodule "src/window"]
-	path = src/window
-	url = git@git.adrianpurser.co.uk:library/window.git
 [submodule "src/utility"]
 	path = src/utility
 	url = git@git.adrianpurser.co.uk:library/utility.git
