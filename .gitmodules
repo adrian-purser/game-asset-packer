@@ -1,9 +1,0 @@
-[submodule "src/adefs"]
-	path = src/adefs
-	url = git@git.adrianpurser.co.uk:library/adefs.git
-[submodule "src/adepng"]
-	path = src/adepng
-	url = git@git.adrianpurser.co.uk:library/adepng.git
-[submodule "src/utility"]
-	path = src/utility
-	url = git@git.adrianpurser.co.uk:library/utility.git

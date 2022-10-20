@@ -11,7 +11,7 @@
 #include <iostream>
 #include <cmath>
 #include "image.h"
-#include "adepng/adepng.h"
+#include "adepng.h"
 
 namespace gap::image
 {

@@ -14,6 +14,21 @@ else()
 	add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+
+include(FetchContent)
+
+FetchContent_Declare(
+		adepng
+		GIT_REPOSITORY https://github.com/adrian-purser/adepng.git
+	)
+FetchContent_MakeAvailable(adepng)
+
+FetchContent_Declare(
+		adefs
+		GIT_REPOSITORY https://github.com/adrian-purser/adefs.git
+	)
+FetchContent_MakeAvailable(adefs)
+
 #set(CMAKE_C_COMPILER clang)
 #set(CMAKE_CXX_COMPILER clang++)
 
@@ -43,9 +58,5 @@ add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC adefs adepng pthread fmt dl)
-
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/adefs)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/adepng)
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/src/utility)
 
 install(TARGETS ${CMAKE_PROJECT_NAME} DESTINATION bin)
