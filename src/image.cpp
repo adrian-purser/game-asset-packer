@@ -346,13 +346,27 @@ SourceImage::rotate_270()
 void
 SourceImage::horizontal_flip()
 {
-
+	std::cout << "HORIZONTAL FLIP" << std::endl;
+	for(int y=0;y<m_height;++y)
+	{
+		const int i = y*m_width;
+		std::reverse(&m_source_data[i],&m_source_data[i+m_width]);
+	}
 }
 
 void
 SourceImage::vertical_flip()
 {
+	std::vector<uint32_t>		buffer;
+	buffer.reserve(m_source_data.size());
 
+	for(int y=0;y<m_height;++y)
+	{
+		std::copy( 	&m_source_data[y * m_width],
+								&m_source_data[(y+1) * m_width],
+								&buffer[((m_height-1) - y) * m_width]);
+	}
+	std::swap(m_source_data,buffer);
 }
 
 } // namespace gap::image
