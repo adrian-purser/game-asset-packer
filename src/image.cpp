@@ -346,7 +346,6 @@ SourceImage::rotate_270()
 void
 SourceImage::horizontal_flip()
 {
-	std::cout << "HORIZONTAL FLIP" << std::endl;
 	for(int y=0;y<m_height;++y)
 	{
 		const int i = y*m_width;
