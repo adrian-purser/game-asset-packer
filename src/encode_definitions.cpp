@@ -98,7 +98,21 @@ encode_definitions(const gap::exporter::ExportInfo & exportinfo, const gap::asse
 
 	definitions.append("} // namespace image\n\n");
 
-	definitions.append("\n}\n");
+	//---------------------------------------------------------------------------
+	//	TileSets
+	//---------------------------------------------------------------------------
+	definitions.append("namespace tileset\n{\n\nenum\n{\n");
+	assets.enumerate_tilesets([&](const gap::tileset::TileSet & tileset)->bool
+		{
+			std::string nam = tileset.name;
+			std::transform(begin(nam),end(nam),begin(nam),::toupper);
+			std::replace(begin(nam),end(nam),'-','_');
+			definitions.append(fmt::format("\t{:24} = {},\n",nam,tileset.id));
+			return true;
+		});
+	definitions.append("};\n\n} // namespace tileset\n\n");
+
+	definitions.append("} // namespace game\n\n");
 
 	std::vector<std::uint8_t> def;
 	def.assign(begin(definitions),end(definitions));
