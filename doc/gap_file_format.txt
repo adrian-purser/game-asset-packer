@@ -122,7 +122,8 @@ XC or XCOUNT                 The width of the image array measured in number of 
 YC or YCOUNT                 The height of the image array measured in number of images. This value multiplied by XC will determine 
                              the total number of images.
 PF or FORMAT                 Pixel format pf the output image. If not specified then the format of the source image will be used.
-
+HFLIP                        Horizontally flip each image. 0 = noflip, >0 = flip
+VFLIP                        Vertically flip each image. 0 = noflip, >0 = flip
 
 IMAGEGROUP
 ----------
