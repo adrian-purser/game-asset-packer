@@ -16,6 +16,23 @@
 namespace gap
 {
 
+static
+std::string
+generate_header_guard_name(const gap::exporter::ExportInfo & exportinfo)
+{
+	std::string name {"GUARD_"};
+
+	for(auto ch : exportinfo.name)
+		name.push_back(isalnum(ch) ? toupper(ch) : '_');
+
+	name.push_back('_');
+
+	for(auto ch : exportinfo.filename)
+		name.push_back(isalnum(ch) ? toupper(ch) : '_');
+
+	return name;
+}
+
 std::vector<std::uint8_t>		
 encode_definitions(const gap::exporter::ExportInfo & exportinfo, const gap::assets::Assets & assets,const gap::Configuration & config)
 {
@@ -25,6 +42,23 @@ encode_definitions(const gap::exporter::ExportInfo & exportinfo, const gap::asse
 		return {};
 
 	std::string	definitions;
+
+	//---------------------------------------------------------------------------
+	// Add Header Guard
+	//---------------------------------------------------------------------------
+	auto header_guard = generate_header_guard_name(exportinfo);
+
+	definitions.append("#ifndef ");
+	definitions.append(header_guard);
+	definitions.append("\n");
+
+	definitions.append("#define ");
+	definitions.append(header_guard);
+	definitions.append("\n\n");
+
+	//---------------------------------------------------------------------------
+	//	Main Namespace
+	//---------------------------------------------------------------------------
 
 	definitions.append("namespace ");
 	definitions.append(exportinfo.name);
@@ -113,6 +147,15 @@ encode_definitions(const gap::exporter::ExportInfo & exportinfo, const gap::asse
 	definitions.append("};\n\n} // namespace tileset\n\n");
 
 	definitions.append("} // namespace game\n\n");
+
+	//---------------------------------------------------------------------------
+	// Add Header Guard endif
+	//---------------------------------------------------------------------------
+	definitions.append("#endif // ! defined ");
+	definitions.append(header_guard);
+	definitions.append("\n");
+
+
 
 	std::vector<std::uint8_t> def;
 	def.assign(begin(definitions),end(definitions));
