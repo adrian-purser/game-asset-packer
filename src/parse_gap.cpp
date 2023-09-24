@@ -14,7 +14,7 @@
 #include <string>
 #include <string_view>
 #include <algorithm>
-#include <fmt/format.h>
+#include <format>
 #include "parse_gap.h"
 #include "parse_colour_map.h"
 #include "utility/hash.h"
@@ -23,6 +23,9 @@
 #define GAPCMD_IMAGE						"image"
 #define GAPCMD_IMAGEGROUP				"imagegroup"
 #define GAPCMD_IMAGEARRAY				"imagearray"
+#define GAPCMD_IMAGESEQUENCE		"imagesequence"
+#define GAPCMD_IMAGESEQ					"imageseq"
+#define GAPCMD_IMAGEFRAME				"imageframe"
 #define GAPCMD_TILESET					"tileset"
 #define GAPCMD_TILE							"tile"
 #define GAPCMD_TILEARRAY				"tilearray"
@@ -32,6 +35,7 @@
 
 using namespace std::literals::string_literals;
 
+#define HASH(s)	ade::hash::hash_ascii_string_as_lower(s)
 namespace gap
 {
 
@@ -195,16 +199,19 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 
 	switch(hash)
 	{
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_LOADIMAGE) :	result = command_loadimage(line_number,cmd); 		break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEGROUP) :	result = command_imagegroup(line_number,cmd); 	break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :			result = command_image(line_number,cmd); 				break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEARRAY) :	result = command_imagearray(line_number,cmd); 	break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILESET) :		result = command_tileset(line_number,cmd); 			break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILE) :				result = command_tile(line_number,cmd); 				break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILEARRAY) :	result = command_tilearray(line_number,cmd); 		break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_EXPORT) :			result = command_export(line_number,cmd); 			break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_FILE) :				result = command_file(line_number,cmd); 				break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_COLOURMAP) :	result = command_colourmap(line_number,cmd); 		break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_LOADIMAGE) :			result = command_loadimage(line_number,cmd); 			break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEGROUP) :			result = command_imagegroup(line_number,cmd);		 	break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :					result = command_image(line_number,cmd); 					break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEARRAY) :			result = command_imagearray(line_number,cmd); 		break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGESEQUENCE) :	[[fallthrough]];	
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGESEQ) :				result = command_imagesequence(line_number,cmd); 	break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEFRAME) :			result = command_imageframe(line_number,cmd); 		break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILESET) :				result = command_tileset(line_number,cmd); 				break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILE) :						result = command_tile(line_number,cmd); 					break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILEARRAY) :			result = command_tilearray(line_number,cmd); 			break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_EXPORT) :					result = command_export(line_number,cmd); 				break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_FILE) :						result = command_file(line_number,cmd); 					break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_COLOURMAP) :			result = command_colourmap(line_number,cmd); 			break;
 
 		default : 
 			std::cerr << "GAP: Unknown command '" << cmd.command << "'\n";
@@ -260,16 +267,15 @@ ParserGAP::command_loadimage(int line_number, const CommandLine & command)
 
 	m_current_source_image = m_p_assets->add_source_image(std::move(p_image));
 
-	std::cout << "  Image added into slot " << m_current_source_image << std::endl;
+//	std::cout << "  Image added into slot " << m_current_source_image << std::endl;
 	
 	return 0;
 }
 
 int 
-ParserGAP::command_imagegroup(int /*line_number*/, const CommandLine & command)
+ParserGAP::command_imagegroup(int line_number, const CommandLine & command)
 {
 
-	int 					group = m_current_image_group + 1;
 	int 					base 	= 0;
 	std::string		name;
 
@@ -279,24 +285,22 @@ ParserGAP::command_imagegroup(int /*line_number*/, const CommandLine & command)
 		
 		switch(hash)
 		{
-			case ade::hash::hash_ascii_string_as_lower("group") 	:	group	= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("base") 		:	base	= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("name") 		:	name	= value; 	break;
 
-			default : 
+			default :
 				// TODO: Warning - unknown arg
 				break;
 		}
 	}
 	
-	if(group >= 0)
-	{
-		m_current_image_group = group;
-		if(base > 0)
-			m_p_assets->set_group_base(group,base);
-		if(!name.empty())
-			m_p_assets->set_group_name(group,name);
-	}
+	if(name.empty())
+		return on_error(line_number, "Missing parameter 'name' in imagegroup!");
+
+	auto group = m_p_assets->add_image_group(name, base);
+	if(group < 0)
+		return on_error(line_number, std::format("Failed to add imagegroup '{}'!",name));
+
 	return 0;
 }
 
@@ -391,7 +395,7 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 	//	CREATE IMAGE/S
 	//---------------------------------------------------------------------------
 	if(count == 1)
-		m_p_assets->add_image(m_current_image_group,image);
+		m_p_assets->add_image(image);
 	else
 	{
 		std::string name = image.name;
@@ -406,8 +410,8 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 		for(int i=0;i<count;++i)
 		{
 			if(!name.empty())
-				image.name = fmt::format("{}-{:03}",name,i);			
-			m_p_assets->add_image(m_current_image_group,image);
+				image.name = std::format("{}-{:03}",name,i);			
+			m_p_assets->add_image(image);
 			image.angle += angle_step;
 		}
 	}
@@ -486,13 +490,92 @@ ParserGAP::command_imagearray(int line_number, const CommandLine & command)
 			image.b_vflip				= vflip;
 			image.source_image	= m_current_source_image;
 			if(!name.empty())
-				image.name = name + '_' + std::to_string(xi) + '_' + std::to_string(yi);
-			m_p_assets->add_image(m_current_image_group,image);
+				image.name = std::format("{}_{}_{}",name,xi,yi);
+			m_p_assets->add_image(image);
 		}
 	}
 
 	return 0;
 }
+
+int 
+ParserGAP::command_imagesequence(int line_number, const CommandLine & command)
+{
+	int					mode = gap::assets::ImageSequence::MODE_LOOP;
+	std::string	name;
+
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case HASH("name") 		:	name 			= value; break;
+			case HASH("mode") 		:	{
+																auto modehash = ade::hash::hash_ascii_string_as_lower(value.c_str(),value.size());
+																switch(modehash)
+																{
+																	case HASH("loop") : 	mode = gap::assets::ImageSequence::MODE_LOOP; break;
+																	case HASH("bounce") : mode = gap::assets::ImageSequence::MODE_BOUNCE; break;
+																	case HASH("once") : 	mode = gap::assets::ImageSequence::MODE_ONCE; break;
+																	// TODO(Ade): Warn about unknown mode type
+																}
+															}
+															break;
+			default : 
+				// TODO(Ade): Warning - unknown arg
+				break;
+		}
+	}
+
+	if(name.empty())
+		return on_error(line_number, "Missing parameter 'name' in image sequence!");
+
+	if(m_p_assets->add_image_sequence(name, mode) < 0)
+		return on_error(line_number, std::format("Failed to add image sequence '{}'!", name));
+
+	return 0;
+}
+
+int 
+ParserGAP::command_imageframe(int line_number, const CommandLine & command)
+{
+	std::string		group;
+	std::string		image;
+	int						time 	= 1;
+	int						x 		= 0;
+	int						y 		= 0;
+	int						count = 1;
+
+	for(const auto & [key,value] : command.args)
+	{
+		auto lcvalue = value;
+		std::transform(begin(lcvalue), end(lcvalue), begin(lcvalue), ::tolower);
+
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case HASH("group") 		:	group 	= value; break;
+			case HASH("image") 		:	image 	= value; break;
+			case HASH("time") 		: time 		= std::strtol(value.c_str(),nullptr,10); break;
+			case HASH("x") 				: x 			= std::strtol(value.c_str(),nullptr,10); break;
+			case HASH("y") 				: y 			= std::strtol(value.c_str(),nullptr,10); break;
+			case HASH("count") 		: count 	= lcvalue == "all" ? -1 : std::strtol(value.c_str(),nullptr,10); break;
+
+			default : 
+				// TODO(Ade): Warning - unknown arg
+				break;
+		}
+	}
+
+	if(count == 0)
+		return on_error(line_number, "Invalid 'count' in image frame!");
+
+	if(m_p_assets->add_image_frame( group, image, time, x, y, count) < 0)
+		return on_error(line_number, std::format("Failed to add image frame - {}", m_p_assets->get_last_error()));
+
+	return 0;
+}
+
 
 int 
 ParserGAP::command_tileset(int line_number, const CommandLine & command)

@@ -39,7 +39,7 @@ private:
 	std::vector<gap::exporter::ExportInfo>	m_export_info;
 
 	int																			m_current_source_image				= -1;
-	int 																		m_current_image_group					= 0;
+//	int 																		m_current_image_group					= 0;
 	int																			m_current_tileset							= -1;
 	int																			m_current_colourmap						= -1;
 	
@@ -62,6 +62,8 @@ private:
 	int 								command_imagegroup(int line_number,const CommandLine & args);
 	int 								command_image(int line_number,const CommandLine & args);
 	int 								command_imagearray(int line_number,const CommandLine & args);
+	int 								command_imagesequence(int line_number,const CommandLine & args);
+	int 								command_imageframe(int line_number,const CommandLine & args);
 	int 								command_export(int line_number,const CommandLine & args);
 	int 								command_file(int line_number,const CommandLine & args);
 	int 								command_tileset(int line_number,const CommandLine & args);

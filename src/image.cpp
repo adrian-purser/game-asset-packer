@@ -100,11 +100,12 @@ load(const std::string & filename,gap::FileSystem & filesystem)
 	p_image->set_source_pixelformat(pixelformat);
 	p_image->set_target_pixelformat(pixelformat);
 
+/*
 	std::cout << "LOADIMAGE: " << decode.width() << 'x' << decode.height() 
 						<< " components=" << decode.components() 
 						<< " source_pixelformat=" << gap::image::get_pixelformat_name(pixelformat)
 						<< std::endl;
-
+*/
 	return p_image;
 }
 

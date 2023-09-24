@@ -12,7 +12,7 @@
 #include <iostream>
 #include <string_view>
 #include <utility>
-#include <fmt/format.h>
+#include <format>
 
 #include "encode_gbin.h"
 
@@ -162,7 +162,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 
 		assets.enumerate_image_groups([&](const std::string & name,uint32_t group_number,uint16_t base, uint16_t size)->bool
 			{
-				std::cout << "  GROUP: " << group_number << " BASE: " << base << " INDEX: " << images.size() << '\n';
+//				std::cout << "  GROUP: " << group_number << " BASE: " << base << " INDEX: " << images.size() << '\n';
 
 				groups[group_number].name 	= name;
 				groups[group_number].index 	= images.size();
@@ -201,11 +201,11 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 					
 					auto imgdata = p_image->create_sub_target_data(0,0,imag.width,imag.height,image.pixel_format,config.b_big_endian);
 					//auto imgdata = assets.get_target_subimage(image.source_image,image.x,image.y,image.width,image.height,image.pixel_format,config.b_big_endian);
-
+/*
 					std::cout << "get_target_subimage(x:0,y:0,w:" << (int)imag.width << ",h:" << (int)imag.height 
 										<< ",pf: " << image.pixel_format << ") = " << imgdata.size() << " bytes"
 										<< " name:" << image.name << '\n';
-
+*/
 					data.insert(end(data),begin(imgdata),end(imgdata));
 					auto sz = (data.size() + 3) & ~3;
 					if(sz > data.size())
@@ -232,7 +232,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 			tset.id									= tileset.id;
 			tset.image_data_offset 	= image_offset;
 
-			std::cout << fmt::format("GBIN:TILESET: id={}, name={}, tilesize = {}x{}, {} tiles\n",tileset.id,tileset.name,tileset.tile_width,tileset.tile_height,tileset.tiles.size());
+			std::cout << std::format("GBIN:TILESET: id={}, name={}, tilesize = {}x{}, {} tiles\n",tileset.id,tileset.name,tileset.tile_width,tileset.tile_height,tileset.tiles.size());
 
 			tilesets.push_back(tset);
 
@@ -253,7 +253,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 				auto imgdata = p_image->create_sub_target_data(0,0,tileset.tile_width,tileset.tile_height,tileset.pixel_format,config.b_big_endian);
 
 	//					auto imgdata = assets.get_target_subimage(tile.source_image,tile.x,tile.y,tileset.tile_width,tileset.tile_height,tileset.pixel_format,config.b_big_endian);
-	//			std::cout << fmt::format("  TILE: x:{} y:{} dim:{}x{}, datasize:{}\n",tile.x,tile.y,p_image->width(),p_image->height(),imgdata.size());
+	//			std::cout << std::format("  TILE: x:{} y:{} dim:{}x{}, datasize:{}\n",tile.x,tile.y,p_image->width(),p_image->height(),imgdata.size());
 				data.insert(end(data),begin(imgdata),end(imgdata));
 			}
 			
@@ -311,7 +311,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	for(uint32_t i=0;i<=max_group;++i)
 	{
 		const auto & group = groups[i];
-		std::cout << "  GROUP: " << i << " BASE: " << group.base << " INDEX: " << group.index << '\n';
+//		std::cout << "  GROUP: " << i << " BASE: " << group.base << " INDEX: " << group.index << '\n';
 		
 		endian_append(data,group.base,2,config.b_big_endian);
 		endian_append(data,group.size,2,config.b_big_endian);
@@ -322,6 +322,39 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	}
 
 	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+	//---------------------------------------------------------------------------
+	//	Image Seqnence [ISEQ]
+	//---------------------------------------------------------------------------
+	std::cout << "Encoding Chunks ISEQ\n";
+
+	assets.enumerate_image_sequences([&](uint32_t id, const gap::assets::ImageSequence & imgseq)->bool
+		{
+			std::cout << std::format("  ISEQ: {:3} : {}\n", id, imgseq.name);
+
+			chunk_offset = data.size();
+			data.reserve(chunk_offset + 4 + (8 * imgseq.frames.size()));
+
+			fourcc_append("ISEQ",data);
+			fourcc_append("size",data);
+
+			data.push_back((uint8_t)imgseq.mode);
+			data.push_back(0); // reserved
+			endian_append(data, imgseq.frames.size(), 2, config.b_big_endian);
+
+			for(const auto & frame : imgseq.frames)
+			{
+				endian_append(data, frame.group, 2, config.b_big_endian);
+				endian_append(data, frame.image, 2, config.b_big_endian);
+				data.push_back(frame.time);
+				data.push_back(frame.x);
+				data.push_back(frame.y);
+				data.push_back(0);
+			}
+
+			endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+			return true;
+		});
 
 	//---------------------------------------------------------------------------
 	//	Tilesets [TSET]

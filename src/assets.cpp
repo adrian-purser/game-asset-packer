@@ -10,6 +10,7 @@
 //=============================================================================
 #include <iostream>
 #include <utility>
+#include <format>
 #include "assets.h"
 #include "utility/format.h"
 
@@ -26,24 +27,123 @@ Assets::add_source_image(std::unique_ptr<gap::image::SourceImage> p_image)
 }
 
 int
-Assets::add_image(int group_index,gap::image::Image & image)
+Assets::add_image_group( std::string_view name, int base)
 {
-	if((group_index < 0) || (group_index >= m_max_image_groups))
+	if(image_group_exists(name))
 		return -1;
 
-	auto & group = m_image_groups[group_index];
-//	int index = group.current_index;
+	int index = m_image_groups.size();
 
-//	if( std::cmp_greater_equal(group.current_index, group.images.size()))
-//		group.images.resize(group.current_index+1);
+//	m_image_groups.emplace_back(name,base);
+	m_image_groups.emplace_back( ImageGroup {.name=std::string(name), .base = static_cast<uint16_t>(base), .images = {}} );
 
-//	group.images[group.current_index++] = image;
+	return index; 
+}
 
+int
+Assets::add_image(gap::image::Image & image)
+{
+	if(m_image_groups.empty())
+		return -1;
+
+	auto & group = m_image_groups.back();
 	int index = group.images.size();
 	group.images.push_back(image);
 
 	return index;
 }
+
+int
+Assets::add_image_sequence( std::string_view name, int mode )
+{
+	if(find_image_sequence( name ) >= 0)
+		return -1;
+
+	int index = m_image_sequences.size();
+	ImageSequence seq;
+	seq.name = name;
+	seq.mode = mode;
+	m_image_sequences.emplace_back(seq);
+	return index;
+}
+
+int
+Assets::add_image_frame( std::string_view group_name, std::string_view image_name, int time, int x, int y, int count)
+{
+	if(m_image_sequences.empty())
+		return set_error( "Image Sequence does not exist!" );
+
+	//---------------------------------------------------------------------------
+	// Validate parameters
+	//---------------------------------------------------------------------------
+
+	if((time < 0) || (time > 255))
+		return set_error( std::format("'time' value {} is out of ramge (0-255)!",time) );
+
+	if((x < -128) || (x > 127))
+		return set_error( std::format("'x' value {} is out of ramge!",x) );
+
+	if((y < -128) || (y > 127))
+		return set_error( std::format("'y' value {} is out of ramge!",y) );
+
+	auto & imgseq = m_image_sequences.back();
+
+	//---------------------------------------------------------------------------
+	// Get group 
+	//---------------------------------------------------------------------------
+	int group_num = current_group();
+	if(!group_name.empty()) 
+		group_num = find_group(group_name);
+
+	if(group_num < 0)
+		return set_error( group_name.empty() ? "Group not available!" : std::format("Unknown group '{}'!",group_name) );
+
+	const auto & group = m_image_groups[group_num];
+
+	if(group.images.empty())
+		return set_error( std::format("Group '{}' does not contain any images!",group.name) );
+
+	//---------------------------------------------------------------------------
+	// if count < 0 then add all images in the group 
+	//---------------------------------------------------------------------------
+	if(count < 0)
+	{
+		const int size = group.images.size();
+		for(int i=0;i<size;++i)
+
+		imgseq.frames.push_back({	.group 	= group_num,
+															.image	= i,
+															.time		= (uint8_t) time,
+															.x			= (int8_t) x,
+															.y			= (int8_t) y
+														});
+	}
+
+	//---------------------------------------------------------------------------
+	// Get image
+	//---------------------------------------------------------------------------
+	int image_num = -1;
+	
+	if(!image_name.empty())
+	{
+		image_num = find_image(group_num, image_name);
+		if(image_num < 0)
+			return set_error( std::format("Image '{}' not found in group '{}'!",image_name,group.name) );
+	}
+
+	//---------------------------------------------------------------------------
+	// Add the image frame
+	//---------------------------------------------------------------------------
+	imgseq.frames.push_back({	.group 	= group_num,
+														.image	= image_num,
+														.time		= (uint8_t) time,
+														.x			= (int8_t) x,
+														.y			= (int8_t) y
+													});
+
+	return 0;
+}
+
 
 int
 Assets::add_file(FileInfo && file)
@@ -67,6 +167,48 @@ Assets::get_tileset(int id)
 			return &ts;
 	return nullptr;
 }
+
+int
+Assets::find_group( std::string_view name )
+{
+	const int size = m_image_groups.size();
+
+	for(int i=0; i<size; ++i)
+		if(m_image_groups[i].name == name)
+			return i;
+
+	return -1;
+}
+
+int
+Assets::find_image(int group_num, std::string_view image_name)
+{
+	if((group_num < 0) || std::cmp_greater_equal(group_num,m_image_groups.size()))
+		return -1;
+
+	const auto & group = m_image_groups[group_num];
+	int size = group.images.size();
+
+	for(int i=0;i<size;++i)
+		if(group.images[i].name == image_name)
+			return i;
+
+	return -1;
+}
+
+int
+Assets::find_image_sequence( std::string_view name )
+{
+	const int size = m_image_sequences.size();
+
+	for(int i=0; i<size; ++i)
+		if(m_image_sequences[i].name == name)
+			return i;
+
+	return -1;
+}
+
+
 
 void
 Assets::dump()
@@ -208,7 +350,7 @@ Assets::enumerate_image_groups(std::function<bool(const std::string & name, uint
 void
 Assets::enumerate_group_images(int group_number,std::function<bool(int image_index,const gap::image::Image & image)> callback) const
 {
-	std::cout << "Enumerating group images: group = " << group_number << '\n';
+//	std::cout << "Enumerating group images: group = " << group_number << '\n';
 
 	if((group_number>=0) && ( std::cmp_less(group_number, m_image_groups.size())))
 	{
@@ -220,6 +362,16 @@ Assets::enumerate_group_images(int group_number,std::function<bool(int image_ind
 				return;
 	}
 }
+
+void
+Assets::enumerate_image_sequences(std::function<bool(uint32_t sequence_number, const gap::assets::ImageSequence &)> callback) const
+{
+	const uint32_t size = m_image_sequences.size();
+	for(uint32_t i=0; i<size;++i)
+		if(!callback(i,m_image_sequences[i]))
+			break;
+}
+
 
 void
 Assets::enumerate_tilesets(std::function<bool(const gap::tileset::TileSet & tileset)> callback) const

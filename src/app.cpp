@@ -61,7 +61,7 @@ Application::run()
 		return -1;
 
 //	std::cout << source << std::endl;
-	p_assets->dump();
+//	p_assets->dump();
 
 	parser.enumerate_exports([&](const auto & exportinfo)->bool
 		{

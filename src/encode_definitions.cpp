@@ -10,7 +10,8 @@
 //=============================================================================
 #include <map>
 #include <cstdint>
-#include <fmt/format.h>
+#include <format>
+#include <iostream>
 #include "encode_definitions.h"
 
 namespace gap
@@ -91,7 +92,7 @@ encode_definitions(const gap::exporter::ExportInfo & exportinfo, const gap::asse
 		for(auto [num,nam] : groups)
 		{
 			std::transform(begin(nam),end(nam),begin(nam),::toupper);
-			definitions.append(fmt::format("\t{:24} = {},\n",nam,num));
+			definitions.append(std::format("\t{:24} = {},\n",nam,num));
 		}
 		definitions.append("};\n} // namespace group\n\n");
 	}
@@ -105,7 +106,7 @@ encode_definitions(const gap::exporter::ExportInfo & exportinfo, const gap::asse
 			(void)size;
 
 			std::map<uint32_t,std::string> images;
-			std::string group_name = name.empty() ? fmt::format("GROUP{}",group_number) : name;
+			std::string group_name = name.empty() ? std::format("GROUP{}",group_number) : name;
 			std::transform(begin(group_name),end(group_name),begin(group_name),::toupper);
 
 			assets.enumerate_group_images(group_number,[&](int image_index,const gap::image::Image & image)->bool
@@ -117,18 +118,44 @@ encode_definitions(const gap::exporter::ExportInfo & exportinfo, const gap::asse
 
 			if(!images.empty())
 			{
-				definitions.append(fmt::format("// GROUP: {}\n\n",group_name));
+				definitions.append(std::format("// GROUP: {}\n\n",group_name));
 				definitions.append("enum\n{\n");
 				for(auto [num,nam] : images)
 				{
 					std::transform(begin(nam),end(nam),begin(nam),::toupper);
-					definitions.append(fmt::format("\t{:24} = {},\n",nam,num));
+					definitions.append(std::format("\t{:24} = {},\n",nam,num));
 				}
 				definitions.append("};\n\n");
 			}
 			return true;
 		});
 
+	//---------------------------------------------------------------------------
+	//	Image Sequences
+	//---------------------------------------------------------------------------
+	{
+		std::cout << "Enumerating Sequences...\n";
+		std::map<uint32_t,std::string>	sequences;
+
+		assets.enumerate_image_sequences( [&](uint32_t sequence_number, const gap::assets::ImageSequence & imgseq)->bool
+			{	
+				std::cout << "  SEQ: " << imgseq.name << " = " << sequence_number << '\n';
+				sequences[sequence_number] = imgseq.name;	
+				return true;
+			});
+
+		if(!sequences.empty())
+		{
+			definitions.append("namespace sequence\n{\nenum\n{\n");
+
+			for(auto & [num,name] : sequences)
+			{
+				std::transform(begin(name),end(name),begin(name),::toupper);
+				definitions.append(std::format("\t{:24} = {},\n",name,num));
+			}
+			definitions.append("};\n} // namespace sequence\n\n");
+		}
+	}
 
 	definitions.append("} // namespace image\n\n");
 
@@ -141,7 +168,7 @@ encode_definitions(const gap::exporter::ExportInfo & exportinfo, const gap::asse
 			std::string nam = tileset.name;
 			std::transform(begin(nam),end(nam),begin(nam),::toupper);
 			std::replace(begin(nam),end(nam),'-','_');
-			definitions.append(fmt::format("\t{:24} = {},\n",nam,tileset.id));
+			definitions.append(std::format("\t{:24} = {},\n",nam,tileset.id));
 			return true;
 		});
 	definitions.append("};\n\n} // namespace tileset\n\n");

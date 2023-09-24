@@ -37,24 +37,48 @@ struct ColourMap
 
 };
 
+struct ImageFrame
+{
+	int											group	= -1;
+	int											image	= -1;
+	uint8_t									time 	= 1;
+	int8_t									x 		= 0;
+	int8_t									y 		= 0;
+};
+
+
+struct ImageSequence
+{
+	enum {MODE_ONCE, MODE_LOOP, MODE_BOUNCE};
+
+	std::string								name;
+	int												mode = MODE_LOOP;
+
+	std::vector<ImageFrame>		frames;
+};
+
+
 class Assets
 {
 private:
 	struct ImageGroup
 	{
 		std::string												name;
-		std::vector<gap::image::Image>		images;
 	//	int																current_index = 0;
 		uint16_t													base = 0;
+		std::vector<gap::image::Image>		images;
+
+//		ImageGroup( std::string_view _name, uint16_t _base = 0) : name(_name), base(_base) {}
 	};
 
-	static const int 																				m_max_image_groups = 256;
 	std::vector<std::unique_ptr<gap::image::SourceImage>>		m_source_images;
-	std::array<ImageGroup,m_max_image_groups>								m_image_groups;
+	std::vector<ImageGroup>																	m_image_groups;
 	std::vector<gap::tileset::TileSet>											m_tilesets;
 	std::vector<FileInfo>																		m_files;
 	std::vector<ColourMap>																	m_colour_maps;
+	std::vector<ImageSequence>															m_image_sequences;
 
+	std::string 																						m_last_error;
 
 public:
 	Assets() = default;
@@ -62,11 +86,16 @@ public:
 	Assets & operator=(const Assets &) = delete;
 
 	int										add_source_image(std::unique_ptr<gap::image::SourceImage> p_image);
-	int										add_image(int group,gap::image::Image & image);
+	int										add_image(gap::image::Image & image);
+	int										add_image_sequence( std::string_view name, int mode );
+	int										add_image_frame( std::string_view group, std::string_view image, int time, int x=0, int y=0, int count=1);
+	int										add_image_group( std::string_view name, int base = 0 );
 	int										add_file(FileInfo && file);
-	
 	void									add_tileset(const gap::tileset::TileSet & tileset)	{m_tilesets.push_back(tileset);}
 	void									add_tile(int tileset, const gap::tileset::Tile & tile);
+
+	bool 									image_group_exists(std::string_view name)	{return !(find_group(name) < 0);}
+
 	uint32_t 							tileset_width(int id)		{	if(auto p_tileset = get_tileset(id))	return p_tileset->tile_width; return 0; }
 	uint32_t 							tileset_height(int id)	{	if(auto p_tileset = get_tileset(id))	return p_tileset->tile_width; return 0; }
 
@@ -75,13 +104,12 @@ public:
 	void									enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;
 	void									enumerate_images(std::function<bool (int group,int image_index,const gap::image::Image &)> callback) const;
 	void									enumerate_image_groups(std::function<bool(const std::string & name,uint32_t group_number,uint16_t base, uint16_t size)> callback) const;
+	void									enumerate_image_sequences(std::function<bool(uint32_t sequence_number, const gap::assets::ImageSequence &)> callback) const;
 	void 									enumerate_group_images(int group_number,std::function<bool(int image_index,const gap::image::Image & image)> callback) const;
 	void									enumerate_tilesets(std::function<bool(const gap::tileset::TileSet & tileset)> callback) const;
 	void									enumerate_files(std::function<bool(const gap::assets::FileInfo & fileinfo)> callback) const;
 	void									enumerate_colourmaps(std::function<bool(const gap::assets::ColourMap &)> callback) const;
-	void 									set_group_base(int group,uint16_t base)								{if((group >= 0) && (group < m_max_image_groups)) m_image_groups[group].base = base;}
-	void 									set_group_name(int group,const std::string & name)		{if((group >= 0) && (group < m_max_image_groups)) m_image_groups[group].name = name;}
-
+	
 	void									dump();
 
 	uint32_t 							get_target_image_offset(int index, int x,int y) const;
@@ -98,8 +126,15 @@ public:
 	const ColourMap *			get_colour_map(int index);
 	int										add_colour_map(const ColourMap & cmap);
 
+	const std::string &		get_last_error() const noexcept		{return m_last_error;}
+
 private:
 	gap::tileset::TileSet * 	get_tileset(int id);
+	int												current_group() const noexcept {return m_image_groups.size()-1;}
+	int												find_group( std::string_view name );
+	int												find_image(int group, std::string_view image_name);
+	int												find_image_sequence( std::string_view name );
+	int												set_error(std::string_view error_msg)		{m_last_error = error_msg; return -1;}
 
 };
 

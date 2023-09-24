@@ -27,6 +27,8 @@ Commands
 | IMAGE           | Add an image to the current image group.                                                    |
 | IMAGEARRAY      | Add a series of images from a 2 dimensional array within the source image.                  | 
 | IMAGEGROUP      | Set the active image group. Following images will be added to this group.                   |
+| IMAGESEQUENCE   | Create an image sequence. Following 'frames' will be appended to this sequence.             |
+| IMAGEFRAME      | Add an image frame to the current image sequence.                                           | 
 | LOADIMAGE       | Load a source image. Following image related commands will use this as source.              |
 | TILE            | Add a tile to the current tileset                                                           |
 | TILEARRAY       | Add a series of tiles from a 2 dimensional array of images from the source image.           |
@@ -97,7 +99,7 @@ HFLIP *                      Horizontal flip. The origin will also be flipped.
 VFLIP *                      Vertical flip. The origin will also be flipped.
 PF or FORMAT                 Pixel format pf the output image. If not specified then the format of the source image will be used.
 NAME                         Name of the image so that it can be found by a search
-COUNT *                      Generate 'COUNT' output images. Each image may be rotated or scaled different if ANGLESTEP and/or SCALESTEP are specified.
+COUNT *                      Generate 'COUNT' output images. Each image may be rotated or scaled differently if ANGLESTEP and/or SCALESTEP are specified.
 
 * = Not currently implemented
 
@@ -131,11 +133,37 @@ IMAGEGROUP
 Images are placed into groups. This command selects the group that following images will be inserted into.  The BASE parameter 
 can be used to specify the index that the following images will start at in the group.
 
-IMAGEGROUP [,GROUP=<group-number>] [,NAME=<group name>] [,BASE=<base>] 
+IMAGEGROUP [,NAME=<group name>] [,BASE=<base>] 
 
-GROUP	                       Group number. Defaults to 0
 NAME                         Group name. Can be used to search for the group.
 BASE                         Base index for images added to the group. Defaults to 0.
+
+
+IMAGESEQUENCE 
+-------------
+
+(May be abbreviated to IMAGESEQ)
+
+Create an image sequence. The sequence will be created empty until image frames are added with the IMAGEFRAME command.
+
+IMAGESEQUENCE ,NAME=<sequence-name> [,MODE=<mode>]
+
+NAME                         Sequence name. Used to reference the sequence.
+MODE                         Sequence mode specifies any repeats of the sequence. e.g., LOOP, BOUNCE, ONCE
+
+IMAGEFRAME
+----------
+
+Create an image frame and append it to the current image sequence.
+
+IMAGEFRAME [,GROUP=<group-name | group-number>] [,IMAGE=<image-name | image-number>] [,TIME=<time-in-frames>] [,X=<value>] [,Y=<value>] [,COUNT=<value>]
+
+GROUP                        Group name or number. If omitted, the current active group will be used.
+IMAGE                        Image name or number. If omitted, the frame will reference the entire group.
+TIME    [1 to 255]           The time in frames that the frame should be shown for before advancing to the next frame.
+X       [-128 to 127]        An offset that can be applied to the X position of the sprite. Default value is 0.
+Y       [-128 to 127]        An offset that can be applied to the Y position of the sprite. Default value is 0.
+COUNT                        Number of frames to create. The image number will be incremented by one for each frame added.
 
 
 LOADIMAGE

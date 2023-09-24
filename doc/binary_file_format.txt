@@ -194,6 +194,39 @@ $20 :                 .                 :
     +-----------------------------------+
 
 
+
+ISEQ Chunk - Image Sequence
+---------------------------
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   I    |   S    |   E    |   Q    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +========+========+=================+
+$08 |  MODE  |        |   FRAME_COUNT   |
+    +========+========+=================+
+    |      GROUP      |      IMAGE      |    Image Frame
+    +--------+--------+--------+--------+
+    |  TIME  |    X   |    Y   |        |
+    +========+========+========+========+
+    :                 .                 :
+    :                 .                 :
+    |                 .                 |
+    +-----------------------------------+
+
+MODE        - uint8_t  - Sequence Mode, e.g. LOOP, ONCE, BOUNCE
+FRAME_COUNT - uint16_t - Number of frames in sequence.
+
+GROUP       - uint16_t - Group ID
+IMAGE       - int16_t  - Image ID, -1 for application specific use of group. 
+TIME        - uint8_t  - Frame time measured in number of video frames.
+X           - int8_t   - X offset of image.
+Y           - int8_t   - Y offset of image.
+
+
+
 TSET Chunk - Tile Set
 ---------------------
 
