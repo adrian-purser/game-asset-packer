@@ -118,28 +118,30 @@ Assets::add_image_frame( std::string_view group_name, std::string_view image_nam
 															.y			= (int8_t) y
 														});
 	}
-
-	//---------------------------------------------------------------------------
-	// Get image
-	//---------------------------------------------------------------------------
-	int image_num = -1;
-	
-	if(!image_name.empty())
+	else
 	{
-		image_num = find_image(group_num, image_name);
-		if(image_num < 0)
-			return set_error( std::format("Image '{}' not found in group '{}'!",image_name,group.name) );
-	}
+		//-----------------------------------------------------------------------
+		// Get image
+		//-----------------------------------------------------------------------
+		int image_num = -1;
+		
+		if(!image_name.empty())
+		{
+			image_num = find_image(group_num, image_name);
+			if(image_num < 0)
+				return set_error( std::format("Image '{}' not found in group '{}'!",image_name,group.name) );
+		}
 
-	//---------------------------------------------------------------------------
-	// Add the image frame
-	//---------------------------------------------------------------------------
-	imgseq.frames.push_back({	.group 	= group_num,
-														.image	= image_num,
-														.time		= (uint8_t) time,
-														.x			= (int8_t) x,
-														.y			= (int8_t) y
-													});
+		//-----------------------------------------------------------------------
+		// Add the image frame
+		//-----------------------------------------------------------------------
+		imgseq.frames.push_back({	.group 	= group_num,
+															.image	= image_num,
+															.time		= (uint8_t) time,
+															.x			= (int8_t) x,
+															.y			= (int8_t) y
+														});
+	}
 
 	return 0;
 }

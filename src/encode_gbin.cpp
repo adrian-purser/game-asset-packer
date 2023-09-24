@@ -330,7 +330,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 
 	assets.enumerate_image_sequences([&](uint32_t id, const gap::assets::ImageSequence & imgseq)->bool
 		{
-			std::cout << std::format("  ISEQ: {:3} : {}\n", id, imgseq.name);
+			std::cout << std::format("  ISEQ: {:3} : {} COUNT: {}\n", id, imgseq.name, imgseq.frames.size());
 
 			chunk_offset = data.size();
 			data.reserve(chunk_offset + 4 + (8 * imgseq.frames.size()));
@@ -350,6 +350,8 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 				data.push_back(frame.x);
 				data.push_back(frame.y);
 				data.push_back(0);
+
+				std::cout << std::format("    FRAME: group:{} image:{}\n", frame.group, frame.image );
 			}
 
 			endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
