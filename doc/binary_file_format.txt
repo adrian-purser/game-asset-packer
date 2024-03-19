@@ -282,5 +282,26 @@ $20 |             FILEDATA              |
 STRT Chunk - String Table
 --------------------------
 
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   S    |   T    |   R    |   T    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +===================================+
+$08 |             LANGUAGE              |    FourCC - 4 Bytes
+    +-----------------+-----------------+
+$0C |      COUNT      |    RESERVED     |    COUNT = number of strings.
+    +-----------------+-----------------+
+$10 |  STRING OFFSET  |  STRING LENGTH  |    COUNT x String Info.
+    + - - - - - - - - - - - - - - - - - |
+    |        "        |       "         |    Each entry represents a single string.
+    + - - - - - - - - - - - - - - - - - |    The STRING OFFSET is a byte offset into
+		\        "        \       "         \    the STRING DATA section.  The strings 
+    + - - - - - - - - - - - - - - - - - |    are STRING LENGTH bytes long.  Strings 
+		|        "        |       "         |    are NOT NULL terminated.
+    +-----------------------------------+
+$20 |            STRING DATA            |    Raw String Data
+    +-----------------------------------+
 
 
