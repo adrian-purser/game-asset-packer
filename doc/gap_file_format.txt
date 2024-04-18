@@ -219,70 +219,15 @@ PF or FORMAT                 Pixel format pf the timeset image data. If not spec
 
 
 
-SOUND
------
+LOADSOUNDSAMPLE
+---------------
 
-Create a new sound.
+LOADSOUNDSAMPLE [,SRC=<filename>] [,FORMAT=<output format>] [,RATE=<sample rate>]
 
-NAME                         Name of the sound, maximum of 15 characters.
+Load a sound sample file. This will become the active sound sample and following sound sample commands will act upon it.
 
-SOUND_MODULE
-------------
-
-Add a module to the current sound.
-
-TYPE                         Module type
-ID                           Used to identify the module in other sound commands. The ID will not be part of the output file.
-<PARAM>                      Module specific parameters. Will be decoded based upon the module type.
-
-SOUND_CONNECT
--------------
-
-Connect a modules output to another modules input.
-
-SRCMOD                       The index or ID of the module whose output will be used.
-DESTMOD                      The index or ID of the module whose input will be used.
-OUTPUT                       The index or name of the output pin.
-INPUT                        The index of name of the input parameter.
+SRC                          Filename of the sound sample file
+FORMAT                       Desired output format
+RATE                         Desired sample rate
 
 
-SOUND_CONTROL
--------------
-
-Assign a particular modules input parameter to a predefined control type.
-
-CONTROL                      The control to bind a modules parameter to. Available control types are -
-                             		CONTROL_GATE          Used mainly for controlling modules such as an envelope.
-                             		CONTROL_PITCH         Used when a music player needs to set the pitch of the sound
-                             		CONTROL_GAIN
-                             		CONTROL_USER1         User controls are generic controls that can be used to expose
-                             		CONTROL_USER2         module parameters.
-                             		CONTROL_USER3
-                             		CONTROL_USER4
-MODULE                       The index or ID of the module whose parameter the control will bind to.
-PARAM                        The parameter index or type that the control will bind to.
-
-
-SOUND_OUTPUT
-------------
-
-Bind a module output to one of the sound outputs.
-
-OUTPUT                       The sound output to bind to. Possible values are -
-                                 MAIN         The main audio output
-                                 FINISHED     Used to detect when the sound has finished playing. Not all sounds do
-                                              finish. Some modules, such as an envelope generator may have a finished
-                                              output to signal when the envelope has reached the end of it's cycle.
-MODULE                       The index or ID of the module whose output will be used as the sounds output.
-MODOUTPUT                    The index or name of the modules output that will be selected. Default Value is 0. The
-                             names of the outputs are specific to the module type.
-
-
-SOUND_DATA
-----------
-
-Load some data that can be used by the current sound module.  The type of data depends upon the module type. 
-For A waveform module, the data could represent a sampled audio waveform.
-
-SRC                          The source of the data. This is generally a file path. A waveform module, for example
-                             could use a sampled audio file such as a .WAV or .OGG etc.

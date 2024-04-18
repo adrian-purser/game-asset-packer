@@ -304,4 +304,22 @@ $10 |  STRING OFFSET  |  STRING LENGTH  |    COUNT x String Info.
 $20 |            STRING DATA            |    Raw String Data
     +-----------------------------------+
 
+SAMP Chunk - Sound Sample 
+--------------------------
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   S    |   A    |   M    |   P    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +===================================+
+$08 |   SAMPLE RATE   | FORMAT |        |
+    +-----------------+--------+--------+
+$0C |           SAMPLE COUNT            |
+    +-----------------+-----------------+
+$10 |            SAMPLE DATA            |
+    +-----------------------------------+
+
+
 
