@@ -9,7 +9,7 @@
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build.debug/gap",
-			"args": ["-m","../data","-m","/home/ade/source/pixelart","luatest.gap"],
+			"args": ["-m","../data","test.gap"],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/build.debug",
 			"environment": [],
