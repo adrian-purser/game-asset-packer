@@ -17,7 +17,7 @@
 #include "encode_gbin.h"
 
 #define HEADER_SIZE		32
-#define VERSION "01"
+#define VERSION "02"
 
 enum
 {
@@ -81,6 +81,9 @@ encode_header(std::vector<std::uint8_t> & data,std::string_view name,const gap::
 IMAG Chunk
 ----------
 
+Version 01
+----------
+
           -------------------->
         0        1        2        3
     +--------+--------+--------+--------+
@@ -99,14 +102,38 @@ $08 | WIDTH  | HEIGHT |X-Origin|Y-Origin|
 		|                 .                 |
     +-----------------------------------+
 
+Version 02
+----------
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   I    |   M    |   A    |   G    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +========+========+========+========+    Image - 16 bytes
+$08 |      WIDTH      |      HEIGHT     |
+    +-----------------+-----------------+
+    |    X-Origin     |    Y-Origin     |
+    +-----------------+--------+--------+
+    |   LINE OFFSET   | PixFmt |Pallete |
+    +-----------------+--------+--------+
+		|         IMAGE DATA OFFSET         |
+    +=================+=================+
+    :                 .                 :
+		:                 .                 :
+		|                 .                 |
+    +-----------------------------------+
+
+
 */
 
 struct IMAGChunkEntry
 {
-	uint8_t				width;
-	uint8_t				height;
-	uint8_t				x_origin;
-	uint8_t				y_origin;	
+	uint16_t			width;
+	uint16_t			height;
+	uint16_t			x_origin;
+	uint16_t			y_origin;	
 	uint16_t			line_offset;
 	uint8_t 			pixel_format;
 	uint8_t				palette;
@@ -284,11 +311,11 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 
 		for(const auto & image : images)
 		{
-			data.push_back(image.width);
-			data.push_back(image.height);
-			data.push_back(image.x_origin);
-			data.push_back(image.y_origin);
-			endian_append(data,0,2,config.b_big_endian);
+			endian_append(data,	image.width,		2,	config.b_big_endian);
+			endian_append(data,	image.height,		2,	config.b_big_endian);
+			endian_append(data,	image.x_origin,	2,	config.b_big_endian);
+			endian_append(data,	image.y_origin,	2,	config.b_big_endian);
+			endian_append(data,	0,							2,	config.b_big_endian);
 			data.push_back(image.pixel_format);
 			data.push_back(image.palette);
 			endian_append(data,image.image_data_offset,4,config.b_big_endian);
