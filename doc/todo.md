@@ -12,6 +12,8 @@ TODO
 - [ ] Sample Sounds
       - [ ] Define sample sound chunks
       - [ ] Define sample sound commands
+      - [ ] Load RAW sound sample files
+      - [ ] Generate SWAV chunk
 
 
 DONE
