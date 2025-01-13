@@ -218,16 +218,28 @@ H or HEIGHT                  Height of each tile in pixels.
 PF or FORMAT                 Pixel format pf the timeset image data. If not specified then the format of the source image will be used.
 
 
+===============================================================================
+*
+*	SOUND SAMPLES
+*
+===============================================================================
+
+SAMPLERATE
+----------
+
+SAMPLERATE [,RATE=<samples per second>]
+
+Sets the sample rate for following sound sample commands.
+
 
 LOADSOUNDSAMPLE
 ---------------
 
-LOADSOUNDSAMPLE [,SRC=<filename>] [,FORMAT=<output format>] [,RATE=<sample rate>]
+LOADSOUNDSAMPLE [,SRC=<filename>] [,FORMAT=<output format>] 
 
 Load a sound sample file. This will become the active sound sample and following sound sample commands will act upon it.
 
 SRC                          Filename of the sound sample file
 FORMAT                       Desired output format
-RATE                         Desired sample rate
 
 

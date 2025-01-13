@@ -100,6 +100,8 @@ CHUNK TYPES
 +------+----------------------------------------------------------------------+
 | STRT | String Table. There should be one string table chunk per language.   |
 +------+----------------------------------------------------------------------+
+| SWAV | Sound Sample Waveform Data.                                          |
++------+----------------------------------------------------------------------+
 
 
 
@@ -330,8 +332,8 @@ $10 |  STRING OFFSET  |  STRING LENGTH  |    COUNT x String Info.
 $20 |            STRING DATA            |    Raw String Data
     +-----------------------------------+
 
-SAMP Chunk - Sound Sample 
---------------------------
+SWAV Chunk - Sound Sample Waveform Data 
+---------------------------------------
 
           -------------------->
         0        1        2        3
@@ -347,5 +349,7 @@ $0C |           SAMPLE COUNT            |
 $10 |            SAMPLE DATA            |
     +-----------------------------------+
 
-
+FORMAT - 00 - 8bit Uncompressed
+       - 01 - 16bit Uncompressed
+	
 
