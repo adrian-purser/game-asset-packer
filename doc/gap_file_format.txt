@@ -224,6 +224,14 @@ PF or FORMAT                 Pixel format pf the timeset image data. If not spec
 *
 ===============================================================================
 
+SAMPLE FORMATS
+--------------
+
+  S8       Signed 8-bit
+  U8       Unsigned 8-bit
+	S16      Signed 16-bit
+	U16      Unsigned 18-bit
+
 SAMPLERATE
 ----------
 
@@ -235,11 +243,13 @@ Sets the sample rate for following sound sample commands.
 LOADSOUNDSAMPLE
 ---------------
 
-LOADSOUNDSAMPLE [,SRC=<filename>] [,FORMAT=<output format>] 
+LOADSOUNDSAMPLE [,SRC=<filename>] [,SRCTYPE=<type>] [.SRCRATE=<sample rate>] [,SRCFORMAT=<input format>] [,FORMAT=<output format>] 
 
 Load a sound sample file. This will become the active sound sample and following sound sample commands will act upon it.
 
 SRC                          Filename of the sound sample file
 FORMAT                       Desired output format
-
+SRCTYPE                      Type of the source file. RAW, WAV, MP3, AUTO
+SRCRATE                      Sample rate of the source file. Useful for RAW file type
+SRCFORMAT                    Sample format of the source file. Useful for RAW file type
 

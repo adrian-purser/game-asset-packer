@@ -338,7 +338,7 @@ SWAV Chunk - Sound Sample Waveform Data
           -------------------->
         0        1        2        3
     +--------+--------+--------+--------+
-$00 |   S    |   A    |   M    |   P    |    FourCC defines chunk type - 4 Bytes
+$00 |   S    |   W    |   A    |   V    |    FourCC defines chunk type - 4 Bytes
     +--------+--------+--------+--------+
 $04 |               SIZE                |    Chunk Size - 4 Bytes
     +===================================+
@@ -349,7 +349,9 @@ $0C |           SAMPLE COUNT            |
 $10 |            SAMPLE DATA            |
     +-----------------------------------+
 
-FORMAT - 00 - 8bit Uncompressed
-       - 01 - 16bit Uncompressed
+FORMAT - 00 - S8    - Signed 8-bit Uncompressed
+       - 01 - U8    - Unsigned 8-bit Uncompressed
+       - 02 - S16   - Signed 16-bit Uncompressed
+       - 03 - U16   - Unsigned 16-bit Uncompressed
 	
 
