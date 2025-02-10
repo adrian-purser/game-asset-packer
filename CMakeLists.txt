@@ -20,6 +20,7 @@ include(FetchContent)
 FetchContent_Declare(
 		adepng
 		GIT_REPOSITORY https://github.com/adrian-purser/adepng.git
+		GIT_TAG origin/main
 	)
 FetchContent_MakeAvailable(adepng)
 

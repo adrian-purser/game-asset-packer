@@ -11,7 +11,7 @@
 #include <iostream>
 #include <cmath>
 #include "image.h"
-#include "adepng.h"
+#include "adepng/adepng.h"
 
 namespace gap::image
 {
@@ -95,7 +95,8 @@ load(const std::string & filename,gap::FileSystem & filesystem)
 		default :	pixelformat	= 0;
 	}
 
-	auto p_image = std::make_unique<SourceImage>(width,height,decode.get_data());
+	//TODO(Ade): Change SourceImage to take a span instead of a raw pointer.
+	auto p_image = std::make_unique<SourceImage>(width,height,decode.get_data().data());
 
 	p_image->set_source_pixelformat(pixelformat);
 	p_image->set_target_pixelformat(pixelformat);
