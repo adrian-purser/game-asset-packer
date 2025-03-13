@@ -217,6 +217,26 @@ W or WIDTH                   Width of each tile in pixels.
 H or HEIGHT                  Height of each tile in pixels.
 PF or FORMAT                 Pixel format pf the timeset image data. If not specified then the format of the source image will be used.
 
+LOADTILEMAP
+-----------
+
+SRC                          Path to the tile map file.
+TYPE                         Type of the tilemap file. eg. ("tiled:tmx", "tiled:json", "csv")
+
+
+TILEMAP
+-------
+
+ID                           Numerical identifier of the tileset.
+NAME                         Name of the tilemap that can be used for searching.
+W or WIDTH                   Width, in tiles. (If omitted, assumes dimension of loaded tilemap)
+H or HEIGHT                  Height, in tiles. (If omitted, assumes dimension of loaded tilemap)
+BLKSIZE or BLOCKSIZE         Block Size, in tiles. Default = 8. (This represents the width and height of the blocks)
+TILESIZE                     Tile size, in bytes.
+LAYER                        The layer to use as the source of tile data.
+
+
+
 
 ===============================================================================
 *

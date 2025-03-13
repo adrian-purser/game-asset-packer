@@ -355,3 +355,35 @@ FORMAT - 00 - S8    - Signed 8-bit Uncompressed
        - 03 - U16   - Unsigned 16-bit Uncompressed
 	
 
+TMAP Chunk - Sparse Tile Map 
+----------------------------
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   T    |   M    |   A    |   P    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +===================================+
+$08 |      WIDTH      |     HEIGHT      |
+    +-----------------+-----------------+
+$0C |   INDEX COUNT   |   BLOCK COUNT   |
+    +--------+--------+-----------------+
+$10 | BSIZE  | TSIZE  |      ---        |
+    +--------+--------------------------+
+$14 | INDICES ....                      |    INDEX COUNT * 2 Bytes
+    :                 :                 :    (Rounded up to multiple of 4 bytes)
+    :                 :                 :
+    +-----------------------------------+
+    | BLOCKS ....                       |    BSIZE * BSIZE * TSIZE * BLOCK COUNT
+    :                 :                 :    (Rounded up to multiple of 4 bytes)
+    :                 :                 :	
+    +-----------------------------------+
+
+WIDTH   - Width of tilemap in tiles.
+HEIGHT  - Width of tilemap in tiles.
+BSIZE 	-	Block Size in tiles. Block volume = BSIZE * BSIZE
+TSIZE   - Tile Size in bytes. 
+
+Block Size in bytes = BSIZE * BSIZE * TSIZE
+

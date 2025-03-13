@@ -17,6 +17,7 @@ endif()
 
 include(FetchContent)
 
+message(STATUS "Adding Ade PNG Library")
 FetchContent_Declare(
 		adepng
 		GIT_REPOSITORY https://github.com/adrian-purser/adepng.git
@@ -24,16 +25,25 @@ FetchContent_Declare(
 	)
 FetchContent_MakeAvailable(adepng)
 
+message(STATUS "Adding Ade FileSystem Library")
 FetchContent_Declare(
 		adefs
 		GIT_REPOSITORY https://github.com/adrian-purser/adefs.git
 	)
 FetchContent_MakeAvailable(adefs)
 
+message(STATUS "Adding Ade XML Library")
+FetchContent_Declare(
+	adexml
+	GIT_REPOSITORY https://github.com/adrian-purser/adexml.git
+	GIT_TAG origin/main
+)
+FetchContent_MakeAvailable(adexml)
+
 #set(CMAKE_C_COMPILER clang)
 #set(CMAKE_CXX_COMPILER clang++)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -42,7 +52,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 include(cmake/StandardProjectSettings.cmake)
 include(cmake/StaticAnalyzers.cmake)
 
-set(SOURCES
+
+add_executable(${CMAKE_PROJECT_NAME})
+
+target_sources(${CMAKE_PROJECT_NAME}
+PRIVATE
 	src/app.cpp
 	src/assets.cpp
 	src/configuration.cpp
@@ -53,11 +67,13 @@ set(SOURCES
 	src/main.cpp
 	src/parse_colour_map.cpp
 	src/parse_gap.cpp
+	src/tilemap.cpp
+PUBLIC
+	src/tilemap.h
 )
 
-add_executable(${CMAKE_PROJECT_NAME} ${SOURCES})
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC adefs adepng pthread fmt dl)
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC adefs adepng adexml pthread dl)
 
 install(TARGETS ${CMAKE_PROJECT_NAME} DESTINATION bin)
