@@ -11,7 +11,8 @@
 #include <iostream>
 
 #include "configuration.h"
-#include "app.h"
+#include "build.h"
+#include "tests/tests.h"
 
 int
 main(int argc,char ** argv)
@@ -22,8 +23,20 @@ main(int argc,char ** argv)
 	if(status)
 		return status;
 
-	gap::Application app(config);
+	gap::FileSystem	filesystem;
 
-	return app.run();
+	// Mount Packages. If there are no mount points then mount the current directory.
+	if(config.mount_points.empty())
+		filesystem.mount(".","/");
+	else
+	{
+		for(const auto & mp : config.mount_points)
+			filesystem.mount(mp.path,mp.mountpoint);
+	}
+	
+	if(!config.test_mode.empty())
+		return run_test(config, filesystem);
+
+	return gap::build(config, filesystem);
 }
 

@@ -18,6 +18,7 @@
 #include "parse_gap.h"
 #include "parse_colour_map.h"
 #include "utility/hash.h"
+#include "tilemap.h"
 
 #define GAPCMD_LOADIMAGE				"loadimage"
 #define GAPCMD_IMAGE						"image"
@@ -29,6 +30,8 @@
 #define GAPCMD_TILESET					"tileset"
 #define GAPCMD_TILE							"tile"
 #define GAPCMD_TILEARRAY				"tilearray"
+#define GAPCMD_TILEMAP					"tilemap"
+#define GAPCMD_LOADTILEMAP			"loadtilemap"
 #define GAPCMD_EXPORT						"export"
 #define GAPCMD_FILE							"file"
 #define GAPCMD_COLOURMAP				"colourmap"
@@ -209,6 +212,7 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILESET) :				result = command_tileset(line_number,cmd); 				break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILE) :						result = command_tile(line_number,cmd); 					break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILEARRAY) :			result = command_tilearray(line_number,cmd); 			break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_LOADTILEMAP) :		result = command_loadtilemap(line_number,cmd); 		break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_EXPORT) :					result = command_export(line_number,cmd); 				break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_FILE) :						result = command_file(line_number,cmd); 					break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_COLOURMAP) :			result = command_colourmap(line_number,cmd); 			break;
@@ -886,6 +890,40 @@ ParserGAP::command_colourmap(int line_number, const CommandLine & command)
 		m_current_colourmap = index;
 	}
 
+	return 0;
+}
+
+int 
+ParserGAP::command_loadtilemap(int line_number, const CommandLine & command)
+{
+	
+	std::string src;
+	std::string type;
+
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("src") 		:	src 	= value; break;
+			case ade::hash::hash_ascii_string_as_lower("type") 		:	type 	= value; break;
+			default : 
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
+
+	if(src.empty())			return on_error(line_number,"Missing tilemap path!");
+	if(type.empty())		return on_error(line_number,"Missing tilemap type!");
+
+	auto p_tilemap = gap::tilemap::load(src,type,m_filesystem);
+	if(p_tilemap == nullptr)
+		return on_error(line_number,std::string("Failed to load tilemap! - ") + src);
+
+//	m_current_tilemap = m_p_assets->add_source_image(std::move(p_image));
+
+//	std::cout << "  Image added into slot " << m_current_source_image << std::endl;
+	
 	return 0;
 }
 

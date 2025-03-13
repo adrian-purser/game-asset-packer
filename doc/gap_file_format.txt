@@ -33,6 +33,8 @@ Commands
 | TILE            | Add a tile to the current tileset                                                           |
 | TILEARRAY       | Add a series of tiles from a 2 dimensional array of images from the source image.           |
 | TILESET         | Create an empty tileset or select an existing tileset.                                      |
+| LOADTILEMAP     |                                                                                             |
+| TILEMAP         |                                                                                             |
 | SOUND           | Create a new sound. Following sound commands will configfure this sound.                    |
 | SOUND_MODULE    | Add a module to the current sound.                                                          |
 | SOUND_CONNECT   | Connect modules within the current sound.                                                   |

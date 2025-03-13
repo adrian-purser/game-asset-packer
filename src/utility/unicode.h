@@ -205,6 +205,24 @@ u32_to_u8(uint32_t u32, std::u8string & out_u8)
 	return len;
 }
 
+inline
+static std::string
+to_string(const std::u8string & u8str)
+{
+	std::string str;
+	ade::unicode::U8Parser parser;
+
+	for(auto ch : u8str)
+	{
+		auto optch = parser.put(ch);
+		if(optch.has_value())
+		{
+			auto value = optch.value();
+			str.push_back(value > 127 ? '?' : static_cast<char>(value & 0xFF));
+		}
+	}
+	return str;
+}
 
 
 } // namespace ade::unicode

@@ -15,6 +15,7 @@
 #include "tilemap.h"
 #include "adexml/xml_parser.h"
 #include "utility/unicode.h"
+#include "utility/tokenize.h"
 
 namespace gap::tilemap
 {
@@ -76,10 +77,10 @@ SourceTileMap::enumerate_layers(std::function<bool(const SourceTileMapLayer &)> 
 
 //=============================================================================
 //
-//	TILEMAP LOADING
+//	HELPER FUNCTIONS
 //
 //=============================================================================
-
+/*
 static std::string
 to_string(const std::u8string & u8str)
 {
@@ -97,28 +98,149 @@ to_string(const std::u8string & u8str)
 	}
 	return str;
 }
+*/
+
+//=============================================================================
+//
+//	TMX TILEMAP LOADING
+//
+//=============================================================================
 
 static 
 std::error_code
-on_start_tag( SourceTileMap & 											tilemap,
-							const std::u8string &									path,
-							const std::vector<adexml::Element> & 	stack )
+tmx_on_end_tag_map_layer_data( 	SourceTileMap & 												tilemap,
+														const std::u8string &										path,
+														const std::vector<adexml::Element> & 		stack )
 {
-	assert(!stack.empty());
-	auto & element = stack.back();
-	if(element.type != adexml::ElementType::ELEMENT)
-		return {};
+	(void)path;
 
-	std::cout << "END:   " << to_string(path) << std::endl;
+	//---------------------------------------------------------------------------
+	//	PARSE LAYER ELEMENT
+	//---------------------------------------------------------------------------
+	const auto & layer_element = stack[1];
+	
+	auto opt_id 			= layer_element.attribute(u8"id");
+	auto opt_name 		= layer_element.attribute(u8"name");
+	auto opt_width 		= layer_element.attribute(u8"width");
+	auto opt_height 	= layer_element.attribute(u8"height");
+	auto opt_x 				= layer_element.attribute(u8"x");
+	auto opt_y 				= layer_element.attribute(u8"y");
+
+	if(!opt_width || !opt_height)
+		return std::make_error_code(std::errc::invalid_argument);
+
+	uint32_t 			id 			= opt_id ? std::strtoul(ade::unicode::to_string(opt_id.value()).c_str(), nullptr, 10) : 0UL;
+	std::string		name 		= opt_name ? ade::unicode::to_string(opt_name.value()) : "";
+	uint32_t 			width		= std::strtoul(ade::unicode::to_string(opt_width.value()).c_str(), nullptr, 10);
+	uint32_t 			height	= std::strtoul(ade::unicode::to_string(opt_height.value()).c_str(), nullptr, 10);
+	uint32_t 			x				= opt_x ? std::strtoul(ade::unicode::to_string(opt_x.value()).c_str(), nullptr, 10) : 0UL;
+	uint32_t 			y				= opt_y ? std::strtoul(ade::unicode::to_string(opt_y.value()).c_str(), nullptr, 10) : 0UL;
+
+
+	auto p_layer = std::make_shared<SourceTileMapLayer>(id, name, width, height);
+	auto & layer = *p_layer.get();
+
+	layer.set_position(x,y);
+
+	//---------------------------------------------------------------------------
+	//	PARSE DATA ELEMENT
+	//---------------------------------------------------------------------------
+	const auto & data_element = stack[2];
+
+	auto opt_encoding 		= data_element.attribute(u8"encoding");
+	auto opt_compression	= data_element.attribute(u8"compression");
+
+	std::string encoding("csv");
+	std::string compression;
+
+	if(opt_encoding)			encoding 		= ade::unicode::to_string(opt_encoding.value());
+	if(opt_compression)		compression = ade::unicode::to_string(opt_compression.value());
+
+	std::transform(begin(encoding), end(encoding), begin(encoding), ::tolower);
+	std::transform(begin(compression), end(compression), begin(compression), ::tolower);
+
+	if(encoding == "csv")
+	{
+		auto csv = ade::unicode::to_string(data_element.content);
+		std::replace(begin(csv), end(csv), '\n', ' ');
+		std::replace(begin(csv), end(csv), '\r', ' ');
+		auto values = ade::tokenize(csv);
+		if(values.size() != (width * height))
+			return std::make_error_code(std::errc::invalid_argument);
+
+		int i=0;
+		for(auto val : values)
+			layer.set_tile(i++,strtoul(std::string(val).c_str(), nullptr, 10));
+	}
+	else
+		return std::make_error_code(std::errc::protocol_not_supported);
+
+	tilemap.add_layer(p_layer);
 
 	return {};
 }
 
 static 
 std::error_code
-on_end_tag( SourceTileMap & 												tilemap,
-						const std::u8string &										path,
-						const std::vector<adexml::Element> & 		stack )
+tmx_on_start_tag_map( SourceTileMap & 											tilemap,
+											const std::u8string &									path,
+											const std::vector<adexml::Element> & 	stack )
+{
+	(void)path;
+	const auto & element = stack[0];
+
+	auto opt_orientation		= element.attribute(u8"orientation");
+	auto opt_renderorder		= element.attribute(u8"renderorder");
+	auto opt_width					= element.attribute(u8"width");
+	auto opt_height					= element.attribute(u8"height");
+	auto opt_tilewidth			= element.attribute(u8"tilewidth");
+	auto opt_tileheight			= element.attribute(u8"tileheight");
+	auto opt_infinite				= element.attribute(u8"infinite");
+
+	if(opt_orientation && opt_orientation.value() != u8"orthogonal")
+		return std::make_error_code(std::errc::protocol_not_supported);
+	if(opt_renderorder && opt_renderorder.value() != u8"right-down")
+		return std::make_error_code(std::errc::protocol_not_supported);
+
+	uint32_t 	width 				= opt_width ? std::strtoul(ade::unicode::to_string(opt_width.value()).c_str(), nullptr, 10) : 0UL;
+	uint32_t 	height 				= opt_height ? std::strtoul(ade::unicode::to_string(opt_height.value()).c_str(), nullptr, 10) : 0UL;
+	uint32_t 	tile_width 		= opt_tilewidth ? std::strtoul(ade::unicode::to_string(opt_tilewidth.value()).c_str(), nullptr, 10) : 0UL;
+	uint32_t 	tile_height 	= opt_tileheight ? std::strtoul(ade::unicode::to_string(opt_tileheight.value()).c_str(), nullptr, 10) : 0UL;
+	uint32_t 	infinite			= opt_infinite ? std::strtoul(ade::unicode::to_string(opt_infinite.value()).c_str(), nullptr, 10) : 0UL;
+
+	if(infinite > 0)
+		return std::make_error_code(std::errc::protocol_not_supported);
+
+	tilemap.set_dimensions(width, height);
+	tilemap.set_tilesize(tile_width, tile_height);
+
+	return {};
+}
+
+static 
+std::error_code
+tmx_on_start_tag( SourceTileMap & 											tilemap,
+									const std::u8string &									path,
+									const std::vector<adexml::Element> & 	stack )
+{
+	assert(!stack.empty());
+	auto & element = stack.back();
+	if(element.type != adexml::ElementType::ELEMENT)
+		return {};
+
+	std::cout << "START: " << ade::unicode::to_string(path) << std::endl;
+
+	if(path == u8"map")
+		return tmx_on_start_tag_map(tilemap, path, stack);
+
+	return {};
+}
+
+static 
+std::error_code
+tmx_on_end_tag( SourceTileMap & 												tilemap,
+								const std::u8string &										path,
+								const std::vector<adexml::Element> & 		stack )
 {
 	(void)path;
 	assert(!stack.empty());
@@ -126,7 +248,10 @@ on_end_tag( SourceTileMap & 												tilemap,
 	if(element.type != adexml::ElementType::ELEMENT)
 		return {};
 
-	std::cout << "START: " << to_string(path) << std::endl;
+	std::cout << "END:   " << ade::unicode::to_string(path) << std::endl;
+
+	if((path == u8"map/layer/data") && (stack.size() >= 3))
+		return tmx_on_end_tag_map_layer_data(tilemap, path, stack);
 
 	return {};
 }
@@ -153,8 +278,8 @@ load_tiled_tmx(const std::string & filename, gap::FileSystem & filesystem)
 															{
 																switch(action)
 																{
-																	case adexml::Parser::ACTION_START_ELEMENT :	return on_start_tag(tilemap, path, stack); break;
-																	case adexml::Parser::ACTION_END_ELEMENT :		return on_end_tag(tilemap, path, stack); break;
+																	case adexml::Parser::ACTION_START_ELEMENT :	return tmx_on_start_tag(tilemap, path, stack); break;
+																	case adexml::Parser::ACTION_END_ELEMENT :		return tmx_on_end_tag(tilemap, path, stack); break;
 																	case adexml::Parser::ACTION_PI :						break; //std::cout << "PI:    "; print_element_path(std::cout, stack); std::cout.put('\n'); break;
 																	default : 																	std::cout << "UNKNOWN ACTION!\n"; return std::make_error_code(std::errc::invalid_argument);
 																};
@@ -173,6 +298,11 @@ load_tiled_tmx(const std::string & filename, gap::FileSystem & filesystem)
 	return p_tilemap;
 }
 
+//=============================================================================
+//
+//	TILEMAP LOADING
+//
+//=============================================================================
 
 std::unique_ptr<SourceTileMap>
 load(const std::string & filename, const std::string & type, gap::FileSystem & filesystem)

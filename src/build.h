@@ -1,5 +1,5 @@
 //=============================================================================
-//	FILE:					app.h
+//	FILE:					build.h
 //	SYSTEM:				Game Asset Packer
 //	DESCRIPTION:
 //-----------------------------------------------------------------------------
@@ -8,8 +8,8 @@
 //	MAINTAINER:		AJP - Adrian Purser <ade&arcadestuff.com>
 //	CREATED:			24-SEP-2019 Adrian Purser <ade&arcadestuff.com>
 //=============================================================================
-#ifndef GUARD_ADE_GAMES_ASSET_PACKER_APP_H
-#define GUARD_ADE_GAMES_ASSET_PACKER_APP_H
+#ifndef GUARD_ADE_GAMES_ASSET_PACKER_BUILD_H
+#define GUARD_ADE_GAMES_ASSET_PACKER_BUILD_H
 
 #include "configuration.h"
 #include "filesystem.h"
@@ -18,22 +18,8 @@
 namespace gap
 {
 
-class Application
-{
-private:
-	const gap::Configuration & 		m_config;
-	gap::FileSystem								m_filesystem;
-
-public:
-	Application() = default;
-	Application(const gap::Configuration & config);
-	~Application() = default;
-
-	int			run();
-
-};
-
+int build(const gap::Configuration & config, gap::FileSystem & filesystem);
 
 } // namespace gap
 
-#endif // ! defined GUARD_ADE_GAMES_ASSET_PACKER_APP_H
+#endif // ! defined GUARD_ADE_GAMES_ASSET_PACKER_BUILD_H

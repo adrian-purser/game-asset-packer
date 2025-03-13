@@ -68,7 +68,8 @@ private:
 	int 								command_file(int line_number,const CommandLine & args);
 	int 								command_tileset(int line_number,const CommandLine & args);
 	int 								command_tile(int line_number,const CommandLine & args);
-	int 								command_tilearray(int line_number,const CommandLine & args);	
+	int 								command_tilearray(int line_number,const CommandLine & args);
+	int									command_loadtilemap(int line_number,const CommandLine & args);
 };
 
 

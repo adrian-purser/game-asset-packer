@@ -32,6 +32,8 @@ struct Configuration
 	bool													b_big_endian													= false;
 	bool													b_retain_original_source_images				= false;
 	std::vector<MountPoint>				mount_points;
+	std::string										test_mode;
+	std::vector<std::string>			args;
 };
 
 int	parse_command_line(int argc,char ** argv,Configuration & out_config);
