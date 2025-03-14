@@ -104,6 +104,7 @@ public:
 	TileMap & operator=(const TileMap &) = delete;
 	TileMap & operator=(TileMap &&) = delete;
 
+	uint32_t										id() const									{return m_id;}
 	uint32_t										width() const 							{return m_width;}
 	uint32_t										height() const 							{return m_height;}
 	uint32_t 										blocks_wide() const 				{return m_blocks_wide;}

@@ -365,13 +365,15 @@ $00 |   T    |   M    |   A    |   P    |    FourCC defines chunk type - 4 Bytes
     +--------+--------+--------+--------+
 $04 |               SIZE                |    Chunk Size - 4 Bytes
     +===================================+
-$08 |      WIDTH      |     HEIGHT      |
+$08 |            TILEMAP ID             |
+    +-----------------------------------+
+$0C |      WIDTH      |     HEIGHT      |
     +-----------------+-----------------+
-$0C |   INDEX COUNT   |   BLOCK COUNT   |
+$10 |   INDEX COUNT   |   BLOCK COUNT   |
     +--------+--------+-----------------+
-$10 | BSIZE  | TSIZE  |      ---        |
+$14 | BSIZE  | TSIZE  |      ---        |
     +--------+--------------------------+
-$14 | INDICES ....                      |    INDEX COUNT * 2 Bytes
+$18 | INDICES ....                      |    INDEX COUNT * 2 Bytes
     :                 :                 :    (Rounded up to multiple of 4 bytes)
     :                 :                 :
     +-----------------------------------+

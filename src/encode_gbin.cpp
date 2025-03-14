@@ -565,6 +565,7 @@ encode_tilemap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets
 			fourcc_append("size",data);
 
 			auto tilesize = tilemap.tile_size();
+			endian_append(data,tilemap.id(),4,config.b_big_endian);
 			endian_append(data,tilemap.width(),2,config.b_big_endian);
 			endian_append(data,tilemap.height(),2,config.b_big_endian);
 			endian_append(data,indices.size(),4,config.b_big_endian);
