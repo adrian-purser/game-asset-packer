@@ -9,7 +9,7 @@
 //	CREATED:			13-MAR-2025 Adrian Purser <ade&arcadestuff.com>
 //=============================================================================
 #include "test_tilemap.h"
-#include "tilemap.h"
+#include "source_tilemap.h"
 
 int	
 test_tilemap(const gap::Configuration & config, gap::FileSystem & filesystem)

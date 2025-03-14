@@ -1,5 +1,5 @@
 //=============================================================================
-//	FILE:						tilemap.cpp
+//	FILE:						source_tilemap.cpp
 //	SYSTEM:				 	game asset packer
 //	DESCRIPTION:
 //-----------------------------------------------------------------------------
@@ -12,7 +12,7 @@
 #include <fstream>
 #include <span>
 #include <vector>
-#include "tilemap.h"
+#include "source_tilemap.h"
 #include "adexml/xml_parser.h"
 #include "utility/unicode.h"
 #include "utility/tokenize.h"
@@ -47,18 +47,26 @@ SourceTileMapLayer::SourceTileMapLayer(uint32_t id, std::string_view name, uint3
 
 
 void
-SourceTileMapLayer::set_tile(std::size_t index, uint32_t value)
+SourceTileMapLayer::set_tile(std::size_t index, uint64_t value)
 {
 	if(index < m_data.size())
 		m_data[index] = value;
 }
 
 void
-SourceTileMapLayer::set_tile(uint32_t x, uint32_t y, uint32_t value)
+SourceTileMapLayer::set_tile(uint32_t x, uint32_t y, uint64_t value)
 {
 	set_tile((y*m_width) + x, value);
 }
 
+uint64_t
+SourceTileMapLayer::get_tile(uint32_t x, uint32_t y) const
+{
+	uint32_t index = (y*m_width) + x;
+	if(index < m_data.size())
+		return m_data[index];
+	return 0U;
+}
 
 //=============================================================================
 //
@@ -73,6 +81,16 @@ SourceTileMap::enumerate_layers(std::function<bool(const SourceTileMapLayer &)> 
 		if(p_layer != nullptr)
 			if(!callback(*p_layer.get()))
 				break;
+}
+
+const SourceTileMapLayer * 	
+SourceTileMap::get_layer(uint32_t id)
+{
+	for(const auto & p_layer : m_layers)
+		if(p_layer != nullptr)
+			if(p_layer->m_id == id)
+				return p_layer.get();
+	return nullptr;
 }
 
 //=============================================================================
@@ -113,6 +131,8 @@ tmx_on_end_tag_map_layer_data( 	SourceTileMap & 												tilemap,
 														const std::vector<adexml::Element> & 		stack )
 {
 	(void)path;
+
+	auto tileset = tilemap.get_tileset();
 
 	//---------------------------------------------------------------------------
 	//	PARSE LAYER ELEMENT
@@ -170,7 +190,12 @@ tmx_on_end_tag_map_layer_data( 	SourceTileMap & 												tilemap,
 
 		int i=0;
 		for(auto val : values)
-			layer.set_tile(i++,strtoul(std::string(val).c_str(), nullptr, 10));
+		{
+			// Tile values are offset by the 'firstgid' attribute of the tileset
+			// so we need to correct for that. 
+			auto tile = strtoul(std::string(val).c_str(), nullptr, 10);
+			layer.set_tile(i++,tile == 0 ? 0 : tile-tileset.first_tile_id);
+		}
 	}
 	else
 		return std::make_error_code(std::errc::protocol_not_supported);
@@ -228,10 +253,21 @@ tmx_on_start_tag( SourceTileMap & 											tilemap,
 	if(element.type != adexml::ElementType::ELEMENT)
 		return {};
 
-	std::cout << "START: " << ade::unicode::to_string(path) << std::endl;
+//	std::cout << "START: " << ade::unicode::to_string(path) << std::endl;
 
 	if(path == u8"map")
 		return tmx_on_start_tag_map(tilemap, path, stack);
+	if(path == u8"map/tileset")
+	{
+		SourceTileSet tileset;
+		auto opt_source		= element.attribute(u8"source");
+		auto opt_firstgid	= element.attribute(u8"firstgid");
+	
+		tileset.sourcefile		= opt_source ? ade::unicode::to_string(opt_source.value()) : "";
+		tileset.sourcetype		= "tiled:tsx";
+		tileset.first_tile_id	= opt_firstgid ? std::strtoul(ade::unicode::to_string(opt_firstgid.value()).c_str(), nullptr, 10) : 0UL;
+		tilemap.set_tileset(tileset);
+	}
 
 	return {};
 }
@@ -248,7 +284,7 @@ tmx_on_end_tag( SourceTileMap & 												tilemap,
 	if(element.type != adexml::ElementType::ELEMENT)
 		return {};
 
-	std::cout << "END:   " << ade::unicode::to_string(path) << std::endl;
+//	std::cout << "END:   " << ade::unicode::to_string(path) << std::endl;
 
 	if((path == u8"map/layer/data") && (stack.size() >= 3))
 		return tmx_on_end_tag_map_layer_data(tilemap, path, stack);
@@ -297,6 +333,10 @@ load_tiled_tmx(const std::string & filename, gap::FileSystem & filesystem)
 
 	return p_tilemap;
 }
+
+
+
+
 
 //=============================================================================
 //

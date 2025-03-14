@@ -14,6 +14,7 @@
 #include <vector>
 #include "image.h"
 #include "tileset.h"
+#include "tilemap.h"
 
 namespace gap::assets
 {
@@ -77,7 +78,7 @@ private:
 	std::vector<FileInfo>																		m_files;
 	std::vector<ColourMap>																	m_colour_maps;
 	std::vector<ImageSequence>															m_image_sequences;
-
+	std::vector<std::unique_ptr<gap::tilemap::TileMap>>			m_tilemaps;
 	std::string 																						m_last_error;
 
 public:
@@ -93,6 +94,7 @@ public:
 	int										add_file(FileInfo && file);
 	void									add_tileset(const gap::tileset::TileSet & tileset)	{m_tilesets.push_back(tileset);}
 	void									add_tile(int tileset, const gap::tileset::Tile & tile);
+	void									add_tilemap(std::unique_ptr<gap::tilemap::TileMap> && p_tilemap);
 
 	bool 									image_group_exists(std::string_view name)	{return !(find_group(name) < 0);}
 
@@ -109,6 +111,7 @@ public:
 	void									enumerate_tilesets(std::function<bool(const gap::tileset::TileSet & tileset)> callback) const;
 	void									enumerate_files(std::function<bool(const gap::assets::FileInfo & fileinfo)> callback) const;
 	void									enumerate_colourmaps(std::function<bool(const gap::assets::ColourMap &)> callback) const;
+	void 									enumerate_tilemaps(std::function<bool(const gap::tilemap::TileMap & tilemap)> callback) const;
 	
 	void									dump();
 

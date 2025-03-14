@@ -62,22 +62,24 @@ PRIVATE
 	src/configuration.cpp
 	src/encode_definitions.cpp
 	src/encode_gbin.cpp
+	src/errors.cpp
 	src/export.cpp
 	src/image.cpp
 	src/main.cpp
 	src/parse_colour_map.cpp
 	src/parse_gap.cpp
-	src/tilemap.cpp
+	src/source_tilemap.cpp
 PUBLIC
 	src/build.h
 	src/configuration.h
 	src/encode_definitions.h
 	src/encode_gbin.h
+	src/errors.h
 	src/export.h
 	src/image.h
 	src/parse_colour_map.h
 	src/parse_gap.h
-	src/tilemap.h
+	src/source_tilemap.h
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)

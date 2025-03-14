@@ -508,6 +508,98 @@ encode_file_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & 
 	return 0;
 }
 
+//=============================================================================
+//
+//	TILEMAP CHUNKS
+//
+//=============================================================================
+/*
+TMAP Chunk - Sparse Tile Map 
+----------------------------
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   T    |   M    |   A    |   P    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +===================================+
+$08 |      WIDTH      |     HEIGHT      |
+    +-----------------+-----------------+
+$0C |            INDEX COUNT            |
+    +-----------------------------------+
+$10 |            BLOCK COUNT            |
+    +--------+--------+-----------------+
+$14 | BSIZE  | TSIZE  |      ---        |
+    +--------+--------------------------+
+$18 |                ---                |
+    +-----------------------------------+
+$1C | INDICES ....                      |    INDEX COUNT * 2 Bytes
+    :                 :                 :    (Rounded up to multiple of 4 bytes)
+    :                 :                 :
+    +-----------------------------------+
+    | BLOCKS ....                       |    BSIZE * BSIZE * TSIZE * BLOCK COUNT
+    :                 :                 :    (Rounded up to multiple of 4 bytes)
+    :                 :                 :	
+    +-----------------------------------+
+
+WIDTH   - Width of tilemap in tiles.
+HEIGHT  - Width of tilemap in tiles.
+BSIZE 	-	Block Size in tiles. Block volume = BSIZE * BSIZE
+TSIZE   - Tile Size in bytes. 
+
+Block Size in bytes = BSIZE * BSIZE * TSIZE
+*/
+
+static
+int
+encode_tilemap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & assets,const gap::Configuration & config)
+{
+	std::cout << "Encoding TMAP Chunks...\n";
+
+	assets.enumerate_tilemaps([&](const gap::tilemap::TileMap & tilemap)->bool
+		{
+			auto indices = tilemap.indices();
+			auto chunk_offset = data.size();
+			fourcc_append("TMAP",data);
+			fourcc_append("size",data);
+
+			auto tilesize = tilemap.tile_size();
+			endian_append(data,tilemap.width(),2,config.b_big_endian);
+			endian_append(data,tilemap.height(),2,config.b_big_endian);
+			endian_append(data,indices.size(),4,config.b_big_endian);
+			endian_append(data,tilemap.active_block_count(),4,config.b_big_endian);
+			endian_append(data,tilemap.block_size(),1,config.b_big_endian);
+			endian_append(data,tilesize,1,config.b_big_endian);
+			endian_append(data,0U,6,config.b_big_endian);
+
+			// INDICES
+			for(uint16_t index : indices)
+				endian_append(data,index,2,config.b_big_endian);
+
+			// Align to 4-byte boundary
+			auto sz = (data.size() + 3) & ~3;
+			if(sz > data.size())
+				data.resize(sz);
+	
+			// BLOCKS
+			const auto block_data = tilemap.block_data();
+			for(uint64_t value : block_data)
+				endian_append(data,value,tilesize,config.b_big_endian);
+
+			// Align to 4-byte boundary
+			sz = (data.size() + 3) & ~3;
+			if(sz > data.size())
+				data.resize(sz);
+
+			endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+			return true;
+		});
+
+	return 0;
+}
+
 
 std::vector<std::uint8_t>		
 encode_gbin(std::string_view name, const gap::assets::Assets & assets,const gap::Configuration & config)
@@ -519,6 +611,7 @@ encode_gbin(std::string_view name, const gap::assets::Assets & assets,const gap:
 	encode_header(data,name,config);
 	//encode_image_chunks(data,assets,config);
 	encode_packed_image_chunks(data,assets,config);
+	errors += encode_tilemap_chunks(data,assets,config);
 	errors += encode_colourmap_chunks(data,assets,config);
 	errors += encode_file_chunks(data,assets,config);
 

@@ -19,6 +19,7 @@
 #include "assets.h"
 #include "filesystem.h"
 #include "export.h"
+#include "source_tilemap.h"
 
 namespace gap
 {
@@ -32,17 +33,18 @@ struct CommandLine
 class ParserGAP
 {
 private:
-	gap::FileSystem &												m_filesystem;
-	std::unique_ptr<gap::assets::Assets>		m_p_assets;
-	std::mutex															m_mutex;
+	gap::FileSystem &																	m_filesystem;
+	std::unique_ptr<gap::assets::Assets>							m_p_assets;
+	std::mutex																				m_mutex;
 
-	std::vector<gap::exporter::ExportInfo>	m_export_info;
+	std::vector<gap::exporter::ExportInfo>						m_export_info;
 
-	int																			m_current_source_image				= -1;
-//	int 																		m_current_image_group					= 0;
-	int																			m_current_tileset							= -1;
-	int																			m_current_colourmap						= -1;
-	
+	int																								m_current_source_image				= -1;
+//	int 																							m_current_image_group					= 0;
+	int																								m_current_tileset							= -1;
+	int																								m_current_colourmap						= -1;
+	std::unique_ptr<gap::tilemap::SourceTileMap>			m_p_current_tilemap;
+
 public:
 	ParserGAP(gap::FileSystem & filesystem);
 	~ParserGAP() = default;
@@ -69,6 +71,7 @@ private:
 	int 								command_tileset(int line_number,const CommandLine & args);
 	int 								command_tile(int line_number,const CommandLine & args);
 	int 								command_tilearray(int line_number,const CommandLine & args);
+	int 								command_tilemap(int line_number,const CommandLine & args);
 	int									command_loadtilemap(int line_number,const CommandLine & args);
 };
 

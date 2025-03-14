@@ -231,10 +231,12 @@ TILEMAP
 
 ID                           Numerical identifier of the tileset.
 NAME                         Name of the tilemap that can be used for searching.
-W or WIDTH                   Width, in tiles. (If omitted, assumes dimension of loaded tilemap)
-H or HEIGHT                  Height, in tiles. (If omitted, assumes dimension of loaded tilemap)
+X                            X offset into the tilemap. Allows a sub region of the tilemap to be selected.
+Y                            Y offset into the tilemap. Allows a sub region of the tilemap to be selected.
+W or WIDTH                   Width, in tiles. (If omitted, assumes dimension of loaded tilemap - X)
+H or HEIGHT                  Height, in tiles. (If omitted, assumes dimension of loaded tilemap - Y)
 BLKSIZE or BLOCKSIZE         Block Size, in tiles. Default = 8. (This represents the width and height of the blocks)
-TILESIZE                     Tile size, in bytes.
+TILESIZE                     Tile size, in bytes. Default = auto. (If not specified, will detect size based upon the data)
 LAYER                        The layer to use as the source of tile data.
 
 

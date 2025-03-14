@@ -161,6 +161,12 @@ Assets::add_tile(int id, const gap::tileset::Tile & tile)
 		p_tileset->tiles.push_back(tile);
 }
 
+void
+Assets::add_tilemap(std::unique_ptr<gap::tilemap::TileMap> && p_tilemap)
+{
+	m_tilemaps.push_back(std::forward<std::unique_ptr<gap::tilemap::TileMap>>(p_tilemap));
+}
+
 gap::tileset::TileSet *
 Assets::get_tileset(int id)
 {
@@ -389,6 +395,15 @@ Assets::enumerate_colourmaps(std::function<bool(const gap::assets::ColourMap &)>
 	for(const auto & cmap : m_colour_maps)
 		if(!callback(cmap))
 			break;
+}
+
+void
+Assets::enumerate_tilemaps(std::function<bool(const gap::tilemap::TileMap & tilemap)> callback) const
+{
+	for(auto & p_tilemap : m_tilemaps)
+		if(p_tilemap != nullptr)
+			if(!callback(*p_tilemap.get()))
+				break;
 }
 
 void

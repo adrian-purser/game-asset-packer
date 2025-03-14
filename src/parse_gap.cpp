@@ -15,10 +15,10 @@
 #include <string_view>
 #include <algorithm>
 #include <format>
+#include <print>
 #include "parse_gap.h"
 #include "parse_colour_map.h"
 #include "utility/hash.h"
-#include "tilemap.h"
 
 #define GAPCMD_LOADIMAGE				"loadimage"
 #define GAPCMD_IMAGE						"image"
@@ -212,6 +212,7 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILESET) :				result = command_tileset(line_number,cmd); 				break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILE) :						result = command_tile(line_number,cmd); 					break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILEARRAY) :			result = command_tilearray(line_number,cmd); 			break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILEMAP) :				result = command_tilemap(line_number,cmd); 				break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_LOADTILEMAP) :		result = command_loadtilemap(line_number,cmd); 		break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_EXPORT) :					result = command_export(line_number,cmd); 				break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_FILE) :						result = command_file(line_number,cmd); 					break;
@@ -847,6 +848,11 @@ ParserGAP::command_file(int line_number, const CommandLine & command)
 	return 0;
 }
 
+//=============================================================================
+//
+//	COLOURMAP
+//
+//=============================================================================
 
 int 
 ParserGAP::command_colourmap(int line_number, const CommandLine & command)
@@ -893,6 +899,12 @@ ParserGAP::command_colourmap(int line_number, const CommandLine & command)
 	return 0;
 }
 
+//=============================================================================
+//
+//	LOADTILEMAP
+//
+//=============================================================================
+
 int 
 ParserGAP::command_loadtilemap(int line_number, const CommandLine & command)
 {
@@ -920,10 +932,131 @@ ParserGAP::command_loadtilemap(int line_number, const CommandLine & command)
 	if(p_tilemap == nullptr)
 		return on_error(line_number,std::string("Failed to load tilemap! - ") + src);
 
-//	m_current_tilemap = m_p_assets->add_source_image(std::move(p_image));
-
-//	std::cout << "  Image added into slot " << m_current_source_image << std::endl;
 	
+	m_p_current_tilemap = std::move(p_tilemap);
+	
+	return 0;
+}
+
+
+//=============================================================================
+//
+//	TILEMAP
+//
+//=============================================================================
+
+/*
+ID                           Numerical identifier of the tileset.
+NAME                         Name of the tilemap that can be used for searching.
+W or WIDTH                   Width, in tiles. (If omitted, assumes dimension of loaded tilemap)
+H or HEIGHT                  Height, in tiles. (If omitted, assumes dimension of loaded tilemap)
+BLKSIZE or BLOCKSIZE         Block Size, in tiles. Default = 8. (This represents the width and height of the blocks)
+TILESIZE                     Tile size, in bytes. Default = auto. (If not specified, will detect size based upon the data)
+LAYER                        The layer to use as the source of tile data. Default = 0
+*/
+
+int 
+ParserGAP::command_tilemap(int line_number, const CommandLine & command)
+{
+	std::string 	name;
+	uint32_t 			id					= 0;
+	uint32_t 			x						= 0;
+	uint32_t 			y						= 0;
+	uint32_t 			width				= 0;
+	uint32_t 			height			= 0;
+	uint32_t 			blocksize		= 8;
+	uint32_t 			tilesize		= 0;
+	uint32_t 			layer_id		= 0;
+
+	//---------------------------------------------------------------------------
+	//	Parse Arguments
+	//---------------------------------------------------------------------------
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("name") 				:	name 			= value; break;
+			case ade::hash::hash_ascii_string_as_lower("id") 					:	id				= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("x") 					:	x			 		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("y") 					:	y					= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("width") 			:	width 		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("height") 			:	height		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("blksize") 		:	[[fallthrough]];
+			case ade::hash::hash_ascii_string_as_lower("blocksize") 	:	blocksize = std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("tilesize") 		:	tilesize 	= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("layer") 			:	layer_id 	= std::strtol(value.c_str(),nullptr,10); 	break;
+			default : 
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
+
+	//---------------------------------------------------------------------------
+	//	Validate and update parameters
+	//---------------------------------------------------------------------------
+	if(m_p_current_tilemap == nullptr)
+		return on_error(line_number,std::string("No tilemap has been loaded!"));
+
+	m_p_current_tilemap->enumerate_layers([&](const gap::tilemap::SourceTileMapLayer & layer)->bool
+		{
+			std::cout << std::format("LAYER: {:5} :{:24}: {}x{}\n", layer.m_id, layer.m_name, layer.m_width, layer.m_height);
+			return true;
+		});
+
+	auto p_layer = m_p_current_tilemap->get_layer(layer_id);
+	if(p_layer == nullptr)
+		return on_error(line_number,std::format("Layer {} not found in tilemap!", layer_id));
+	const auto & layer = *p_layer;
+
+	if(blocksize == 0)
+		return on_error(line_number,std::format("Invalid Block Size (0)!"));
+
+	if(layer.m_data.empty())
+		return on_error(line_number,std::format("Layer {} is empty!", layer_id));
+
+	if((x>=layer.m_width) || (y>layer.m_height))
+		return on_error(line_number,std::format("Specified coordinates ({},{}) are outside of the tilemap area!", x,y));
+		
+	if(width == 0)		width 		= layer.m_width - x;
+	if(height == 0)		height 		= layer.m_height - y;
+	if(name.empty())	name			= layer.m_name;
+
+	if((width == 0) || (height == 0))
+		return on_error(line_number,std::format("Specified dimensions ({},{}) are too small", width, height));
+
+	if(tilesize == 0)
+	{
+		auto largest = *std::max_element(begin(layer.m_data), end(layer.m_data));
+		uint32_t bits=0;
+		for(int i=0;(i<32) && (largest!=0);++i, ++bits, largest >>= 1)
+			;
+		tilesize = (bits+7)/8;
+	}
+
+	std::println("TILEMAP: id:{} name:'{}' pos:{},{} size:{}x{} blksize:{} tilesize:{}", id, name, x, y, width, height, blocksize, tilesize);
+
+	uint32_t blocks_wide = std::max<uint32_t>(1,(width+(blocksize-1))/blocksize);
+	uint32_t blocks_high = std::max<uint32_t>(1,(height+(blocksize-1))/blocksize);
+
+	std::println("TILEMAP: Blocks Wide: {} Blocks High: {}",blocks_wide, blocks_high);
+
+	//---------------------------------------------------------------------------
+	//	Create TileMap
+	//---------------------------------------------------------------------------
+	auto p_tilemap = std::make_unique<gap::tilemap::TileMap>(id, name, width, height, blocksize, tilesize);
+
+	for(uint32_t iy=y, h=0; h<height; ++h, ++iy)
+	{
+		for(uint32_t ix=x, w=0; w<width; ++w, ++ix)
+		{
+			uint64_t 	tile = layer.get_tile(ix,iy);
+			p_tilemap->set(ix,iy,tile);
+		}
+	}
+
+	m_p_assets->add_tilemap(std::move(p_tilemap));
+
 	return 0;
 }
 
