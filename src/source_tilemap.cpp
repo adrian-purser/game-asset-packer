@@ -298,7 +298,7 @@ load_tiled_tmx(const std::string & filename, gap::FileSystem & filesystem)
 	auto file = filesystem.load(filename);
 	if(file.empty())
 	{
-		std::cerr << "LOADIMAGE: Failed to load image '" << filename << "'\n";
+		std::cerr << "LOADTILEMAP: Failed to load tilemap '" << filename << "'\n";
 		return nullptr;
 	}
 
