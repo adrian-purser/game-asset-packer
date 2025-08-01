@@ -27,17 +27,17 @@ $00 |   G    |   B    |   I    |   N    |			FourCC 'GBIN' (Game-Assets Binary) -
     +--------+--------+--------+--------+
 $04 | SIZE   | FLAGS  | Version Number  |			Flags - 1 Byte. Size - 1 Byte. Version Number - 2 Bytes (ASCII Characters)
     +--------+--------+-----------------+
-$08 |               CRC32               |			CRC32 of ALL data after the header - 4 Bytes 
-    +-----------------------------------+	
+$08 |               CRC32               |			CRC32 of ALL data after the header - 4 Bytes
+    +-----------------------------------+
 $0C |              NAME                 |			12 Bytes  - Name of package
     +-----------------------------------+
-$10 |              NAME (Cont.)         |	
+$10 |              NAME (Cont.)         |
     +-----------------------------------+
 $14 |              NAME (Cont.)         |
     +-----------------------------------+
-$18 |              RESERVED             |			4 Bytes 
+$18 |              RESERVED             |			4 Bytes
     +-----------------------------------+
-$1C |              RESERVED             |			4 Bytes 
+$1C |              RESERVED             |			4 Bytes
     +-----------------------------------+
 
     +--------+--------+--------+--------+
@@ -56,7 +56,7 @@ HEADER FLAGS
 
 
 
-CHUNK 
+CHUNK
 -----
 
           -------------------->
@@ -114,14 +114,14 @@ CMAP Chunk
 $00 |   C    |   M    |   A    |   P    |    FourCC defines chunk type - 4 Bytes
     +--------+--------+--------+--------+
 $04 |               SIZE                |    Chunk Size - 4 Bytes
-    +===================================+    
+    +===================================+
 $08 |               NAME                |    Name of CMAP - 16 Bytes
-		:                 .                 :    Max. 15 Characters name plus
-		|                 .                 |    one zero termination byte.
-		+-----------------+-----------------+
-		|      SIZE       |    RESERVED     |
+    :                 .                 :    Max. 15 Characters name plus
+    |                 .                 |    one zero termination byte.
+    +-----------------+-----------------+
+    |      SIZE       |    RESERVED     |
     +--------+--------+--------+--------+
-$18	|    B   |   G    |   R    |   A    |    1 or more palette entries 
+$18	|    B   |   G    |   R    |   A    |    1 or more palette entries
     +--------+--------------------------+
     :                 .                 :
 		:                 .                 :
@@ -141,13 +141,13 @@ $04 |               SIZE                |    Chunk Size - 4 Bytes
     +=================+=================+    Source Image - 12 bytes
 $08 |      WIDTH      |     HEIGHT      |
     +-----------------+-----------------+
-		|         IMAGE DATA OFFSET         |
+    |         IMAGE DATA OFFSET         |
     +--------+--------------------------+
-		| PixFmt |        Reserved          |
+    | PixFmt |        Reserved          |
     +========+==========================+
     :                 .                 :
-		:                 .                 :
-		|                 .                 |
+    :                 .                 :
+    |                 .                 |
     +-----------------------------------+
 
 
@@ -168,11 +168,11 @@ $08 | WIDTH  | HEIGHT |X-Origin|Y-Origin|
     +--------+--------+--------+--------+
     |   LINE OFFSET   | PixFmt |Pallete |
     +-----------------+--------+--------+
-		|         IMAGE DATA OFFSET         |
+    |         IMAGE DATA OFFSET         |
     +=================+=================+
     :                 .                 :
-		:                 .                 :
-		|                 .                 |
+    :                 .                 :
+    |                 .                 |
     +-----------------------------------+
 
 Version 02
@@ -194,8 +194,8 @@ $08 |      WIDTH      |      HEIGHT     |
 		|         IMAGE DATA OFFSET         |
     +=================+=================+
     :                 .                 :
-		:                 .                 :
-		|                 .                 |
+    :                 .                 :
+    |                 .                 |
     +-----------------------------------+
 
 
@@ -212,14 +212,14 @@ $04 |               SIZE                |    Chunk Size - 4 Bytes
 $08 |   Group Base    |   Group Size    |
     +-----------------+-----------------+
     |            Image Index            |
-		+-----------------------------------+
+    +-----------------------------------+
 $10 |               NAME                |    Name of group - 16 Bytes
-		:                 .                 :    Max. 15 Characters name plus at
-		|                 .                 |    least one zero termination byte.		
+    :                 .                 :    Max. 15 Characters name plus at
+    |                 .                 |    least one zero termination byte.
     +===================================+
 $20 :                 .                 :
-		:         More Image Groups         :
-		|                 .                 |
+    :         More Image Groups         :
+    |                 .                 |
     +-----------------------------------+
 
 
@@ -249,7 +249,7 @@ MODE        - uint8_t  - Sequence Mode, e.g. LOOP, ONCE, BOUNCE
 FRAME_COUNT - uint16_t - Number of frames in sequence.
 
 GROUP       - uint16_t - Group ID
-IMAGE       - int16_t  - Image ID, -1 for application specific use of group. 
+IMAGE       - int16_t  - Image ID, -1 for application specific use of group.
 TIME        - uint8_t  - Frame time measured in number of video frames.
 X           - int8_t   - X offset of image.
 Y           - int8_t   - Y offset of image.
@@ -259,7 +259,7 @@ Y           - int8_t   - Y offset of image.
 TSET Chunk - Tile Set
 ---------------------
 
-A tileset is a group of images that all have the same dimensions and 
+A tileset is a group of images that all have the same dimensions and
 pixelformat. The tile images are all contiguous in the image data chunk.
 
           -------------------->
@@ -299,11 +299,11 @@ $10 |             FILENAME              |    16 Bytes, NULL terminated filename 
     + - - - - - - - - - - - - - - - - - |
     |                                   |
     + - - - - - - - - - - - - - - - - - |
-		|                                   |
+    |                                   |
     + - - - - - - - - - - - - - - - - - |
-		|                                   |
+    |                                   |
     +-----------------------------------+
-$20 |             FILEDATA              | 
+$20 |             FILEDATA              |
     +-----------------------------------+
 
 
@@ -325,14 +325,14 @@ $10 |  STRING OFFSET  |  STRING LENGTH  |    COUNT x String Info.
     + - - - - - - - - - - - - - - - - - |
     |        "        |       "         |    Each entry represents a single string.
     + - - - - - - - - - - - - - - - - - |    The STRING OFFSET is a byte offset into
-		\        "        \       "         \    the STRING DATA section.  The strings 
-    + - - - - - - - - - - - - - - - - - |    are STRING LENGTH bytes long.  Strings 
-		|        "        |       "         |    are NOT NULL terminated.
+    \        "        \       "         \    the STRING DATA section.  The strings
+    + - - - - - - - - - - - - - - - - - |    are STRING LENGTH bytes long.  Strings
+    |        "        |       "         |    are NOT NULL terminated.
     +-----------------------------------+
 $20 |            STRING DATA            |    Raw String Data
     +-----------------------------------+
 
-SWAV Chunk - Sound Sample Waveform Data 
+SWAV Chunk - Sound Sample Waveform Data
 ---------------------------------------
 
           -------------------->
@@ -353,9 +353,9 @@ FORMAT - 00 - S8    - Signed 8-bit Uncompressed
        - 01 - U8    - Unsigned 8-bit Uncompressed
        - 02 - S16   - Signed 16-bit Uncompressed
        - 03 - U16   - Unsigned 16-bit Uncompressed
-	
 
-TMAP Chunk - Sparse Tile Map 
+
+TMAP Chunk - Sparse Tile Map
 ----------------------------
 
           -------------------->
@@ -379,13 +379,13 @@ $18 | INDICES ....                      |    INDEX COUNT * 2 Bytes
     +-----------------------------------+
     | BLOCKS ....                       |    BSIZE * BSIZE * TSIZE * BLOCK COUNT
     :                 :                 :    (Rounded up to multiple of 4 bytes)
-    :                 :                 :	
+    :                 :                 :
     +-----------------------------------+
 
 WIDTH   - Width of tilemap in tiles.
 HEIGHT  - Width of tilemap in tiles.
 BSIZE 	-	Block Size in tiles. Block volume = BSIZE * BSIZE
-TSIZE   - Tile Size in bytes. 
+TSIZE   - Tile Size in bytes.
 
 Block Size in bytes = BSIZE * BSIZE * TSIZE
 
