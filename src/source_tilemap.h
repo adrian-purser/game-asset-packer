@@ -60,16 +60,20 @@ private:
 	std::vector<std::shared_ptr<SourceTileMapLayer>>	m_layers;
 
 public:
+	uint32_t										width() const {return m_width;}
+	uint32_t										height() const {return m_height;}
+
 	void												set_dimensions(uint32_t width, uint32_t height)						{	m_width = width; m_height = height; }
 	void												set_tilesize(uint32_t tilewidth, uint32_t tileheight)			{	m_tile_width = tilewidth; m_tile_height = tileheight; }
 	void												add_layer(std::shared_ptr<SourceTileMapLayer> p_layer)		{m_layers.push_back(p_layer);}
-	void												enumerate_layers(std::function<bool(const SourceTileMapLayer &)> callback);
+	void												enumerate_layers(std::function<bool(const SourceTileMapLayer &)> callback) const;
 	void												set_tileset(const SourceTileSet & tileset)								{m_tileset = tileset;}
 	const SourceTileSet &				get_tileset() const 																			{return m_tileset;}
 	const SourceTileMapLayer * 	get_layer(uint32_t id);
 };
 
 std::unique_ptr<SourceTileMap>		load(const std::string & filename, const std::string & type, gap::FileSystem & filesystem);
+void															print_tilemap(const SourceTileMap & tilemap);
 
 } // namespace gap::tilemap
 

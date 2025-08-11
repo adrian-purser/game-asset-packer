@@ -12,10 +12,13 @@
 #include <fstream>
 #include <span>
 #include <vector>
+#include <print>
+#include <format>
 #include "source_tilemap.h"
 #include "adexml/xml_parser.h"
 #include "utility/unicode.h"
 #include "utility/tokenize.h"
+#include "utility/ansi.h"
 
 namespace gap::tilemap
 {
@@ -75,7 +78,7 @@ SourceTileMapLayer::get_tile(uint32_t x, uint32_t y) const
 //=============================================================================
 
 void
-SourceTileMap::enumerate_layers(std::function<bool(const SourceTileMapLayer &)> callback)
+SourceTileMap::enumerate_layers(std::function<bool(const SourceTileMapLayer &)> callback) const 
 {
 	for(const auto & p_layer : m_layers)
 		if(p_layer != nullptr)
@@ -347,13 +350,67 @@ load_tiled_tmx(const std::string & filename, gap::FileSystem & filesystem)
 std::unique_ptr<SourceTileMap>
 load(const std::string & filename, const std::string & type, gap::FileSystem & filesystem)
 {
+	std::unique_ptr<SourceTileMap> p_tilemap;
+
 	auto ltype(type);
 	std::transform(begin(ltype), end(ltype), begin(ltype), ::tolower);
 
-	if(type == "tiled:tmx")			return load_tiled_tmx(filename, filesystem);
+	if(type == "tiled:tmx")			p_tilemap = load_tiled_tmx(filename, filesystem);
 
-	return nullptr;
+	if(p_tilemap)
+	{
+		print_tilemap(*p_tilemap);
+	}
+	return p_tilemap;
 }
+
+
+//=============================================================================
+//
+//	TILEMAP DEBUG
+//
+//=============================================================================
+
+void
+print_tilemap(const SourceTileMap & tilemap)
+{
+	printf("Tilemap\n------------------------------\n\n");
+	
+	printf(FOREGROUND_LIGHT_BLUE "Dimensions: " FOREGROUND_GREY "%d x %d\n", tilemap.width(), tilemap.height());
+	printf(FOREGROUND_CYAN "\nLayers\n\n");
+
+	tilemap.enumerate_layers([&](const SourceTileMapLayer & layer)->bool
+		{
+			std::print(FOREGROUND_LIGHT_BLUE "ID       : " FOREGROUND_GREY "{}\n", layer.m_id);
+			std::print(FOREGROUND_LIGHT_BLUE "Name     : " FOREGROUND_GREY "{}\n", layer.m_name);
+			std::print(FOREGROUND_LIGHT_BLUE "position : " FOREGROUND_GREY "x:{}, y:{}\n", layer.m_x, layer.m_y);
+			std::print(FOREGROUND_LIGHT_BLUE "size     : " FOREGROUND_GREY "{} x {}\n", layer.m_width, layer.m_height);
+
+			if((layer.m_x * layer.m_y) <= layer.m_data.size())
+			{
+				int i = 0;
+				for(uint32_t y = 0; y < layer.m_height; ++y)
+				{
+					for(uint32_t x = 0; x < layer.m_width; ++x)
+					{
+						auto tile = layer.m_data[i++];
+						ansi::stdio::background_colour(ansi::sgr::FG_BLACK + std::min<int>(tile,9));
+						//printf("\033[%dm",ansi::sgr::BG_BLACK + std::min<int>(tile,9));
+						printf("%c", tile == 0 ? '.' : (tile > 9 ? '#' : '0' + (char)(tile&0x7F)));
+					}
+					ansi::stdio::background_colour(ansi::sgr::FG_BLACK);
+					printf("\n");
+				}
+			}
+			printf("\n\n");
+			return true;	
+		});
+
+	printf("\n------------------------------\n\n");
+
+}
+
+
 
 } // namespace gap::tilemap
 
