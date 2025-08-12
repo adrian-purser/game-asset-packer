@@ -78,7 +78,7 @@ SourceTileMapLayer::get_tile(uint32_t x, uint32_t y) const
 //=============================================================================
 
 void
-SourceTileMap::enumerate_layers(std::function<bool(const SourceTileMapLayer &)> callback) const 
+SourceTileMap::enumerate_layers(std::function<bool(const SourceTileMapLayer &)> callback) const
 {
 	for(const auto & p_layer : m_layers)
 		if(p_layer != nullptr)
@@ -86,7 +86,7 @@ SourceTileMap::enumerate_layers(std::function<bool(const SourceTileMapLayer &)> 
 				break;
 }
 
-const SourceTileMapLayer * 	
+const SourceTileMapLayer *
 SourceTileMap::get_layer(uint32_t id)
 {
 	for(const auto & p_layer : m_layers)
@@ -127,7 +127,7 @@ to_string(const std::u8string & u8str)
 //
 //=============================================================================
 
-static 
+static
 std::error_code
 tmx_on_end_tag_map_layer_data( 	SourceTileMap & 												tilemap,
 														const std::u8string &										path,
@@ -141,7 +141,7 @@ tmx_on_end_tag_map_layer_data( 	SourceTileMap & 												tilemap,
 	//	PARSE LAYER ELEMENT
 	//---------------------------------------------------------------------------
 	const auto & layer_element = stack[1];
-	
+
 	auto opt_id 			= layer_element.attribute(u8"id");
 	auto opt_name 		= layer_element.attribute(u8"name");
 	auto opt_width 		= layer_element.attribute(u8"width");
@@ -195,7 +195,7 @@ tmx_on_end_tag_map_layer_data( 	SourceTileMap & 												tilemap,
 		for(auto val : values)
 		{
 			// Tile values are offset by the 'firstgid' attribute of the tileset
-			// so we need to correct for that. 
+			// so we need to correct for that.
 			auto tile = strtoul(std::string(val).c_str(), nullptr, 10);
 			layer.set_tile(i++,tile == 0 ? 0 : tile-tileset.first_tile_id);
 		}
@@ -208,7 +208,7 @@ tmx_on_end_tag_map_layer_data( 	SourceTileMap & 												tilemap,
 	return {};
 }
 
-static 
+static
 std::error_code
 tmx_on_start_tag_map( SourceTileMap & 											tilemap,
 											const std::u8string &									path,
@@ -245,7 +245,7 @@ tmx_on_start_tag_map( SourceTileMap & 											tilemap,
 	return {};
 }
 
-static 
+static
 std::error_code
 tmx_on_start_tag( SourceTileMap & 											tilemap,
 									const std::u8string &									path,
@@ -265,7 +265,7 @@ tmx_on_start_tag( SourceTileMap & 											tilemap,
 		SourceTileSet tileset;
 		auto opt_source		= element.attribute(u8"source");
 		auto opt_firstgid	= element.attribute(u8"firstgid");
-	
+
 		tileset.sourcefile		= opt_source ? ade::unicode::to_string(opt_source.value()) : "";
 		tileset.sourcetype		= "tiled:tsx";
 		tileset.first_tile_id	= opt_firstgid ? std::strtoul(ade::unicode::to_string(opt_firstgid.value()).c_str(), nullptr, 10) : 0UL;
@@ -275,7 +275,7 @@ tmx_on_start_tag( SourceTileMap & 											tilemap,
 	return {};
 }
 
-static 
+static
 std::error_code
 tmx_on_end_tag( SourceTileMap & 												tilemap,
 								const std::u8string &										path,
@@ -375,7 +375,7 @@ void
 print_tilemap(const SourceTileMap & tilemap)
 {
 	printf("Tilemap\n------------------------------\n\n");
-	
+
 	printf(FOREGROUND_LIGHT_BLUE "Dimensions: " FOREGROUND_GREY "%d x %d\n", tilemap.width(), tilemap.height());
 	printf(FOREGROUND_CYAN "\nLayers\n\n");
 
@@ -399,11 +399,12 @@ print_tilemap(const SourceTileMap & tilemap)
 						printf("%c", tile == 0 ? '.' : (tile > 9 ? '#' : '0' + (char)(tile&0x7F)));
 					}
 					ansi::stdio::background_colour(ansi::sgr::FG_BLACK);
+					ansi::stdio::reset_colour();
 					printf("\n");
 				}
 			}
 			printf("\n\n");
-			return true;	
+			return true;
 		});
 
 	printf("\n------------------------------\n\n");

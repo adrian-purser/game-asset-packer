@@ -56,10 +56,10 @@ namespace gap
 
 
 static
-void	
+void
 encode_header(std::vector<std::uint8_t> & data,std::string_view name,const gap::Configuration & config)
 {
-	data.reserve(data.size()+HEADER_SIZE);	
+	data.reserve(data.size()+HEADER_SIZE);
 
 	fourcc_append("GBIN",data);
 	data.push_back(HEADER_SIZE);
@@ -133,7 +133,7 @@ struct IMAGChunkEntry
 	uint16_t			width;
 	uint16_t			height;
 	uint16_t			x_origin;
-	uint16_t			y_origin;	
+	uint16_t			y_origin;
 	uint16_t			line_offset;
 	uint8_t 			pixel_format;
 	uint8_t				palette;
@@ -154,7 +154,7 @@ struct TSETChunkEntry
 static const uint32_t TSET_SHUNK_SIZE = 12;
 
 static
-void		
+void
 encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & assets,const gap::Configuration & config)
 {
 	struct ImageGroup
@@ -175,13 +175,13 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	//---------------------------------------------------------------------------
 	uint32_t chunk_offset = data.size();
 	uint32_t image_offset = 0;
-	
+
 	bool b_have_image_data = false;
 	assets.enumerate_image_groups( [&](const std::string & /*name*/ ,uint32_t /*group_number*/,uint16_t /*base*/, uint16_t /*size*/ )->bool	{	b_have_image_data = true; return false; });
 	assets.enumerate_tilesets( [&](const gap::tileset::TileSet & /*tileset*/)->bool {	b_have_image_data = true; return false; });
 
 	if(b_have_image_data)
-	{	
+	{
 		std::cout << "Encoding Chunk IMGD\n";
 
 		fourcc_append("IMGD",data);
@@ -225,11 +225,11 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 					imag.image_data_offset	=	image_offset;
 
 					images.push_back(imag);
-					
+
 					auto imgdata = p_image->create_sub_target_data(0,0,imag.width,imag.height,image.pixel_format,config.b_big_endian);
 					//auto imgdata = assets.get_target_subimage(image.source_image,image.x,image.y,image.width,image.height,image.pixel_format,config.b_big_endian);
 /*
-					std::cout << "get_target_subimage(x:0,y:0,w:" << (int)imag.width << ",h:" << (int)imag.height 
+					std::cout << "get_target_subimage(x:0,y:0,w:" << (int)imag.width << ",h:" << (int)imag.height
 										<< ",pf: " << image.pixel_format << ") = " << imgdata.size() << " bytes"
 										<< " name:" << image.name << '\n';
 */
@@ -244,7 +244,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 				return true;
 			});
 	}
-	
+
 	//-----------------------------------------------------------------------
 	//	TILESETS
 	//-----------------------------------------------------------------------
@@ -283,7 +283,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	//			std::cout << std::format("  TILE: x:{} y:{} dim:{}x{}, datasize:{}\n",tile.x,tile.y,p_image->width(),p_image->height(),imgdata.size());
 				data.insert(end(data),begin(imgdata),end(imgdata));
 			}
-			
+
 			auto sz = (data.size() + 3) & ~3;
 			if(sz > data.size())
 				data.resize(sz);
@@ -339,7 +339,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	{
 		const auto & group = groups[i];
 //		std::cout << "  GROUP: " << i << " BASE: " << group.base << " INDEX: " << group.index << '\n';
-		
+
 		endian_append(data,group.base,2,config.b_big_endian);
 		endian_append(data,group.size,2,config.b_big_endian);
 		endian_append(data,group.index,4,config.b_big_endian);
@@ -442,7 +442,7 @@ encode_colourmap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Asse
 			for(uint32_t colour : cmap.colourmap)
 			{
 				for(int i=0;i<4;++i,colour >>= 8)
-					data.push_back(colour & 0x0FF);	
+					data.push_back(colour & 0x0FF);
 			}
 
 			endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
@@ -462,21 +462,21 @@ encode_colourmap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Asse
 struct FILEChunkEntry
 {
 	uint8_t 			type[4];
-	uint8_t				datasize[4];	
+	uint8_t				datasize[4];
 	uint8_t				name[16];
 };
 
 static
-int		
+int
 encode_file_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & assets,const gap::Configuration & config)
 {
 	std::cout << "Encoding FILE Chunks...\n";
 	assets.enumerate_files([&](const gap::assets::FileInfo & fileinfo)->bool
 		{
-			std::cout << "  Encoding File - '" << fileinfo.source_path << "' as '" << fileinfo.name 
+			std::cout << "  Encoding File - '" << fileinfo.source_path << "' as '" << fileinfo.name
 								<< "' size: " << fileinfo.data.size()
 								<< '\n';
-		
+
 			auto chunk_offset = data.size();
 			fourcc_append("FILE",data);
 			fourcc_append("size",data);
@@ -514,7 +514,7 @@ encode_file_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & 
 //
 //=============================================================================
 /*
-TMAP Chunk - Sparse Tile Map 
+TMAP Chunk - Sparse Tile Map
 ----------------------------
 
           -------------------->
@@ -540,13 +540,13 @@ $1C | INDICES ....                      |    INDEX COUNT * 2 Bytes
     +-----------------------------------+
     | BLOCKS ....                       |    BSIZE * BSIZE * TSIZE * BLOCK COUNT
     :                 :                 :    (Rounded up to multiple of 4 bytes)
-    :                 :                 :	
+    :                 :                 :
     +-----------------------------------+
 
 WIDTH   - Width of tilemap in tiles.
 HEIGHT  - Width of tilemap in tiles.
 BSIZE 	-	Block Size in tiles. Block volume = BSIZE * BSIZE
-TSIZE   - Tile Size in bytes. 
+TSIZE   - Tile Size in bytes.
 
 Block Size in bytes = BSIZE * BSIZE * TSIZE
 */
@@ -582,7 +582,7 @@ encode_tilemap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets
 			auto sz = (data.size() + 3) & ~3;
 			if(sz > data.size())
 				data.resize(sz);
-	
+
 			// BLOCKS
 			const auto block_data = tilemap.block_data();
 			for(uint64_t value : block_data)
@@ -595,6 +595,7 @@ encode_tilemap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets
 
 			endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
 
+			tilemap.print();
 			return true;
 		});
 
@@ -602,7 +603,7 @@ encode_tilemap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets
 }
 
 
-std::vector<std::uint8_t>		
+std::vector<std::uint8_t>
 encode_gbin(std::string_view name, const gap::assets::Assets & assets,const gap::Configuration & config)
 {
 

@@ -42,7 +42,7 @@ public:
 			m_data.resize(blockcount * blocksize * blocksize);
 		}
 
-	uint64_t			get(uint32_t block, uint32_t x, uint32_t y)
+	uint64_t			get(uint32_t block, uint32_t x, uint32_t y) const
 								{
 									auto index = calc_index(block,x,y);
 									return index < m_data.size() ? m_data.at(index) : 0U;
@@ -60,9 +60,9 @@ public:
 	std::span<const uint64_t>		block_data() const					{return std::span<const uint64_t>(m_data.data(), m_active_block_count * m_blocksize * m_blocksize);}
 
 private:
-	std::size_t 	calc_index(uint32_t block, uint32_t x, uint32_t y)	
+	std::size_t 	calc_index(uint32_t block, uint32_t x, uint32_t y) const
 								{
-									return 	(block * m_blocksize * m_blocksize) + 
+									return 	(block * m_blocksize * m_blocksize) +
 													((y&(m_blocksize-1))*m_blocksize) +
 													(x&(m_blocksize-1));
 								}
@@ -84,7 +84,7 @@ private:
 
 public:
 	TileMap() = delete;
-	TileMap(uint32_t id, std::string_view name, uint32_t width, uint32_t height, uint32_t blocksize, uint32_t tilesize) 
+	TileMap(uint32_t id, std::string_view name, uint32_t width, uint32_t height, uint32_t blocksize, uint32_t tilesize)
 		: m_name(name)
 		, m_tilemap_blocks(blocksize, width*height)
 		, m_id(id)
@@ -116,59 +116,10 @@ public:
 	std::span<const uint64_t>		block_data() const					{return m_tilemap_blocks.block_data();}
 	std::span<const uint16_t>		indices() const							{return std::span<const uint16_t>(m_indices.data(), m_indices.size());}
 
-	uint16_t							allocate_block()
-												{
-													auto index = m_tilemap_blocks.allocate();
-													//TODO(Ade): Add algorithm to handle the case where a block may need to be freed to satisfy this request.
-													return index;
-												}
-
-	void									set(uint32_t x, uint32_t y, uint64_t value)
-												{
-													assert(x<m_width);
-													assert(y<m_height);
-													const std::size_t iblk = ((y/m_blocksize)*m_blocks_wide)+(x/m_blocksize);
-													assert(iblk < m_indices.size());
-													auto index = m_indices[iblk];
-												
-													switch(index)
-													{
-														case INDEX_UNLOADED :
-															//TODO(Ade): Add mechanism to re-load block.
-															break;
-													
-														case INDEX_EMPTY :
-															index = allocate_block();
-															if(index == INDEX_EMPTY)
-																break;
-															m_indices[iblk] = index;
-															[[fallthrough]];
-
-														default :
-															m_tilemap_blocks.set(index,x,y,value);
-															break;
-													}
-												}
-											
-	uint64_t							get(uint32_t x, uint32_t y)
-												{
-													assert(x<m_width);
-													assert(y<m_height);
-													const std::size_t iblk = ((y/m_blocksize)*m_blocks_wide)+(x/m_blocksize);
-													assert(iblk < m_indices.size());
-													auto index = m_indices[iblk];
-													switch(index)
-													{
-														case INDEX_UNLOADED :
-															//TODO(Ade): Add mechanism to re-load block.
-															return 0U;
-															break;
-													
-														case INDEX_EMPTY :
-															return 0U;
-													}
-													return m_tilemap_blocks.get(index,x,y);
-												}
+	uint16_t							allocate_block();
+	void									set(uint32_t x, uint32_t y, uint64_t value);
+	uint64_t							get(uint32_t x, uint32_t y);
+	void									print() const;
 };
 
 } // namespace gap::tilemap

@@ -111,7 +111,9 @@
 			"source_location": "cpp",
 			"print": "cpp",
 			"stdfloat": "cpp",
-			"text_encoding": "cpp"
+			"text_encoding": "cpp",
+			"coroutine": "cpp",
+			"future": "cpp"
 		}
 	}
 }

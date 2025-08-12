@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 project(	gap
-					LANGUAGES C CXX 
+					LANGUAGES C CXX
 					VERSION 0.0.4 )
 
 configure_file(src/config.h.in src/config.h)
@@ -69,6 +69,7 @@ PRIVATE
 	src/parse_colour_map.cpp
 	src/parse_gap.cpp
 	src/source_tilemap.cpp
+	src/tilemap.cpp
 PUBLIC
 	src/build.h
 	src/configuration.h
@@ -80,6 +81,7 @@ PUBLIC
 	src/parse_colour_map.h
 	src/parse_gap.h
 	src/source_tilemap.h
+	src/tilemap.h
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)

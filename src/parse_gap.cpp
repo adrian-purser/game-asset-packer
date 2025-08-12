@@ -48,7 +48,7 @@ ParserGAP::ParserGAP(gap::FileSystem & filesystem)
  {
  }
 
-std::unique_ptr<gap::assets::Assets>		
+std::unique_ptr<gap::assets::Assets>
 ParserGAP::parse(std::string_view source)
 {
 	m_p_assets = std::make_unique<gap::assets::Assets>();
@@ -125,7 +125,7 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 				if(!token.empty())
 					token.push_back(ch);
 				break;
-				
+
 			case '#' :
 				b_finished = true;
 				break;
@@ -161,17 +161,17 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 			case 10 :
 			case 13 :
 				break;
-			
+
 			default :
 				token.push_back(ch);
 				break;
 		}
-	
+
 		if(b_finished)
 			break;
 	}
 
-		
+
 	if(!token.empty())
 	{
 		if(iarg == 0)
@@ -195,7 +195,7 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 	//---------------------------------------------------------------------------
 	// Process the command
 	//---------------------------------------------------------------------------
-	
+
 	int result = 0;
 
 	auto hash = ade::hash::hash_ascii_string_as_lower(cmd.command.c_str(),cmd.command.size());
@@ -206,7 +206,7 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEGROUP) :			result = command_imagegroup(line_number,cmd);		 	break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGE) :					result = command_image(line_number,cmd); 					break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEARRAY) :			result = command_imagearray(line_number,cmd); 		break;
-		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGESEQUENCE) :	[[fallthrough]];	
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGESEQUENCE) :	[[fallthrough]];
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGESEQ) :				result = command_imagesequence(line_number,cmd); 	break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_IMAGEFRAME) :			result = command_imageframe(line_number,cmd); 		break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_TILESET) :				result = command_tileset(line_number,cmd); 				break;
@@ -218,7 +218,7 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_FILE) :						result = command_file(line_number,cmd); 					break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_COLOURMAP) :			result = command_colourmap(line_number,cmd); 			break;
 
-		default : 
+		default :
 			std::cerr << "GAP: Unknown command '" << cmd.command << "'\n";
 			result = -1;
 			break;
@@ -235,10 +235,10 @@ ParserGAP::enumerate_exports(std::function<bool(const gap::exporter::ExportInfo 
 			break;
 }
 
-int 
+int
 ParserGAP::command_loadimage(int line_number, const CommandLine & command)
 {
-	
+
 	std::string src;
 	std::string format;
 
@@ -249,7 +249,7 @@ ParserGAP::command_loadimage(int line_number, const CommandLine & command)
 		{
 			case ade::hash::hash_ascii_string_as_lower("src") 		:	src 		= value; break;
 			case ade::hash::hash_ascii_string_as_lower("format") 	:	format 	= value; break;
-			default : 
+			default :
 				// TODO: Warning - unknown arg
 				break;
 		}
@@ -273,11 +273,11 @@ ParserGAP::command_loadimage(int line_number, const CommandLine & command)
 	m_current_source_image = m_p_assets->add_source_image(std::move(p_image));
 
 //	std::cout << "  Image added into slot " << m_current_source_image << std::endl;
-	
+
 	return 0;
 }
 
-int 
+int
 ParserGAP::command_imagegroup(int line_number, const CommandLine & command)
 {
 
@@ -287,7 +287,7 @@ ParserGAP::command_imagegroup(int line_number, const CommandLine & command)
 	for(const auto & [key,value] : command.args)
 	{
 		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
-		
+
 		switch(hash)
 		{
 			case ade::hash::hash_ascii_string_as_lower("base") 		:	base	= std::strtol(value.c_str(),nullptr,10); 	break;
@@ -298,7 +298,7 @@ ParserGAP::command_imagegroup(int line_number, const CommandLine & command)
 				break;
 		}
 	}
-	
+
 	if(name.empty())
 		return on_error(line_number, "Missing parameter 'name' in imagegroup!");
 
@@ -309,7 +309,7 @@ ParserGAP::command_imagegroup(int line_number, const CommandLine & command)
 	return 0;
 }
 
-int 
+int
 ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 {
 	//TODO: Add 'scale' parameters
@@ -336,40 +336,40 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 		{
 			case ade::hash::hash_ascii_string_as_lower("x") 					:	image.x 				= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("y") 					:	image.y 				= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("w") 					:	
+			case ade::hash::hash_ascii_string_as_lower("w") 					:
 			case ade::hash::hash_ascii_string_as_lower("width") 			:	image.width			= std::strtol(value.c_str(),nullptr,10); 	b_width = true; break;
-			case ade::hash::hash_ascii_string_as_lower("h") 					:	
+			case ade::hash::hash_ascii_string_as_lower("h") 					:
 			case ade::hash::hash_ascii_string_as_lower("height")			:	image.height		= std::strtol(value.c_str(),nullptr,10); 	b_height = true; break;
-			case ade::hash::hash_ascii_string_as_lower("xo") 					:	
+			case ade::hash::hash_ascii_string_as_lower("xo") 					:
 			case ade::hash::hash_ascii_string_as_lower("xorigin")			:	image.x_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("yo") 					:	
+			case ade::hash::hash_ascii_string_as_lower("yo") 					:
 			case ade::hash::hash_ascii_string_as_lower("yorigin")			:	image.y_origin	= std::strtol(value.c_str(),nullptr,10); 	break;
 
-			case ade::hash::hash_ascii_string_as_lower("hf") 					:	
+			case ade::hash::hash_ascii_string_as_lower("hf") 					:
 			case ade::hash::hash_ascii_string_as_lower("hflip")				:	image.b_hflip		= !!std::strtol(value.c_str(),nullptr,10);	break;
 
-			case ade::hash::hash_ascii_string_as_lower("vf") 					:	
+			case ade::hash::hash_ascii_string_as_lower("vf") 					:
 			case ade::hash::hash_ascii_string_as_lower("vflip")				:	image.b_vflip		= !!std::strtol(value.c_str(),nullptr,10);	break;
 
-			case ade::hash::hash_ascii_string_as_lower("angle") 			:	
+			case ade::hash::hash_ascii_string_as_lower("angle") 			:
 			case ade::hash::hash_ascii_string_as_lower("rotate")			:	image.angle			= std::strtof(value.c_str(),nullptr); b_have_angle = true;	break;
 
-			case ade::hash::hash_ascii_string_as_lower("angle-step") 	:	
+			case ade::hash::hash_ascii_string_as_lower("angle-step") 	:
 			case ade::hash::hash_ascii_string_as_lower("rotate-step")	:	angle_step 			= std::strtof(value.c_str(),nullptr); break;
 
-			case ade::hash::hash_ascii_string_as_lower("angle-from") 	:	
+			case ade::hash::hash_ascii_string_as_lower("angle-from") 	:
 			case ade::hash::hash_ascii_string_as_lower("rotate-from")	:	angle_from			= std::strtof(value.c_str(),nullptr); b_have_angle_from=true;	break;
 
-			case ade::hash::hash_ascii_string_as_lower("angle-to") 		:	
+			case ade::hash::hash_ascii_string_as_lower("angle-to") 		:
 			case ade::hash::hash_ascii_string_as_lower("rotate-to")		:	angle_to 				= std::strtof(value.c_str(),nullptr); b_have_angle_to=true;	break;
 
-			case ade::hash::hash_ascii_string_as_lower("pf") 					:	
+			case ade::hash::hash_ascii_string_as_lower("pf") 					:
 			case ade::hash::hash_ascii_string_as_lower("format")			:	image.pixel_format = gap::image::parse_pixelformat_name(value); break;
 			case ade::hash::hash_ascii_string_as_lower("name") 				:	image.name 			= value; break;
 
 			case ade::hash::hash_ascii_string_as_lower("count")				: count						=	std::strtol(value.c_str(),nullptr,10); 	break;
 
-			default : 
+			default :
 				// TODO: Warning - unknown arg
 				break;
 		}
@@ -389,10 +389,10 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 
 	if(image.pixel_format == 0)
 		image.pixel_format = m_p_assets->get_target_pixelformat(m_current_source_image);
-		
+
 	if((image.width <= 0) || (image.height <= 0))
 		return 0;
-	
+
 	if(!b_have_angle && b_have_angle_from)
 			image.angle = angle_from;
 
@@ -415,7 +415,7 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 		for(int i=0;i<count;++i)
 		{
 			if(!name.empty())
-				image.name = std::format("{}-{:03}",name,i);			
+				image.name = std::format("{}-{:03}",name,i);
 			m_p_assets->add_image(image);
 			image.angle += angle_step;
 		}
@@ -424,7 +424,7 @@ ParserGAP::command_image(int /*line_number*/, const CommandLine & command)
 	return 0;
 }
 
-int 
+int
 ParserGAP::command_imagearray(int line_number, const CommandLine & command)
 {
 	int 				x 			= 0;
@@ -447,28 +447,28 @@ ParserGAP::command_imagearray(int line_number, const CommandLine & command)
 		{
 			case ade::hash::hash_ascii_string_as_lower("x") 			:	x 				= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("y") 			:	y 				= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("w") 			:	
+			case ade::hash::hash_ascii_string_as_lower("w") 			:
 			case ade::hash::hash_ascii_string_as_lower("width") 	:	width			= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("h") 			:	
+			case ade::hash::hash_ascii_string_as_lower("h") 			:
 			case ade::hash::hash_ascii_string_as_lower("height")	:	height		= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("xc") 			:	
+			case ade::hash::hash_ascii_string_as_lower("xc") 			:
 			case ade::hash::hash_ascii_string_as_lower("xcount")	:	xcount		= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("yc") 			:	
+			case ade::hash::hash_ascii_string_as_lower("yc") 			:
 			case ade::hash::hash_ascii_string_as_lower("ycount")	:	ycount		= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("xo") 			:	
+			case ade::hash::hash_ascii_string_as_lower("xo") 			:
 			case ade::hash::hash_ascii_string_as_lower("xorigin")	:	xorigin		= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("yo") 			:	
+			case ade::hash::hash_ascii_string_as_lower("yo") 			:
 			case ade::hash::hash_ascii_string_as_lower("yorigin")	:	yorigin		= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("pf") 			:	
+			case ade::hash::hash_ascii_string_as_lower("pf") 			:
 			case ade::hash::hash_ascii_string_as_lower("format")	:	format 		= gap::image::parse_pixelformat_name(value); break;
-			case ade::hash::hash_ascii_string_as_lower("hf") 			:	
-			case ade::hash::hash_ascii_string_as_lower("hmirror") :	
+			case ade::hash::hash_ascii_string_as_lower("hf") 			:
+			case ade::hash::hash_ascii_string_as_lower("hmirror") :
 			case ade::hash::hash_ascii_string_as_lower("hflip")		:	hflip			= !!std::strtol(value.c_str(),nullptr,10);	break;
-			case ade::hash::hash_ascii_string_as_lower("vf") 			:	
-			case ade::hash::hash_ascii_string_as_lower("vmirror") :	
+			case ade::hash::hash_ascii_string_as_lower("vf") 			:
+			case ade::hash::hash_ascii_string_as_lower("vmirror") :
 			case ade::hash::hash_ascii_string_as_lower("vflip")		:	vflip			= !!std::strtol(value.c_str(),nullptr,10);	break;
 			case ade::hash::hash_ascii_string_as_lower("name") 		:	name 			= value; break;
-			default : 
+			default :
 				// TODO: Warning - unknown arg
 				break;
 		}
@@ -503,7 +503,7 @@ ParserGAP::command_imagearray(int line_number, const CommandLine & command)
 	return 0;
 }
 
-int 
+int
 ParserGAP::command_imagesequence(int line_number, const CommandLine & command)
 {
 	int					mode = gap::assets::ImageSequence::MODE_LOOP;
@@ -526,7 +526,7 @@ ParserGAP::command_imagesequence(int line_number, const CommandLine & command)
 																}
 															}
 															break;
-			default : 
+			default :
 				// TODO(Ade): Warning - unknown arg
 				break;
 		}
@@ -541,7 +541,7 @@ ParserGAP::command_imagesequence(int line_number, const CommandLine & command)
 	return 0;
 }
 
-int 
+int
 ParserGAP::command_imageframe(int line_number, const CommandLine & command)
 {
 	std::string		group;
@@ -566,7 +566,7 @@ ParserGAP::command_imageframe(int line_number, const CommandLine & command)
 			case HASH("y") 				: y 			= std::strtol(value.c_str(),nullptr,10); break;
 			case HASH("count") 		: count 	= lcvalue == "all" ? -1 : std::strtol(value.c_str(),nullptr,10); break;
 
-			default : 
+			default :
 				// TODO(Ade): Warning - unknown arg
 				break;
 		}
@@ -582,7 +582,7 @@ ParserGAP::command_imageframe(int line_number, const CommandLine & command)
 }
 
 
-int 
+int
 ParserGAP::command_tileset(int line_number, const CommandLine & command)
 {
 	gap::tileset::TileSet	tileset;
@@ -592,15 +592,15 @@ ParserGAP::command_tileset(int line_number, const CommandLine & command)
 		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
 		switch(hash)
 		{
-			case ade::hash::hash_ascii_string_as_lower("w") 			:	
+			case ade::hash::hash_ascii_string_as_lower("w") 			:
 			case ade::hash::hash_ascii_string_as_lower("width") 	:	tileset.tile_width		= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("h") 			:	
+			case ade::hash::hash_ascii_string_as_lower("h") 			:
 			case ade::hash::hash_ascii_string_as_lower("height")	:	tileset.tile_height		= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("id")			:	tileset.id						= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("pf") 			:	
+			case ade::hash::hash_ascii_string_as_lower("pf") 			:
 			case ade::hash::hash_ascii_string_as_lower("format")	:	tileset.pixel_format 	= gap::image::parse_pixelformat_name(value); break;
 			case ade::hash::hash_ascii_string_as_lower("name") 		:	tileset.name 					= value; break;
-			default : 
+			default :
 				// TODO: Warning - unknown arg
 				break;
 		}
@@ -616,20 +616,20 @@ ParserGAP::command_tileset(int line_number, const CommandLine & command)
 
 		if(tileset.pixel_format == 0)
 			tileset.pixel_format = m_p_assets->get_target_pixelformat(m_current_source_image);
-		
+
 		m_p_assets->add_tileset(tileset);
 	}
-	
+
 	m_current_tileset = tileset.id;
 
 	return 0;
 }
 
-int 
+int
 ParserGAP::command_tile(int line_number, const CommandLine & command)
 {
 	if(m_current_tileset < 0)	return on_error(line_number,std::string("No active tileset! The tile command requires an active tileset."));
-	
+
 	gap::tileset::Tile tile;
 
 	tile.source_image = m_current_source_image;
@@ -644,20 +644,20 @@ ParserGAP::command_tile(int line_number, const CommandLine & command)
 			case ade::hash::hash_ascii_string_as_lower("hflip")			:	tile.transform |= gap::tileset::FLIP_HORZ; 	break;
 			case ade::hash::hash_ascii_string_as_lower("vflip")			:	tile.transform |= gap::tileset::FLIP_VERT; 	break;
 			case ade::hash::hash_ascii_string_as_lower("rotate")		:
-			case ade::hash::hash_ascii_string_as_lower("rotation")	:	
+			case ade::hash::hash_ascii_string_as_lower("rotation")	:
 				{
 					switch(std::strtol(value.c_str(),nullptr,10))
 					{
 						case 0 :		break;
-						case 90 : 	tile.transform |= gap::tileset::ROTATE_90; break;	
-						case 180 : 	tile.transform |= gap::tileset::ROTATE_180; break;	
-						case 270 : 	tile.transform |= gap::tileset::ROTATE_270; break;	
+						case 90 : 	tile.transform |= gap::tileset::ROTATE_90; break;
+						case 180 : 	tile.transform |= gap::tileset::ROTATE_180; break;
+						case 270 : 	tile.transform |= gap::tileset::ROTATE_270; break;
 						default : 	return on_error(line_number,std::string("Invalid 'rotation' parameter! Must be one of 0, 90, 180 or 270."));
 					}
 				}
 				break;
 
-			default : 
+			default :
 				// TODO: Warning - unknown arg
 				break;
 		}
@@ -668,11 +668,11 @@ ParserGAP::command_tile(int line_number, const CommandLine & command)
 	return 0;
 }
 
-int 
+int
 ParserGAP::command_tilearray(int line_number, const CommandLine & command)
 {
 	if(m_current_tileset < 0)	return on_error(line_number,std::string("No active tileset! The tilearray command requires an active tileset."));
-	
+
 	gap::tileset::Tile tile;
 
 	//---------------------------------------------------------------------------
@@ -691,29 +691,29 @@ ParserGAP::command_tilearray(int line_number, const CommandLine & command)
 		{
 			case ade::hash::hash_ascii_string_as_lower("x") 					:	x						= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("y")						:	y						= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("width")				:	
-			case ade::hash::hash_ascii_string_as_lower("tw")					:	
+			case ade::hash::hash_ascii_string_as_lower("width")				:
+			case ade::hash::hash_ascii_string_as_lower("tw")					:
 			case ade::hash::hash_ascii_string_as_lower("tiles-wide")	:	tiles_wide 	= std::strtol(value.c_str(),nullptr,10); 	break;
-			case ade::hash::hash_ascii_string_as_lower("height")			:	
-			case ade::hash::hash_ascii_string_as_lower("th")					:	
+			case ade::hash::hash_ascii_string_as_lower("height")			:
+			case ade::hash::hash_ascii_string_as_lower("th")					:
 			case ade::hash::hash_ascii_string_as_lower("tiles-high")	:	tiles_high 	= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("hflip")				:	transform |= gap::tileset::FLIP_HORZ; 	break;
 			case ade::hash::hash_ascii_string_as_lower("vflip")				:	transform |= gap::tileset::FLIP_VERT; 	break;
 			case ade::hash::hash_ascii_string_as_lower("rotate")		:
-			case ade::hash::hash_ascii_string_as_lower("rotation")	:	
+			case ade::hash::hash_ascii_string_as_lower("rotation")	:
 				{
 					switch(std::strtol(value.c_str(),nullptr,10))
 					{
 						case 0 :		break;
-						case 90 : 	transform |= gap::tileset::ROTATE_90; break;	
-						case 180 : 	transform |= gap::tileset::ROTATE_180; break;	
-						case 270 : 	transform |= gap::tileset::ROTATE_270; break;	
+						case 90 : 	transform |= gap::tileset::ROTATE_90; break;
+						case 180 : 	transform |= gap::tileset::ROTATE_180; break;
+						case 270 : 	transform |= gap::tileset::ROTATE_270; break;
 						default : 	return on_error(line_number,std::string("Invalid 'rotation' parameter! Must be one of 0, 90, 180 or 270."));
 					}
 				}
 				break;
 
-			default : 
+			default :
 				// TODO: Warning - unknown arg
 				break;
 		}
@@ -742,7 +742,7 @@ ParserGAP::command_tilearray(int line_number, const CommandLine & command)
 	return 0;
 }
 
-int 
+int
 ParserGAP::command_export(int line_number, const CommandLine & command)
 {
 	gap::exporter::ExportInfo exportinfo;
@@ -752,16 +752,16 @@ ParserGAP::command_export(int line_number, const CommandLine & command)
 		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
 		switch(hash)
 		{
-			case ade::hash::hash_ascii_string_as_lower("filename") :	
-			case ade::hash::hash_ascii_string_as_lower("path") :		
-				exportinfo.filename = value;	
+			case ade::hash::hash_ascii_string_as_lower("filename") :
+			case ade::hash::hash_ascii_string_as_lower("path") :
+				exportinfo.filename = value;
 				break;
 
-			case ade::hash::hash_ascii_string_as_lower("name") :	
-				exportinfo.name = value;	
+			case ade::hash::hash_ascii_string_as_lower("name") :
+				exportinfo.name = value;
 				break;
 
-			case ade::hash::hash_ascii_string_as_lower("type") 			:		
+			case ade::hash::hash_ascii_string_as_lower("type") 			:
 				{
 					auto valhash = ade::hash::hash_ascii_string_as_lower(value.c_str(),value.size());
 					switch(valhash)
@@ -773,7 +773,7 @@ ParserGAP::command_export(int line_number, const CommandLine & command)
 				}
 				break;
 
-			case ade::hash::hash_ascii_string_as_lower("format") 			:		
+			case ade::hash::hash_ascii_string_as_lower("format") 			:
 				{
 					auto valhash = ade::hash::hash_ascii_string_as_lower(value.c_str(),value.size());
 					switch(valhash)
@@ -788,7 +788,7 @@ ParserGAP::command_export(int line_number, const CommandLine & command)
 				}
 				break;
 
-			default : 
+			default :
 				// TODO: Warning - unknown arg
 				break;
 		}
@@ -799,7 +799,7 @@ ParserGAP::command_export(int line_number, const CommandLine & command)
 	return 0;
 }
 
-int 
+int
 ParserGAP::command_file(int line_number, const CommandLine & command)
 {
 	gap::assets::FileInfo fileinfo;
@@ -812,7 +812,7 @@ ParserGAP::command_file(int line_number, const CommandLine & command)
 			case ade::hash::hash_ascii_string_as_lower("src") 	:	fileinfo.source_path 	= value; break;
 			case ade::hash::hash_ascii_string_as_lower("name") 	:	fileinfo.name 				= value; break;
 			case ade::hash::hash_ascii_string_as_lower("type") 	:	fileinfo.type 				= ade::hash::fourcc(value.c_str(),value.size()); break;
-			default : 
+			default :
 				// TODO: Warning - unknown arg
 				break;
 		}
@@ -844,7 +844,7 @@ ParserGAP::command_file(int line_number, const CommandLine & command)
 	}
 
 	m_p_assets->add_file(std::move(fileinfo));
-		
+
 	return 0;
 }
 
@@ -854,7 +854,7 @@ ParserGAP::command_file(int line_number, const CommandLine & command)
 //
 //=============================================================================
 
-int 
+int
 ParserGAP::command_colourmap(int line_number, const CommandLine & command)
 {
 
@@ -868,7 +868,7 @@ ParserGAP::command_colourmap(int line_number, const CommandLine & command)
 		{
 			case ade::hash::hash_ascii_string_as_lower("src") 	:	src 	= value; break;
 			case ade::hash::hash_ascii_string_as_lower("name") 	:	name	= value; break;
-			default : 
+			default :
 				// TODO: Warning - unknown arg
 				break;
 		}
@@ -905,10 +905,10 @@ ParserGAP::command_colourmap(int line_number, const CommandLine & command)
 //
 //=============================================================================
 
-int 
+int
 ParserGAP::command_loadtilemap(int line_number, const CommandLine & command)
 {
-	
+
 	std::string src;
 	std::string type;
 
@@ -919,7 +919,7 @@ ParserGAP::command_loadtilemap(int line_number, const CommandLine & command)
 		{
 			case ade::hash::hash_ascii_string_as_lower("src") 		:	src 	= value; break;
 			case ade::hash::hash_ascii_string_as_lower("type") 		:	type 	= value; break;
-			default : 
+			default :
 				// TODO: Warning - unknown arg
 				break;
 		}
@@ -932,9 +932,9 @@ ParserGAP::command_loadtilemap(int line_number, const CommandLine & command)
 	if(p_tilemap == nullptr)
 		return on_error(line_number,std::string("Failed to load tilemap! - ") + src);
 
-	
+
 	m_p_current_tilemap = std::move(p_tilemap);
-	
+
 	return 0;
 }
 
@@ -955,7 +955,7 @@ TILESIZE                     Tile size, in bytes. Default = auto. (If not specif
 LAYER                        The layer to use as the source of tile data. Default = 0
 */
 
-int 
+int
 ParserGAP::command_tilemap(int line_number, const CommandLine & command)
 {
 	std::string 	name;
@@ -986,7 +986,7 @@ ParserGAP::command_tilemap(int line_number, const CommandLine & command)
 			case ade::hash::hash_ascii_string_as_lower("blocksize") 	:	blocksize = std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("tilesize") 		:	tilesize 	= std::strtol(value.c_str(),nullptr,10); 	break;
 			case ade::hash::hash_ascii_string_as_lower("layer") 			:	layer_id 	= std::strtol(value.c_str(),nullptr,10); 	break;
-			default : 
+			default :
 				// TODO: Warning - unknown arg
 				break;
 		}
@@ -1017,7 +1017,7 @@ ParserGAP::command_tilemap(int line_number, const CommandLine & command)
 
 	if((x>=layer.m_width) || (y>layer.m_height))
 		return on_error(line_number,std::format("Specified coordinates ({},{}) are outside of the tilemap area!", x,y));
-		
+
 	if(width == 0)		width 		= layer.m_width - x;
 	if(height == 0)		height 		= layer.m_height - y;
 	if(name.empty())	name			= layer.m_name;
@@ -1054,6 +1054,8 @@ ParserGAP::command_tilemap(int line_number, const CommandLine & command)
 			p_tilemap->set(ix,iy,tile);
 		}
 	}
+
+	p_tilemap->print();
 
 	m_p_assets->add_tilemap(std::move(p_tilemap));
 
