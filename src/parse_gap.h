@@ -58,7 +58,7 @@ public:
 private:
 	int									parse_line(std::string_view line,int line_number);
 	int									on_error(int line_number,const std::string & error_message) {std::cerr << "Line " << line_number << ": " << error_message << '\n';return -1;}
-	
+
 	int									command_colourmap(int line_number,const CommandLine & args);
 	int 								command_loadimage(int line_number,const CommandLine & args);
 	int 								command_imagegroup(int line_number,const CommandLine & args);
@@ -73,6 +73,7 @@ private:
 	int 								command_tilearray(int line_number,const CommandLine & args);
 	int 								command_tilemap(int line_number,const CommandLine & args);
 	int									command_loadtilemap(int line_number,const CommandLine & args);
+	int									command_soundsample(int line_number,const CommandLine & args);
 };
 
 

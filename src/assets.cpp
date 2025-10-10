@@ -37,7 +37,7 @@ Assets::add_image_group( std::string_view name, int base)
 //	m_image_groups.emplace_back(name,base);
 	m_image_groups.emplace_back( ImageGroup {.name=std::string(name), .base = static_cast<uint16_t>(base), .images = {}} );
 
-	return index; 
+	return index;
 }
 
 int
@@ -89,10 +89,10 @@ Assets::add_image_frame( std::string_view group_name, std::string_view image_nam
 	auto & imgseq = m_image_sequences.back();
 
 	//---------------------------------------------------------------------------
-	// Get group 
+	// Get group
 	//---------------------------------------------------------------------------
 	int group_num = current_group();
-	if(!group_name.empty()) 
+	if(!group_name.empty())
 		group_num = find_group(group_name);
 
 	if(group_num < 0)
@@ -104,7 +104,7 @@ Assets::add_image_frame( std::string_view group_name, std::string_view image_nam
 		return set_error( std::format("Group '{}' does not contain any images!",group.name) );
 
 	//---------------------------------------------------------------------------
-	// if count < 0 then add all images in the group 
+	// if count < 0 then add all images in the group
 	//---------------------------------------------------------------------------
 	if(count < 0)
 	{
@@ -124,7 +124,7 @@ Assets::add_image_frame( std::string_view group_name, std::string_view image_nam
 		// Get image
 		//-----------------------------------------------------------------------
 		int image_num = -1;
-		
+
 		if(!image_name.empty())
 		{
 			image_num = find_image(group_num, image_name);
@@ -165,6 +165,12 @@ void
 Assets::add_tilemap(std::unique_ptr<gap::tilemap::TileMap> && p_tilemap)
 {
 	m_tilemaps.push_back(std::forward<std::unique_ptr<gap::tilemap::TileMap>>(p_tilemap));
+}
+
+void
+Assets::add_sound_sample(std::unique_ptr<gap::sound::SoundSample> && p_sound_sample)
+{
+	m_sound_samples.push_back(std::forward<std::unique_ptr<gap::sound::SoundSample>>(p_sound_sample));
 }
 
 gap::tileset::TileSet *
@@ -255,7 +261,7 @@ Assets::dump()
 		str.resize(4,' ');
 
 		std::cout << "grp ";
-		
+
 		if(group.images.empty())
 			std::cout << str << "empty\n";
 		else
@@ -285,7 +291,7 @@ Assets::dump()
 
 	std::cout << "-----------------------------------------------------------------------------\n";
 	std::cout << "Tile Sets\n";
-	std::cout << "-----------------------------------------------------------------------------\n";	
+	std::cout << "-----------------------------------------------------------------------------\n";
 	index = 0;
 	for(const auto & tileset : m_tilesets)
 	{
@@ -302,7 +308,7 @@ Assets::dump()
 		std::cout << str << '\n';
 	}
 
-	std::cout << "\n\n";	
+	std::cout << "\n\n";
 }
 
 int
@@ -352,7 +358,7 @@ Assets::enumerate_image_groups(std::function<bool(const std::string & name, uint
 			if(!callback(group.name,group_index,group.base, (uint16_t)group.images.size()))
 				return;
 		++group_index;
-	}	
+	}
 }
 
 void
@@ -414,7 +420,7 @@ Assets::enumerate_files(std::function<bool(const gap::assets::FileInfo & fileinf
 			break;
 }
 
-std::uint32_t 	
+std::uint32_t
 Assets::get_target_image_offset(int index, int x,int y) const
 {
 	if((index<0) || ( std::cmp_greater_equal(index,m_source_images.size())))
@@ -423,7 +429,7 @@ Assets::get_target_image_offset(int index, int x,int y) const
 	return gap::image::pixelformat::image_pixel_offset(m_source_images[index]->target_pixelformat(),x,y,m_source_images[index]->width());
 }
 
-std::uint32_t 	
+std::uint32_t
 Assets::get_target_line_stride(int index) const
 {
 	if((index<0) || (std::cmp_greater_equal(index,m_source_images.size())))
@@ -432,7 +438,7 @@ Assets::get_target_line_stride(int index) const
 	return m_source_images[index]->width();
 }
 
-std::uint8_t 		
+std::uint8_t
 Assets::get_target_pixelformat(int index) const
 {
 	if((index<0) || ( std::cmp_greater_equal(index, m_source_images.size())))
@@ -442,7 +448,7 @@ Assets::get_target_pixelformat(int index) const
 }
 
 
-std::vector<uint8_t>	
+std::vector<uint8_t>
 Assets::get_target_subimage(int index, int x, int y, int width, int height, uint8_t pixel_format, bool big_endian) const
 {
 	if((index<0) || ( std::cmp_greater_equal(index, m_source_images.size()) ))
@@ -450,7 +456,7 @@ Assets::get_target_subimage(int index, int x, int y, int width, int height, uint
 		std::cerr << "get_target_subimage: Unknown Image: " << index << std::endl;
  		return {};
 	}
-	
+
 	return m_source_images[index]->create_sub_target_data(x, y, width, height, pixel_format, big_endian);
 
 }
@@ -461,7 +467,7 @@ Assets::source_image_width(int index) const
 	if((index<0) || ( std::cmp_greater_equal(index, m_source_images.size()) ))
 		return 0;
 
-	return m_source_images[index]->width();		
+	return m_source_images[index]->width();
 }
 
 int
@@ -470,20 +476,20 @@ Assets::source_image_height(int index) const
 	if((index<0) || ( std::cmp_greater_equal(index, m_source_images.size()) ))
 		return 0;
 
-	return m_source_images[index]->height();	
+	return m_source_images[index]->height();
 }
 
 
 
 std::unique_ptr<gap::image::SourceImage>
-Assets::get_source_subimage(int index, int x, int y, int width, int height) const 
+Assets::get_source_subimage(int index, int x, int y, int width, int height) const
 {
 	if((index<0) || ( std::cmp_greater_equal(index, m_source_images.size()) ))
 	{
 		std::cerr << "get_source_subimage: Unknown Image: " << index << std::endl;
  		return nullptr;
 	}
-	
+
 	return m_source_images[index]->duplicate_subimage(x, y, width, height);
 }
 

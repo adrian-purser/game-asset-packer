@@ -15,6 +15,7 @@
 #include "image.h"
 #include "tileset.h"
 #include "tilemap.h"
+#include "sound_sample.h"
 
 namespace gap::assets
 {
@@ -79,6 +80,7 @@ private:
 	std::vector<ColourMap>																	m_colour_maps;
 	std::vector<ImageSequence>															m_image_sequences;
 	std::vector<std::unique_ptr<gap::tilemap::TileMap>>			m_tilemaps;
+	std::vector<std::unique_ptr<gap::sound::SoundSample>>		m_sound_samples;
 	std::string 																						m_last_error;
 
 public:
@@ -95,6 +97,7 @@ public:
 	void									add_tileset(const gap::tileset::TileSet & tileset)	{m_tilesets.push_back(tileset);}
 	void									add_tile(int tileset, const gap::tileset::Tile & tile);
 	void									add_tilemap(std::unique_ptr<gap::tilemap::TileMap> && p_tilemap);
+	void									add_sound_sample(std::unique_ptr<gap::sound::SoundSample> && p_sound_sample);
 
 	bool 									image_group_exists(std::string_view name)	{return !(find_group(name) < 0);}
 
@@ -112,7 +115,7 @@ public:
 	void									enumerate_files(std::function<bool(const gap::assets::FileInfo & fileinfo)> callback) const;
 	void									enumerate_colourmaps(std::function<bool(const gap::assets::ColourMap &)> callback) const;
 	void 									enumerate_tilemaps(std::function<bool(const gap::tilemap::TileMap & tilemap)> callback) const;
-	
+
 	void									dump();
 
 	uint32_t 							get_target_image_offset(int index, int x,int y) const;

@@ -35,6 +35,7 @@
 #define GAPCMD_EXPORT						"export"
 #define GAPCMD_FILE							"file"
 #define GAPCMD_COLOURMAP				"colourmap"
+#define GAPCMD_SOUNDSAMPLE			"soundsample"
 
 using namespace std::literals::string_literals;
 
@@ -217,6 +218,7 @@ ParserGAP::parse_line(std::string_view line,int line_number)
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_EXPORT) :					result = command_export(line_number,cmd); 				break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_FILE) :						result = command_file(line_number,cmd); 					break;
 		case ade::hash::hash_ascii_string_as_lower(GAPCMD_COLOURMAP) :			result = command_colourmap(line_number,cmd); 			break;
+		case ade::hash::hash_ascii_string_as_lower(GAPCMD_SOUNDSAMPLE) :		result = command_soundsample(line_number,cmd); 		break;
 
 		default :
 			std::cerr << "GAP: Unknown command '" << cmd.command << "'\n";
@@ -1061,6 +1063,60 @@ ParserGAP::command_tilemap(int line_number, const CommandLine & command)
 
 	return 0;
 }
+
+//=============================================================================
+//
+//	SOUND SAMPLE
+//
+//=============================================================================
+static uint8_t
+decode_sample_format(std::string fmt)
+{
+	std::transform(begin(fmt), end(fmt), begin(fmt), ::toupper);
+	if(fmt == "S8")		return gap::sound::FORMAT_S8;
+	if(fmt == "U8")		return gap::sound::FORMAT_U8;
+	if(fmt == "S16")	return gap::sound::FORMAT_S16;
+	if(fmt == "U16")	return gap::sound::FORMAT_U16;
+
+	return gap::sound::FORMAT_S8;
+}
+
+int
+ParserGAP::command_soundsample(int line_number,const CommandLine & command)
+{
+	std::string 	name;
+	std::string		source;
+	uint8_t				format			= 0;	// Required format.
+	uint8_t				srcformat		= 0;	// Source format hint, for RAW files.
+	uint16_t			srcrate			= 0;	// Source rate hint, for RAW files.
+	uint16_t			rate				= 0; 	// Desired rate
+
+	//---------------------------------------------------------------------------
+	//	Parse Arguments
+	//---------------------------------------------------------------------------
+	for(const auto & [key,value] : command.args)
+	{
+		auto hash = ade::hash::hash_ascii_string_as_lower(key.c_str(),key.size());
+		switch(hash)
+		{
+			case ade::hash::hash_ascii_string_as_lower("name") 				:	name 			= value; break;
+			case ade::hash::hash_ascii_string_as_lower("src") 				:	source		= value; break;
+			case ade::hash::hash_ascii_string_as_lower("srcformat") 	:	srcformat	= decode_sample_format(value); break;
+			case ade::hash::hash_ascii_string_as_lower("format") 			:	format		= decode_sample_format(value); break;
+
+			case ade::hash::hash_ascii_string_as_lower("srcrate") 		:	srcrate		= std::strtol(value.c_str(),nullptr,10); 	break;
+			case ade::hash::hash_ascii_string_as_lower("rate") 				:	rate			= std::strtol(value.c_str(),nullptr,10); 	break;
+			default :
+				// TODO: Warning - unknown arg
+				break;
+		}
+	}
+
+	std::print("SOUNDSAMPLE: name: {}, source: {}, srcfmt: {}, format: {}, srcrate: {}, rate: {}\n", name, source, format, srcformat, srcrate, rate);
+
+	return 0;
+}
+
 
 } // namespace gap
 

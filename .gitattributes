@@ -18,5 +18,9 @@
 *.ttf binary
 *.font binary
 *.luac binary
+*.raw binary
+*.mp3 binary
+*.wav binary
+
 
 

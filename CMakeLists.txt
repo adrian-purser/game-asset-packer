@@ -40,6 +40,17 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(adexml)
 
+message(STATUS "Adding MiniAudio Library")
+FetchContent_Declare(
+    miniaudio
+    GIT_REPOSITORY https://github.com/mackron/miniaudio.git
+    GIT_TAG master #v0.13.28  # or the latest release
+)
+
+FetchContent_MakeAvailable(miniaudio)
+
+
+
 #set(CMAKE_C_COMPILER clang)
 #set(CMAKE_CXX_COMPILER clang++)
 
@@ -68,6 +79,7 @@ PRIVATE
 	src/main.cpp
 	src/parse_colour_map.cpp
 	src/parse_gap.cpp
+	src/sound_sample.cpp
 	src/source_tilemap.cpp
 	src/tilemap.cpp
 PUBLIC
@@ -80,12 +92,23 @@ PUBLIC
 	src/image.h
 	src/parse_colour_map.h
 	src/parse_gap.h
+	src/sound_sample.h
 	src/source_tilemap.h
 	src/tilemap.h
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${miniaudio_SOURCE_DIR})
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC adefs adepng adexml pthread dl)
+
+target_compile_definitions(${CMAKE_PROJECT_NAME}  PRIVATE
+    MINIAUDIO_IMPLEMENTATION
+    MA_NO_DECODING_THREADS
+    MA_NO_GENERATION
+    MA_NO_ENCODING
+    MA_NO_DEVICE_IO
+    MA_NO_RUNTIME_LINKING
+)
 
 add_subdirectory(src/tests)
 

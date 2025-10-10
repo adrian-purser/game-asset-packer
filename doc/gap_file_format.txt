@@ -25,10 +25,10 @@ Commands
 | COLOURMAP       | Load a colourmap or select an existing colourmap                                            |
 | EXPORT          | Export the data to a file in a specified format                                             |
 | IMAGE           | Add an image to the current image group.                                                    |
-| IMAGEARRAY      | Add a series of images from a 2 dimensional array within the source image.                  | 
+| IMAGEARRAY      | Add a series of images from a 2 dimensional array within the source image.                  |
 | IMAGEGROUP      | Set the active image group. Following images will be added to this group.                   |
 | IMAGESEQUENCE   | Create an image sequence. Following 'frames' will be appended to this sequence.             |
-| IMAGEFRAME      | Add an image frame to the current image sequence.                                           | 
+| IMAGEFRAME      | Add an image frame to the current image sequence.                                           |
 | LOADIMAGE       | Load a source image. Following image related commands will use this as source.              |
 | TILE            | Add a tile to the current tileset                                                           |
 | TILEARRAY       | Add a series of tiles from a 2 dimensional array of images from the source image.           |
@@ -49,7 +49,7 @@ COLOURMAP
 Load a colourmap or select an existing one.
 
 SRC                          The filename/path of the colourmap file that should be loaded.
-NAME                         The name of the colourmap. If the SRC is not provided then an existing colourmap 
+NAME                         The name of the colourmap. If the SRC is not provided then an existing colourmap
                              with this name will be selected.
 
 EXPORT
@@ -60,7 +60,7 @@ Export the data to a file in a specified format.
 FILENAME or PATH             The filename of the target file.
 NAME                         The name of the package.
 TYPE                         The type of file. Currently only type GBIN is supported.
-FORMAT                       The format or encoding of the output file. Supported values are BINARY, C_ARRAY, 
+FORMAT                       The format or encoding of the output file. Supported values are BINARY, C_ARRAY,
                              CPP_VECTOR and CPP_STDARRAY.
 
 FILE
@@ -79,17 +79,17 @@ TYPE                         The type of the file. This is a 4CC so there is a m
 IMAGE
 -----
 
-Add an image to the current imagegroup. The image is taken as a subimage of the current source image if the subimage 
+Add an image to the current imagegroup. The image is taken as a subimage of the current source image if the subimage
 coordinates are specified, otherwise the whole source image is used.
 
 X                            X coordinate in pixels of the top left of the source region within the parent image
 Y                            Y coordinate in pixels of the top left of the source region within the parent image
 W or WIDTH                   Width of the image source region in pixels. The output image width may differ if it is rotated or has empty regions removed.
 H or HEIGHT                  Height of the image source region in pixels. The output image height may differ if it is rotated or has empty regions removed.
-XO or XORIGIN                X Origin of the image in pixels. The image will be rendered with the origin placed at 
+XO or XORIGIN                X Origin of the image in pixels. The image will be rendered with the origin placed at
                              the specified coordinate. Rotations will use this as the origin of rotation. The final origin coordinate may differ after
                              any rotations have been applied.
-YO or YORIGIN                Y Origin of the image in pixels. The image will be rendered with the origin placed at 
+YO or YORIGIN                Y Origin of the image in pixels. The image will be rendered with the origin placed at
                              the specified coordinate. Rotations will use this as the origin of rotation. The final origin coordinate may differ after
                              any rotations have been applied.
 ANGLE ot ROTATE              Angle in degrees to rotate the image. The image will be rotated around the origin specified by XO,YO. If COUNT and ANGLESTEP
@@ -109,7 +109,7 @@ COUNT *                      Generate 'COUNT' output images. Each image may be r
 IMAGEARRAY
 ----------
 
-Create a series of images from a square 2 dimensional array within the source image. Each image will have the same 
+Create a series of images from a square 2 dimensional array within the source image. Each image will have the same
 dimensions and pixel format.
 
 
@@ -117,13 +117,13 @@ X                            X coordinate in pixels of the top left of the sourc
 Y                            Y coordinate in pixels of the top left of the source region within the parent image
 W or WIDTH                   Width of each image in pixels
 H or HEIGHT                  Height of each image in pixels
-XO or XORIGIN                X Origin of each image in pixels. The image will be rendered with the origin placed at the specified 
+XO or XORIGIN                X Origin of each image in pixels. The image will be rendered with the origin placed at the specified
                              coordinate. Rotations will use this as the origin of rotation
-YO or YORIGIN                Y Origin of each image in pixels. The image will be rendered with the origin placed at the specified 
+YO or YORIGIN                Y Origin of each image in pixels. The image will be rendered with the origin placed at the specified
                              coordinate. Rotations will use this as the origin of rotation
-XC or XCOUNT                 The width of the image array measured in number of images. This value multiplied by YC will determine 
+XC or XCOUNT                 The width of the image array measured in number of images. This value multiplied by YC will determine
                              the total number of images.
-YC or YCOUNT                 The height of the image array measured in number of images. This value multiplied by XC will determine 
+YC or YCOUNT                 The height of the image array measured in number of images. This value multiplied by XC will determine
                              the total number of images.
 PF or FORMAT                 Pixel format pf the output image. If not specified then the format of the source image will be used.
 HFLIP                        Horizontally flip each image. 0 = noflip, >0 = flip
@@ -132,16 +132,16 @@ VFLIP                        Vertically flip each image. 0 = noflip, >0 = flip
 IMAGEGROUP
 ----------
 
-Images are placed into groups. This command selects the group that following images will be inserted into.  The BASE parameter 
+Images are placed into groups. This command selects the group that following images will be inserted into.  The BASE parameter
 can be used to specify the index that the following images will start at in the group.
 
-IMAGEGROUP [,NAME=<group name>] [,BASE=<base>] 
+IMAGEGROUP [,NAME=<group name>] [,BASE=<base>]
 
 NAME                         Group name. Can be used to search for the group.
 BASE                         Base index for images added to the group. Defaults to 0.
 
 
-IMAGESEQUENCE 
+IMAGESEQUENCE
 -------------
 
 (May be abbreviated to IMAGESEQ)
@@ -197,7 +197,7 @@ TILEARRAY
 ---------
 
 Add a series of tiles to the current tileset. The tiles are taken from a 2 dimensional array of sub-images
-within the source image. 
+within the source image.
 
 X                            X coordinate in pixels of the top left of the tiles source region within the parent image
 Y                            Y coordinate in pixels of the top left of the tiles source region within the parent image
@@ -264,12 +264,11 @@ SAMPLERATE [,RATE=<samples per second>]
 Sets the sample rate for following sound sample commands.
 
 
-LOADSOUNDSAMPLE
+SOUNDSAMPLE
 ---------------
 
-LOADSOUNDSAMPLE [,SRC=<filename>] [,SRCTYPE=<type>] [.SRCRATE=<sample rate>] [,SRCFORMAT=<input format>] [,FORMAT=<output format>] 
+SOUNDSAMPLE [,SRC=<filename>] [,SRCTYPE=<type>] [.SRCRATE=<sample rate>] [,SRCFORMAT=<input format>] [,FORMAT=<output format>]
 
-Load a sound sample file. This will become the active sound sample and following sound sample commands will act upon it.
 
 SRC                          Filename of the sound sample file
 FORMAT                       Desired output format

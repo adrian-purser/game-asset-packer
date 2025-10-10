@@ -154,6 +154,9 @@ $08 |      WIDTH      |     HEIGHT      |
 IMAG Chunk
 ----------
 
+This chuck contains an array of image info blocks. The data for the images
+is stored in an IMGD chunk which contains image data for all images.
+
 Version 01
 ----------
 
@@ -177,6 +180,7 @@ $08 | WIDTH  | HEIGHT |X-Origin|Y-Origin|
 
 Version 02
 ----------
+
 
           -------------------->
         0        1        2        3
@@ -332,8 +336,11 @@ $10 |  STRING OFFSET  |  STRING LENGTH  |    COUNT x String Info.
 $20 |            STRING DATA            |    Raw String Data
     +-----------------------------------+
 
-SWAV Chunk - Sound Sample Waveform Data
+SWAV Chunk - Sound Sample Waveform Info
 ---------------------------------------
+
+Contains an array of sound sample waveform info blocks. The actual sample
+data is stored in a WAVD block.
 
           -------------------->
         0        1        2        3
@@ -342,17 +349,25 @@ $00 |   S    |   W    |   A    |   V    |    FourCC defines chunk type - 4 Bytes
     +--------+--------+--------+--------+
 $04 |               SIZE                |    Chunk Size - 4 Bytes
     +===================================+
-$08 |   SAMPLE RATE   | FORMAT |        |
+$08 |   SAMPLE RATE   | FORMAT |  COMP  |
     +-----------------+--------+--------+
 $0C |           SAMPLE COUNT            |
     +-----------------+-----------------+
-$10 |            SAMPLE DATA            |
+$10 |        SAMPLE DATA OFFSET         |
+    +=================+=================+
+    :                 .                 :
+    :                 .                 :
+    |                 .                 |
     +-----------------------------------+
 
-FORMAT - 00 - S8    - Signed 8-bit Uncompressed
-       - 01 - U8    - Unsigned 8-bit Uncompressed
-       - 02 - S16   - Signed 16-bit Uncompressed
-       - 03 - U16   - Unsigned 16-bit Uncompressed
+
+FORMAT - 00 - S8    - Signed 8-bit
+       - 01 - U8    - Unsigned 8-bit
+       - 02 - S16   - Signed 16-bit
+       - 03 - U16   - Unsigned 16-bit
+
+COMP - Compression
+       - 00 - Uncompressed
 
 
 TMAP Chunk - Sparse Tile Map
