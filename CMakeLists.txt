@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(	gap
 					LANGUAGES C CXX
-					VERSION 0.0.4 )
+					VERSION 0.0.5 )
 
 configure_file(src/config.h.in src/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src)

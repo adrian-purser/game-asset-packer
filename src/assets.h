@@ -83,6 +83,8 @@ private:
 	std::vector<std::unique_ptr<gap::sound::SoundSample>>		m_sound_samples;
 	std::string 																						m_last_error;
 
+	int			m_most_recent_tileset = -1;
+
 public:
 	Assets() = default;
 	Assets(const Assets &) = delete;
@@ -94,7 +96,7 @@ public:
 	int										add_image_frame( std::string_view group, std::string_view image, int time, int x=0, int y=0, int count=1);
 	int										add_image_group( std::string_view name, int base = 0 );
 	int										add_file(FileInfo && file);
-	void									add_tileset(const gap::tileset::TileSet & tileset)	{m_tilesets.push_back(tileset);}
+	void									add_tileset(const gap::tileset::TileSet & tileset)	{m_tilesets.push_back(tileset); m_most_recent_tileset=tileset.id;}
 	void									add_tile(int tileset, const gap::tileset::Tile & tile);
 	void									add_tilemap(std::unique_ptr<gap::tilemap::TileMap> && p_tilemap);
 	void									add_sound_sample(std::unique_ptr<gap::sound::SoundSample> && p_sound_sample);
@@ -133,6 +135,8 @@ public:
 	int										add_colour_map(const ColourMap & cmap);
 
 	const std::string &		get_last_error() const noexcept		{return m_last_error;}
+
+	int										generate_tileset_id(int mimimum_value=1);
 
 private:
 	gap::tileset::TileSet * 	get_tileset(int id);

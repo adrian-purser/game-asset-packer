@@ -13,6 +13,7 @@
 
 #include "configuration.h"
 #include "adefs/adefs.h"
+#include "utility/loadfile.h"
 
 namespace gap
 {
@@ -31,7 +32,10 @@ public:
 	std::vector<std::uint8_t>		load( const std::string & filename )																					
 															{
 																// TODO: If the file can not be loaded from adefs then attempt to load it from the systems filesystem.
-																return m_adefs.load(filename);
+																auto data = m_adefs.load(filename);
+																if(data.empty())
+																	data = ade::loadfile(filename);
+																return data;
 															}	
 
 };

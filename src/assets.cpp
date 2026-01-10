@@ -183,6 +183,15 @@ Assets::get_tileset(int id)
 }
 
 int
+Assets::generate_tileset_id(int mimimum_value)
+{
+	auto id = std::max(m_most_recent_tileset, mimimum_value);
+	while(get_tileset(id) != nullptr)
+		++id;
+	return id;
+}
+
+int
 Assets::find_group( std::string_view name )
 {
 	const int size = m_image_groups.size();

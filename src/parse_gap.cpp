@@ -608,9 +608,11 @@ ParserGAP::command_tileset(int line_number, const CommandLine & command)
 		}
 	}
 
+	// ----- If the tileset id was not specified then generate a unique id. -----
+	if(tileset.id < 0)	tileset.id = m_p_assets->generate_tileset_id(m_current_tileset >= 0 ? m_current_tileset : 1);
 	if(tileset.id < 0)	return on_error(line_number,std::string("Invalid/Missing 'id' parameter!"));
 
-	// If the width and height are specified then add the tileset, otherwise just make the tileset current.
+	// ----- If the width and height are specified then add the tileset, otherwise just make the tileset current. -----
 	if((tileset.tile_width > 0) || (tileset.tile_height > 0))
 	{
 		if(tileset.tile_width <= 0)			return on_error(line_number,std::string("Invalid/Missing 'width' parameter!"));
