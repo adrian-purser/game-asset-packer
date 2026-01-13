@@ -111,7 +111,7 @@ encode_pixel(uint32_t colour,uint8_t pixel_format)
 		case gap::image::pixelformat::AL88 :				return ((colour >> 16) & 0x0FF00) | (( ((colour >> 16) & 0x0FF) + ((colour >> 8) & 0x0FF) + (colour & 0x0FF) ) / 3);
 		case gap::image::pixelformat::L8 :					return (((colour >> 16) & 0x0FF) + ((colour >> 8) & 0x0FF) + (colour & 0x0FF) ) / 3;
 		case gap::image::pixelformat::AL44 :				return ((colour >> 24) & 0x0F0) | ((( ((colour >> 16) & 0x0FF) + ((colour >> 8) & 0x0FF) + (colour & 0x0FF) ) / 3) >> 4);
-		case gap::image::pixelformat::A8 :					return ((colour >> 24) & 0x0FF00);
+		case gap::image::pixelformat::A8 :					return ((colour >> 24) & 0x0FF);
 		case gap::image::pixelformat::I8 :					return 0;
 		case gap::image::pixelformat::L4 :					return ((((colour >> 16) & 0x0FF) + ((colour >> 8) & 0x0FF) + (colour & 0x0FF) ) / 3) >> 4;
 		case gap::image::pixelformat::A4 :					return ((colour >> 28) & 0x0F);
