@@ -16,7 +16,7 @@
 namespace gap::image
 {
 
-std::uint8_t 
+std::uint8_t
 parse_pixelformat_name(const std::string & name)
 {
 	auto hash = ade::hash::hash_ascii_string_as_lower(name.c_str(),name.size());
@@ -42,7 +42,7 @@ parse_pixelformat_name(const std::string & name)
 	return pf;
 }
 
-std::string			
+std::string
 get_pixelformat_name(std::uint8_t pixelformat)
 {
 	switch(pixelformat)
@@ -74,7 +74,7 @@ load(const std::string & filename,gap::FileSystem & filesystem)
 		return nullptr;
 	}
 
-	
+
 	adepng::PNGDecode decode;
 	if(decode.decode(file.data(),file.size(),4))
 	{
@@ -85,7 +85,7 @@ load(const std::string & filename,gap::FileSystem & filesystem)
 	int width					= decode.width();
 	int height				= decode.height();
 	int pixelformat		= 0;
-	
+
 	switch(decode.source_components())
 	{
 		case 1 : 	pixelformat	= gap::image::pixelformat::A8;			 break;
@@ -102,8 +102,8 @@ load(const std::string & filename,gap::FileSystem & filesystem)
 	p_image->set_target_pixelformat(pixelformat);
 
 /*
-	std::cout << "LOADIMAGE: " << decode.width() << 'x' << decode.height() 
-						<< " components=" << decode.components() 
+	std::cout << "LOADIMAGE: " << decode.width() << 'x' << decode.height()
+						<< " components=" << decode.components()
 						<< " source_pixelformat=" << gap::image::get_pixelformat_name(pixelformat)
 						<< std::endl;
 */
@@ -116,7 +116,7 @@ SourceImage::SourceImage(int width,int height,const std::uint32_t * p_data,int l
 {
 	m_source_data.reserve(width*height);
 	for(int y=0;y<height;++y,p_data+=line_offset)
-		for(int x=0;x<width;++x) 	
+		for(int x=0;x<width;++x)
 			m_source_data.push_back(*p_data++);
 }
 
@@ -127,12 +127,12 @@ SourceImage::SourceImage(int width,int height,const std::uint8_t * p_data,int li
 	m_source_data.reserve(width*height);
 	int i=0;
 	for(int y=0;y<height;++y,p_data+=line_offset*4)
-		for(int x=0;x<width;++x,++i,p_data += 4) 	
+		for(int x=0;x<width;++x,++i,p_data += 4)
 			m_source_data.push_back(p_data[0] | (p_data[1]<<8) | (p_data[2]<<16) | (p_data[3]<<24));
 }
 
 
-std::vector<uint8_t>	
+std::vector<uint8_t>
 SourceImage::create_sub_target_data(int x, int y, int width, int height, uint8_t pixel_format, bool big_endian)
 {
 	std::vector<uint8_t>	data;
@@ -155,9 +155,9 @@ SourceImage::create_sub_target_data(int x, int y, int width, int height, uint8_t
 				{
 					std::uint32_t pixel = gap::image::pixelformat::encode_pixel(get_pixel(x+ix,y+iy),pixel_format);
 					for(int c=0;c<bpp;++c)
-						data.push_back((big_endian ? (pixel >> (((bpp-1)-c)*8))  : (pixel >> (c*8)) ) & 0x0FF); 
+						data.push_back((big_endian ? (pixel >> (((bpp-1)-c)*8))  : (pixel >> (c*8)) ) & 0x0FF);
 				}
-			}	
+			}
 			break;
 	}
 
@@ -178,8 +178,8 @@ SourceImage::create_sub_target_data(int x, int y, int width, int height, uint8_t
 					const std::uint8_t l2 = ((((pixel2 >> 16) & 0x0FF) + ((pixel2 >> 8) & 0x0FF) + (pixel2 & 0x0FF)) / 3) & 0x0F0;
 					data[iout++] = (l1 >> 4) | l2;
 				}
-			}	
-			break;		
+			}
+			break;
 
 
 
@@ -196,20 +196,20 @@ SourceImage::create_sub_target_data(int x, int y, int width, int height, uint8_t
 					const std::uint8_t a2 = (pixel2 >> 28) & 0x0F;
 					data[iout++] = a1 | (a2 << 4);
 				}
-			}	
-			break;		
+			}
+			break;
 
 		//-------------------------------------------------------------------------
 		case gap::image::pixelformat::I8 :
 		//-------------------------------------------------------------------------
 			if(m_palette.empty())
 			{
-				// TODO: 
+				// TODO:
 				//target.palette = create_palette(source,256);
 				std::cout << "CreateTargetImage: create_palette is unimplemented, sorry!\n";
 				break;
 			}
-			
+
 			for(int y=0;y<m_height;++y)
 			{
 				for(int x=0;x<m_width;++x)
@@ -218,13 +218,13 @@ SourceImage::create_sub_target_data(int x, int y, int width, int height, uint8_t
 					int index = m_palette.find_colour(pixel);
 
 					for(int c=0;c<4;++c)
-						data[iout++] = (big_endian ?  (pixel >> ((3-c)*8)) : (pixel >> (c*8)) ) & 0x0FF; 
+						data[iout++] = (big_endian ?  (pixel >> ((3-c)*8)) : (pixel >> (c*8)) ) & 0x0FF;
 				}
-			}	
-			break;		
+			}
+			break;
 */
 
-std::unique_ptr<SourceImage>	
+std::unique_ptr<SourceImage>
 SourceImage::duplicate_subimage(int x, int y, int width, int height)
 {
 	return std::make_unique<SourceImage>(width,height,get_pixel_address(x,y),m_width-width);
@@ -239,7 +239,7 @@ SourceImage::rotate(float angle,int & originx, int & originy)
 	const int ox = originx;
 	const int oy = originy;
 
-	if(angle == 90.0f)				{rotate_90(); 	originx = m_width-oy; 	originy = ox;}	
+	if(angle == 90.0f)				{rotate_90(); 	originx = m_width-oy; 	originy = ox;}
 	else if(angle == 180.0f)	{rotate_180();	originx = m_width-ox; 	originy = m_height-oy;}
 	else if(angle == 270.0f)	{rotate_270();	originx = oy; 					originy = m_height-ox;}
 	else
@@ -296,12 +296,12 @@ SourceImage::rotate(float angle,int & originx, int & originy)
 
 		m_source_data.clear();
 		m_source_data.reserve(m_width * m_height);
-		
+
 		for(int y=miny;y<=maxy;++y)
 			for(int x=minx;x<=maxx;++x)
 				m_source_data.push_back(buffer[(y*side) + x]);
 	}
-	
+
 }
 
 void
@@ -351,7 +351,7 @@ SourceImage::horizontal_flip()
 	for(int y=0;y<m_height;++y)
 	{
 		const int i = y*m_width;
-		std::reverse(&m_source_data[i],&m_source_data[i+m_width]);
+		std::reverse(&m_source_data[i],&m_source_data[i+m_width-1]);
 	}
 }
 
