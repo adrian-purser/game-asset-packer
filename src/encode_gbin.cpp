@@ -22,7 +22,8 @@
 
 enum
 {
-	HEADER_FLAG_BIG_ENDIAN
+	HEADER_FLAG_BIG_ENDIAN			= (1<<0),
+	HEADER_FLAG_EXECUTABLE			= (1<<1)
 };
 
 
@@ -58,20 +59,46 @@ namespace gap
 
 static
 void
-encode_header(std::vector<std::uint8_t> & data,std::string_view name,const gap::Configuration & config)
+encode_header(	std::vector<std::uint8_t> & 	data,
+								std::string_view 							name,
+								const gap::assets::Assets & 	assets,
+								const gap::Configuration & 		config )
 {
 	data.reserve(data.size()+HEADER_SIZE);
 
+	//---------------------------------------------------------------------------
+	// Calculate flags
+	//---------------------------------------------------------------------------
+	uint8_t flags = config.b_big_endian ? HEADER_FLAG_BIG_ENDIAN : 0;
+
+	// ----- Search for a CODE file. Set executable flag if found. -----
+	assets.enumerate_files([&](const gap::assets::FileInfo & fileinfo)->bool
+	{
+		if( fileinfo.type == ade::hash::fourcc("CODE") )
+		{
+			flags |= HEADER_FLAG_EXECUTABLE;
+			return false;
+		}
+		return true;
+	});
+
+	//---------------------------------------------------------------------------
+	// Encode Chunk
+	//---------------------------------------------------------------------------
 	fourcc_append("GBIN",data);
 	data.push_back(HEADER_SIZE);
-	data.push_back(config.b_big_endian ? HEADER_FLAG_BIG_ENDIAN : 0);
+	data.push_back(flags);
 	data.push_back(VERSION[0]);
 	data.push_back(VERSION[1]);
+
+	// ----- Placeholder for CRC. Will be filled in later -----
 	fourcc_append("CRC-",data);
 
+	// ----- Name -----
 	for(int i=0;i<12;++i)
 		data.push_back( std::cmp_less(i, name.size()) ? name[i] : 0);
 
+	// ----- Reserved Fields -----
 	fourcc_append("xxxx",data);
 	fourcc_append("xxxx",data);
 
@@ -719,7 +746,7 @@ encode_gbin(std::string_view name, const gap::assets::Assets & assets,const gap:
 	std::vector<std::uint8_t> data;
 	int errors = 0;
 
-	encode_header(data,name,config);
+	encode_header(data,name,assets,config);
 	//encode_image_chunks(data,assets,config);
 	encode_packed_image_chunks(data,assets,config);
 	errors += encode_tilemap_chunks(data,assets,config);
