@@ -110,7 +110,7 @@ public:
 	int										image_sequence_count() const noexcept		{return m_image_sequences.size();}
 	int										source_image_count() const noexcept			{return m_source_images.size();}
 	int										file_count() const noexcept							{return m_files.size();}
-
+	int										colourmap_count() const noexcept				{return m_colour_maps.size();}
 
 	void									enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;
 	void									enumerate_images(std::function<bool (int group,int image_index,const gap::image::Image &)> callback) const;

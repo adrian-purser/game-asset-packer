@@ -97,7 +97,10 @@ CHUNK TYPES
 +------+----------------------------------------------------------------------+
 | TMAP | Tile Map - TODO                                                      |
 +------+----------------------------------------------------------------------+
-| FILE | File Data.                                                           |
+| FDIR | File Directory.                                                      |
++------+----------------------------------------------------------------------+
+| FDAT | File Data. Contains data for all files. FDIR chunk contains index    |
+|      | into the file data.                                                  |
 +------+----------------------------------------------------------------------+
 | STRT | String Table. There should be one string table chunk per language.   |
 +------+----------------------------------------------------------------------+
@@ -115,19 +118,36 @@ CMAP Chunk
 $00 |   C    |   M    |   A    |   P    |    FourCC defines chunk type - 4 Bytes
     +--------+--------+--------+--------+
 $04 |               SIZE                |    Chunk Size - 4 Bytes
-    +===================================+
-$08 |               NAME                |    Name of CMAP - 16 Bytes
-    :                 .                 :    Max. 15 Characters name plus
-    |                 .                 |    one zero termination byte.
+    +=================+=================+
+$08 |      SIZE       |      INDEX      |    Index into the COLR chunk
     +-----------------+-----------------+
-    |      SIZE       |    RESERVED     |
-    +--------+--------+--------+--------+
-$18	|    B   |   G    |   R    |   A    |    1 or more palette entries
-    +--------+--------------------------+
     :                 .                 :
 		:                 .                 :
 		|                 .                 |
     +-----------------------------------+
+
+An array of colour maps. Each entry contains the index of the colour data
+into the COLR chunk and the number of colours in the colour map.
+
+COLR Chunk
+----------
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   C    |   O    |   L    |   R    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +=================+=================+
+$08 |    B   |   G    |   R    |   A    |
+    +--------+--------+--------+--------+
+    :                 .                 :
+		:                 .                 :
+		|                 .                 |
+    +-----------------------------------+
+
+An array of colours for all of the colour maps.  CMAP chunks
+index into this array.
 
 
 SIMG Chunk

@@ -504,14 +504,55 @@ static
 int
 encode_colourmap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & assets,const gap::Configuration & config)
 {
-	std::cout << "Encoding CMAP Chunks...\n";
+	if(assets.colourmap_count() == 0)
+		return 0;
 
+	//---------------------------------------------------------------------------
+	//	COLR Chunk
+	//---------------------------------------------------------------------------
+	std::cout << "Encoding COLR Chunk...\n";
+
+	auto chunk_offset = data.size();
+	fourcc_append("COLR",data);
+	fourcc_append("size",data);	
+
+	std::vector<uint32_t> cmap_indices;
+	
 	assets.enumerate_colourmaps([&](const gap::assets::ColourMap & cmap)->bool
 		{
-			auto chunk_offset = data.size();
-			fourcc_append("CMAP",data);
-			fourcc_append("size",data);
+			cmap_indices.push_back(data.size() - chunk_offset - 8);
+			data.reserve(data.size()+(cmap.colourmap.size()*4));
 
+			for(uint32_t colour : cmap.colourmap)
+			{
+				for(int i=0;i<4;++i,colour >>= 8)
+					data.push_back(colour & 0x0FF);
+			}
+			return true;
+		});
+	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+	//---------------------------------------------------------------------------
+	//	CMAP Chunk
+	//---------------------------------------------------------------------------
+	std::cout << "Encoding CMAP Chunk...\n";
+
+	chunk_offset = data.size();
+	fourcc_append("CMAP",data);
+	fourcc_append("size",data);	
+
+	uint32_t index = 0;
+	assets.enumerate_colourmaps([&](const gap::assets::ColourMap & cmap)->bool
+		{
+			endian_append(data,cmap.colourmap.size(),2,config.b_big_endian);
+			endian_append(data,cmap_indices[index++],2,config.b_big_endian);
+			return true;
+		});
+	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+	/*
+	assets.enumerate_colourmaps([&](const gap::assets::ColourMap & cmap)->bool
+		{
 			data.reserve(chunk_offset + 16 + (cmap.colourmap.size() * 4));
 
 			for(size_t i=0;i<15;++i)	data.push_back( i<cmap.name.size() ? cmap.name[i] : 0 );
@@ -530,7 +571,7 @@ encode_colourmap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Asse
 
 			return true;
 		});
-
+*/
 	return 0;
 }
 
