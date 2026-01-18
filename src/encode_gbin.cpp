@@ -353,37 +353,90 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 	//---------------------------------------------------------------------------
 	//	Image Seqnence [ISEQ]
 	//---------------------------------------------------------------------------
-	std::cout << "Encoding Chunks ISEQ\n";
+	if(assets.image_sequence_count() > 0)
+	{
+		// ----- Encode the IFRMs first and keep a record of the frame indices -----
+		std::cout << "Encoding Chunk IFRM\n";
 
-	assets.enumerate_image_sequences([&](uint32_t id, const gap::assets::ImageSequence & imgseq)->bool
-		{
-			std::cout << std::format("  ISEQ: {:3} : {} COUNT: {}\n", id, imgseq.name, imgseq.frames.size());
+		std::vector<uint32_t> frames;
+		uint32_t frame_index = 0;
 
-			chunk_offset = data.size();
-			data.reserve(chunk_offset + 4 + (8 * imgseq.frames.size()));
+		chunk_offset = data.size();
+		fourcc_append("IFRM",data);
+		fourcc_append("size",data);
 
-			fourcc_append("ISEQ",data);
-			fourcc_append("size",data);
-
-			data.push_back((uint8_t)imgseq.mode);
-			data.push_back(0); // reserved
-			endian_append(data, imgseq.frames.size(), 2, config.b_big_endian);
-
-			for(const auto & frame : imgseq.frames)
+		assets.enumerate_image_sequences([&](uint32_t id, const gap::assets::ImageSequence & imgseq)->bool
 			{
-				endian_append(data, frame.group, 2, config.b_big_endian);
-				endian_append(data, frame.image, 2, config.b_big_endian);
-				data.push_back(frame.time);
-				data.push_back(frame.x);
-				data.push_back(frame.y);
-				data.push_back(0);
+				std::cout << std::format("  ISEQ: {:3} : {} COUNT: {}\n", id, imgseq.name, imgseq.frames.size());
 
-				std::cout << std::format("    FRAME: group:{} image:{}\n", frame.group, frame.image );
-			}
+				frames.push_back(frame_index);
+				frame_index += imgseq.frames.size();
+				for(const auto & frame : imgseq.frames)
+				{
+					endian_append(data, frame.group, 2, config.b_big_endian);
+					endian_append(data, frame.image, 2, config.b_big_endian);
+					data.push_back(frame.time);
+					data.push_back(frame.x);
+					data.push_back(frame.y);
+					data.push_back(0);
+					std::cout << std::format("    FRAME: group:{} image:{}\n", frame.group, frame.image );
+				}
 
-			endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
-			return true;
-		});
+				return true;
+			});
+		endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+		// ----- Encode the ISEQs using the fram indices that we saved earlier -----
+		std::cout << "Encoding Chunk ISEQ\n";
+		frame_index = 0;
+
+		chunk_offset = data.size();
+		fourcc_append("ISEQ",data);
+		fourcc_append("size",data);
+		data.reserve(data.size() + (assets.image_sequence_count() * 8));
+
+		assets.enumerate_image_sequences([&](uint32_t id, const gap::assets::ImageSequence & imgseq)->bool
+			{
+				data.push_back((uint8_t)imgseq.mode);
+				data.push_back(0); // reserved
+				endian_append(data, imgseq.frames.size(), 2, config.b_big_endian);
+				endian_append(data, frames[frame_index++], 4, config.b_big_endian);
+				return true;
+			});
+		endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+	}	
+		/*
+		assets.enumerate_image_sequences([&](uint32_t id, const gap::assets::ImageSequence & imgseq)->bool
+			{
+				std::cout << std::format("  ISEQ: {:3} : {} COUNT: {}\n", id, imgseq.name, imgseq.frames.size());
+
+				chunk_offset = data.size();
+				data.reserve(chunk_offset + 4 + (8 * imgseq.frames.size()));
+
+				fourcc_append("ISEQ",data);
+				fourcc_append("size",data);
+
+				data.push_back((uint8_t)imgseq.mode);
+				data.push_back(0); // reserved
+				endian_append(data, imgseq.frames.size(), 2, config.b_big_endian);
+
+				for(const auto & frame : imgseq.frames)
+				{
+					endian_append(data, frame.group, 2, config.b_big_endian);
+					endian_append(data, frame.image, 2, config.b_big_endian);
+					data.push_back(frame.time);
+					data.push_back(frame.x);
+					data.push_back(frame.y);
+					data.push_back(0);
+
+					std::cout << std::format("    FRAME: group:{} image:{}\n", frame.group, frame.image );
+				}
+
+				endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+				return true;
+			});
+			*/
+	
 
 	//---------------------------------------------------------------------------
 	//	Tilesets [TSET]

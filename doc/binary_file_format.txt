@@ -239,8 +239,33 @@ $00 |   I    |   S    |   E    |   Q    |    FourCC defines chunk type - 4 Bytes
 $04 |               SIZE                |    Chunk Size - 4 Bytes
     +========+========+=================+
 $08 |  MODE  |        |   FRAME_COUNT   |
+    +--------+--------+--------+--------+
+    |            FRAME_INDEX            |
+    +===================================+
+    :                 .                 :
+    :                 .                 :
+    |                 .                 |
+    +-----------------------------------+
+
+Describes an image sequence. The individual sequence frames are stored in the 
+IFRM chunk.
+
+MODE        - uint8_t  - Sequence Mode, e.g. LOOP, ONCE, BOUNCE
+FRAME_COUNT - uint16_t - Number of frames in sequence.
+FRAME_INDEX - uint32_t - Offset into the IFRM chunk.
+
+
+IFRM Chunk - Image Sequence Frame
+---------------------------------
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   I    |   F    |   R    |   M    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
     +========+========+=================+
-    |      GROUP      |      IMAGE      |    Image Frame
+$08 |      GROUP      |      IMAGE      |    Image Frame
     +--------+--------+--------+--------+
     |  TIME  |    X   |    Y   |        |
     +========+========+========+========+
@@ -249,15 +274,15 @@ $08 |  MODE  |        |   FRAME_COUNT   |
     |                 .                 |
     +-----------------------------------+
 
-MODE        - uint8_t  - Sequence Mode, e.g. LOOP, ONCE, BOUNCE
-FRAME_COUNT - uint16_t - Number of frames in sequence.
+Stores all image sequence frames for all sequences. Each sequences frames
+are stored contiguoously. The sequence contains an index and size into this
+array.
 
 GROUP       - uint16_t - Group ID
 IMAGE       - int16_t  - Image ID, -1 for application specific use of group.
 TIME        - uint8_t  - Frame time measured in number of video frames.
 X           - int8_t   - X offset of image.
 Y           - int8_t   - Y offset of image.
-
 
 
 TSET Chunk - Tile Set
