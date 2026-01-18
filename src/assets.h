@@ -109,6 +109,9 @@ public:
 	int										image_group_count() const noexcept;
 	int										image_sequence_count() const noexcept		{return m_image_sequences.size();}
 	int										source_image_count() const noexcept			{return m_source_images.size();}
+	int										file_count() const noexcept							{return m_files.size();}
+
+
 	void									enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;
 	void									enumerate_images(std::function<bool (int group,int image_index,const gap::image::Image &)> callback) const;
 	void									enumerate_image_groups(std::function<bool(const std::string & name,uint32_t group_number,uint16_t base, uint16_t size)> callback) const;

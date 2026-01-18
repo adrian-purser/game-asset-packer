@@ -52,6 +52,7 @@ HEADER FLAGS
     | 7 | 8 | 5 | 4 | 3 | 2 | 1 | 0 |  -  Bit Number
     +---+---+---+---+---+---+---+---+
     |   |   |   |   |   |   |   | * |  -  Endian Type. 0 = Little Endian, 1 = Big Endian
+    |   |   |   |   |   |   | * |   |  -  Executable. 0 = No CODE File Chunk, 1 = Has CODE File Chunk
     +---+---+---+---+---+---+---+---+
 
 
@@ -310,29 +311,50 @@ $10	|         IMAGE DATA OFFSET         |
     +-----------------------------------+
 
 
-FILE Chunk - File Data
+FDIR Chunk - File Directory
+---------------------------
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   F    |   D    |   I    |   R    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +===================================+
+$08 |             FILE TYPE             |    FourCC - 4 Bytes
+    +-----------------------------------+
+$0C |             FILE SIZE             |    FileSize, 32 bits Little Endian byte order.
+    +-----------------------------------+
+$10 |          FILE DATA INDEX          |    Index of the file data in the FDAT chunk, 32 bits Little Endian byte order.
+    +-----------------------------------+
+$10 |             FILE NAME             |    16 Bytes, NULL terminated filename string.
+    + - - - - - - - - - - - - - - - - - |
+    |                                   |
+    + - - - - - - - - - - - - - - - - - |
+    |                                   |
+    + - - - - - - - - - - - - - - - - - |
+    |                                   |
+    +-----------------------------------+
+    :                 .                 :
+    :                 .                 :
+    |                 .                 |
+    +-----------------------------------+
+
+
+FDAT Chunk - File Data
 -----------------------
 
           -------------------->
         0        1        2        3
     +--------+--------+--------+--------+
-$00 |   F    |   I    |   L    |   E    |    FourCC defines chunk type - 4 Bytes
+$00 |   F    |   D    |   A    |   T    |    FourCC defines chunk type - 4 Bytes
     +--------+--------+--------+--------+
 $04 |               SIZE                |    Chunk Size - 4 Bytes
     +===================================+
-$08 |               TYPE                |    FourCC - 4 Bytes
-    +-----------------------------------+
-$0C |             FILESIZE              |    FileSize, 32 bits Little Endian byte order.
-    +-----------------------------------+
-$10 |             FILENAME              |    16 Bytes, NULL terminated filename string.
-    + - - - - - - - - - - - - - - - - - |
-    |                                   |
-    + - - - - - - - - - - - - - - - - - |
-    |                                   |
-    + - - - - - - - - - - - - - - - - - |
-    |                                   |
-    +-----------------------------------+
-$20 |             FILEDATA              |
+$08 |             FILEDATA              |    Data for all files concatenated. 
+    :                 .                 :    FDIR chunk contains indices into this data.
+    :                 .                 :    Each files data is aligned to a 4-byte boundary.
+    |                 .                 |
     +-----------------------------------+
 
 

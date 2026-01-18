@@ -13,6 +13,7 @@
 #include <string_view>
 #include <utility>
 #include <format>
+#include <print>
 
 #include "encode_gbin.h"
 
@@ -365,7 +366,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 		fourcc_append("IFRM",data);
 		fourcc_append("size",data);
 
-		assets.enumerate_image_sequences([&](uint32_t id, const gap::assets::ImageSequence & imgseq)->bool
+		assets.enumerate_image_sequences([&]([[maybe_unused]] uint32_t id, const gap::assets::ImageSequence & imgseq)->bool
 			{
 				std::cout << std::format("  ISEQ: {:3} : {} COUNT: {}\n", id, imgseq.name, imgseq.frames.size());
 
@@ -395,7 +396,7 @@ encode_packed_image_chunks(std::vector<std::uint8_t> & data,const gap::assets::A
 		fourcc_append("size",data);
 		data.reserve(data.size() + (assets.image_sequence_count() * 8));
 
-		assets.enumerate_image_sequences([&](uint32_t id, const gap::assets::ImageSequence & imgseq)->bool
+		assets.enumerate_image_sequences([&]([[maybe_unused]] uint32_t id, const gap::assets::ImageSequence & imgseq)->bool
 			{
 				data.push_back((uint8_t)imgseq.mode);
 				data.push_back(0); // reserved
@@ -512,18 +513,73 @@ encode_colourmap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Asse
 //
 //=============================================================================
 
-struct FILEChunkEntry
-{
-	uint8_t 			type[4];
-	uint8_t				datasize[4];
-	uint8_t				name[16];
-};
+// struct FDIRChunkEntry
+// {
+// 	uint8_t 			type[4];
+// 	uint8_t				datasize[4];
+// 	uint8_t				name[16];
+// };
 
 static
 int
 encode_file_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & assets,const gap::Configuration & config)
 {
+	if(assets.file_count() == 0)
+		return 0;
+
 	std::cout << "Encoding FILE Chunks...\n";
+
+	//---------------------------------------------------------------------------
+	//	FDAT Chunk
+	//---------------------------------------------------------------------------
+
+	std::vector<uint32_t>	fdat_indices;
+
+	auto chunk_offset = data.size();
+	fourcc_append("FDAT",data);
+	fourcc_append("size",data);
+
+	assets.enumerate_files([&](const gap::assets::FileInfo & fileinfo)->bool
+		{
+			std::println("Encoding File - '{}' as '{}' size: {}", fileinfo.source_path, fileinfo.name, fileinfo.data.size());
+			fdat_indices.push_back(data.size()-chunk_offset-8);
+			data.insert(end(data),begin(fileinfo.data),end(fileinfo.data));
+
+			// ----- Align the data to 4 byte boundary -----
+			{
+				auto sz = (data.size() + 3) & ~3;
+				if(sz > data.size())
+					data.resize(sz,0);
+			}
+			return true;
+		});
+
+	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+	//---------------------------------------------------------------------------
+	//	FDIR Chunk
+	//---------------------------------------------------------------------------
+	chunk_offset = data.size();
+	fourcc_append("FDIR",data);
+	fourcc_append("size",data);
+
+	int fdat_index = 0;
+	assets.enumerate_files([&](const gap::assets::FileInfo & fileinfo)->bool
+		{
+			const uint8_t 	namesize = std::min<uint8_t>(fileinfo.name.size(),15);
+			const uint32_t	datasize = fileinfo.data.size();
+
+			endian_append(data,fileinfo.type,4,config.b_big_endian);
+			for(int i=0;i<4;++i) 	data.push_back((datasize >> (i*8)) & 0x0FF);
+			endian_append(data, fdat_indices[fdat_index++], 4, config.b_big_endian);
+			for(size_t i=0;i<16;++i)	data.push_back( i<namesize ? fileinfo.name[i] : 0 );
+
+			return true;
+		});
+
+	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+	/*
 	assets.enumerate_files([&](const gap::assets::FileInfo & fileinfo)->bool
 		{
 			std::cout << "  Encoding File - '" << fileinfo.source_path << "' as '" << fileinfo.name
@@ -557,7 +613,7 @@ encode_file_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & 
 
 			return false;
 		});
-
+*/
 	return 0;
 }
 
