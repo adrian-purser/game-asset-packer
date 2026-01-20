@@ -453,20 +453,14 @@ $0C |      WIDTH      |     HEIGHT      |
     +-----------------+-----------------+
 $10 |            INDEX COUNT            |
     +-----------------------------------+
+$10 |            INDEX OFFSET           |    Offset into the TMIX chunk
+    +-----------------------------------+
 $14 |            BLOCK COUNT            |
+    +-----------------------------------+
+$14 |            BLOCK OFFSET           |    Offset into the TMBL chunk 
     +--------+--------+-----------------+
 $18 | BSIZE  | TSIZE  |      ---        |
     +--------+--------+-----------------+
-$1C |             ---------             |
-    +-----------------------------------+
-$20 | INDICES ....                      |    INDEX COUNT * 2 Bytes
-    :                 :                 :    (Rounded up to multiple of 4 bytes)
-    :                 :                 :
-    +-----------------------------------+
-    | BLOCKS ....                       |    BSIZE * BSIZE * TSIZE * BLOCK COUNT
-    :                 :                 :    (Rounded up to multiple of 4 bytes)
-    :                 :                 :
-    +-----------------------------------+
 
 WIDTH   - Width of tilemap in tiles.
 HEIGHT  - Width of tilemap in tiles.
@@ -474,4 +468,38 @@ BSIZE 	-	Block Size in tiles. Block volume = BSIZE * BSIZE
 TSIZE   - Tile Size in bytes.
 
 Block Size in bytes = BSIZE * BSIZE * TSIZE
+
+
+
+TMIX Chunk - Sparse Tile Map Index Data
+---------------------------------------
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   T    |   M    |   I    |   X    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +===================================+
+$08 | INDICES ....                      |    Indices for all of the tilemaps
+    :                 :                 :    
+    :                 :                 :    The TMAP chunk contains an index into this data.
+    +-----------------------------------+
+
+
+TMBL Chunk - Sparse Tile Map Block Data
+---------------------------------------
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   T    |   M    |   B    |   L    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +===================================+
+$08 | BLOCKS ....                       |    Block data for all tilemaps.
+    :                 :                 :    Each tilemaps block data is rounded up to multiple of 4 bytes.
+    :                 :                 :    The TMAP chunk contains an index into this data.
+    +-----------------------------------+
+
 

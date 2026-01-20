@@ -111,7 +111,8 @@ public:
 	int										source_image_count() const noexcept			{return m_source_images.size();}
 	int										file_count() const noexcept							{return m_files.size();}
 	int										colourmap_count() const noexcept				{return m_colour_maps.size();}
-
+	int										tilemap_count() const noexcept					{return m_tilemaps.size();}
+	
 	void									enumerate_source_images(std::function<bool (int image_index,const gap::image::SourceImage &)> callback) const;
 	void									enumerate_images(std::function<bool (int group,int image_index,const gap::image::Image &)> callback) const;
 	void									enumerate_image_groups(std::function<bool(const std::string & name,uint32_t group_number,uint16_t base, uint16_t size)> callback) const;
