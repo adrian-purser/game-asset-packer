@@ -72,6 +72,11 @@ export_assets(gap::assets::Assets & assets,const gap::exporter::ExportInfo & exp
 				outfile << "//=============================================================================\n\n";
 				outfile << std::format("#ifndef {}\n#define {}\n\n",guard_name,guard_name);
 
+				if(!exportinfo.section.empty())
+					outfile << std::format("__attribute__((section(\"{}\"), used))\n", exportinfo.section);
+				else
+					outfile << "#if defined(GBIN_ASSET_SECTION)\n__attribute__((section(GBIN_ASSET_SECTION), used))\n#endif\n";
+
 				outfile << std::format("static const uint8_t sg_gbin_{}[] =\n{{\n",exportinfo.name);
 
 				for(size_t i=0,size=blob.size(); i<size; ++i)

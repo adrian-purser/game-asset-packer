@@ -40,6 +40,7 @@ struct ExportInfo
 {
 	std::string			filename;
 	std::string			name;
+	std::string			section;			// For C or C++ arrays/vectors, the linker secion they should be assigned to.
 	int							type;
 	int							format;
 };
