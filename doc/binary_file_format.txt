@@ -416,25 +416,42 @@ $00 |   S    |   W    |   A    |   V    |    FourCC defines chunk type - 4 Bytes
     +--------+--------+--------+--------+
 $04 |               SIZE                |    Chunk Size - 4 Bytes
     +===================================+
-$08 |   SAMPLE RATE   | FORMAT |  COMP  |
+$08 |   SAMPLE RATE   | FORMAT |        |
     +-----------------+--------+--------+
-$0C |           SAMPLE COUNT            |
-    +-----------------+-----------------+
-$10 |        SAMPLE DATA OFFSET         |
-    +=================+=================+
+$0C |         SAMPLE DATA SIZE          |
+    +-----------------------------------+
+$10 |         SAMPLE DATA OFFSET        |
+    +===================================+
     :                 .                 :
     :                 .                 :
     |                 .                 |
     +-----------------------------------+
 
 
-FORMAT - 00 - S8    - Signed 8-bit
-       - 01 - U8    - Unsigned 8-bit
-       - 02 - S16   - Signed 16-bit
-       - 03 - U16   - Unsigned 16-bit
+FORMAT - 00 - S8          - PCM Signed 8-bit
+       - 01 - U8          - PCM Unsigned 8-bit
+       - 02 - S16         - PCM Signed 16-bit
+       - 03 - U16         - PCM Unsigned 16-bit
+       - 04 - IMA_ADPCM   - DVI/IMA ADPCM
 
-COMP - Compression
-       - 00 - Uncompressed
+WAVD Chunk - Sound Sample Waveform Data
+---------------------------------------
+
+Contains sample data for all sound samples. 
+
+          -------------------->
+        0        1        2        3
+    +--------+--------+--------+--------+
+$00 |   W    |   A    |   V    |   D    |    FourCC defines chunk type - 4 Bytes
+    +--------+--------+--------+--------+
+$04 |               SIZE                |    Chunk Size - 4 Bytes
+    +===================================+
+$08	|            SAMPLE DATA            |
+    :                 .                 :
+    :                 .                 :
+    |                 .                 |
+    +-----------------------------------+
+
 
 
 TMAP Chunk - Sparse Tile Map

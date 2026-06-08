@@ -173,6 +173,23 @@ encode_definitions(const gap::exporter::ExportInfo & exportinfo, const gap::asse
 		});
 	definitions.append("};\n\n} // namespace tileset\n\n");
 
+	//---------------------------------------------------------------------------
+	//	Sound Samples
+	//---------------------------------------------------------------------------
+	definitions.append("namespace soundsamples\n{\n\nenum\n{\n");
+	int id=0;
+	assets.enumerate_sound_samples([&](const gap::sound::SoundSample & sample)->bool
+		{
+			std::string nam = sample.name;
+			std::transform(begin(nam),end(nam),begin(nam),::toupper);
+			std::replace(begin(nam),end(nam),'-','_');
+			definitions.append(std::format("\t{:24} = {},\n",nam,id));
+			++id;
+			return true;
+		});
+	definitions.append("};\n\n} // namespace soundsamples\n\n");
+
+	//---------------------------------------------------------------------------
 	definitions.append("} // namespace game\n\n");
 
 	//---------------------------------------------------------------------------

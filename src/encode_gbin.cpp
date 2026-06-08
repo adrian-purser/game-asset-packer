@@ -912,6 +912,59 @@ encode_tilemap_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets
 	return 0;
 }
 
+static int
+encode_sound_sample_chunks(std::vector<std::uint8_t> & data,const gap::assets::Assets & assets,const gap::Configuration & config)
+{
+	std::cout << "Encoding Sound Sample Chunks...\n";
+
+	//---------------------------------------------------------------------------
+	//	WAVD Chunk
+	//---------------------------------------------------------------------------
+	auto chunk_offset = data.size();
+	fourcc_append("WAVD",data);
+	fourcc_append("size",data);
+	std::vector<uint32_t> sample_data_offsets;
+	auto data_offset = data.size();
+	assets.enumerate_sound_samples([&](const gap::sound::SoundSample & sample)->bool
+		{
+			sample_data_offsets.push_back(data.size() - data_offset);
+			data.insert(end(data),begin(sample.data),end(sample.data));
+
+			// ----- Align to 4-byte boundary -----
+			auto sz = (data.size() + 3) & ~3;
+			if(sz > data.size())
+				data.resize(sz);
+
+			return true;
+		});
+	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+
+	//---------------------------------------------------------------------------
+	//	SWAV Chunk
+	//---------------------------------------------------------------------------
+	chunk_offset = data.size();
+	fourcc_append("SWAV",data);
+	fourcc_append("size",data);
+
+	int index = 0;
+	assets.enumerate_sound_samples([&](const gap::sound::SoundSample & sample)->bool
+		{
+			std::cout << std::format("  SOUND SAMPLE: name='{}' size={} bytes\n", sample.name, sample.data.size());
+
+			endian_append(data,sample.sample_rate,2,config.b_big_endian);
+			endian_append(data,sample.format,1,config.b_big_endian);
+			endian_append(data,0,1,config.b_big_endian);
+			endian_append(data,sample.data.size(),4,config.b_big_endian);
+			endian_append(data,sample_data_offsets[index++],4,config.b_big_endian);
+			return true;
+		});
+
+	// ----- Update the chunk size -----
+	endian_insert(data,std::uint32_t(data.size()-(chunk_offset+8)),chunk_offset+4,4,config.b_big_endian);
+
+	return 0;
+}
 
 std::vector<std::uint8_t>
 encode_gbin(std::string_view name, const gap::assets::Assets & assets,const gap::Configuration & config)
@@ -926,6 +979,7 @@ encode_gbin(std::string_view name, const gap::assets::Assets & assets,const gap:
 	errors += encode_tilemap_chunks(data,assets,config);
 	errors += encode_colourmap_chunks(data,assets,config);
 	errors += encode_file_chunks(data,assets,config);
+	errors += encode_sound_sample_chunks(data,assets,config);
 
 	//---------------------------------------------------------------------------
 	//	End [ENDC]

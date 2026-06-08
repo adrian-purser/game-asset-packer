@@ -58,6 +58,7 @@ public:
 private:
 	int									parse_line(std::string_view line,int line_number);
 	int									on_error(int line_number,const std::string & error_message) {std::cerr << "Line " << line_number << ": " << error_message << '\n';return -1;}
+	int									on_warning(int line_number,const std::string & warning_message) {std::cerr << "Line " << line_number << ": Warning: " << warning_message << '\n';return 0;}
 
 	int									command_colourmap(int line_number,const CommandLine & args);
 	int 								command_loadimage(int line_number,const CommandLine & args);

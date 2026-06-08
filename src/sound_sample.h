@@ -23,35 +23,24 @@
 namespace gap::sound
 {
 
-static constexpr uint8_t		FORMAT_S8		= 0;
-static constexpr uint8_t		FORMAT_U8		= 1;
-static constexpr uint8_t		FORMAT_S16	= 2;
-static constexpr uint8_t		FORMAT_U16	= 3;
+static constexpr uint8_t		FORMAT_S8					= 0;
+static constexpr uint8_t		FORMAT_U8					= 1;
+static constexpr uint8_t		FORMAT_S16				= 2;
+static constexpr uint8_t		FORMAT_U16				= 3;
+static constexpr uint8_t		FORMAT_IMA_ADPCM	= 4;
 
-static constexpr uint8_t		COMPRESSION_NONE	= 0;
+static constexpr uint8_t		FORMAT_UNKNOWN 		= 0xFF;
 
-
-class SoundSample
+struct SoundSample
 {
-private:
-	std::string							m_name;
-	uint16_t								m_sample_rate 	= 0;
-	uint8_t									m_format 				= 0;
-	uint8_t									m_compression 	= 0;
-	std::vector<uint8_t>		m_data;
-
-public:
-	SoundSample() = default;
-	~SoundSample() = default;
-	SoundSample( 	std::string_view name,
-								uint16_t								sample_rate,
-								uint8_t									format,
-								uint8_t									compression,
-								std::vector<uint8_t>		data );
-
+	std::string							name;
+	uint16_t								sample_rate 	= 0;
+	uint8_t									format 				= FORMAT_UNKNOWN;
+	std::vector<uint8_t>		data;
 };
 
 std::unique_ptr<SoundSample>			load_sound_sample(const std::filesystem::path & filename, gap::FileSystem & filesystem);
+std::unique_ptr<SoundSample>			convert_sample(const SoundSample & sample, uint8_t format, uint16_t rate);
 
 } // namespace gap::sound
 

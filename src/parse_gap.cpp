@@ -1079,12 +1079,13 @@ static uint8_t
 decode_sample_format(std::string fmt)
 {
 	std::transform(begin(fmt), end(fmt), begin(fmt), ::toupper);
-	if(fmt == "S8")		return gap::sound::FORMAT_S8;
-	if(fmt == "U8")		return gap::sound::FORMAT_U8;
-	if(fmt == "S16")	return gap::sound::FORMAT_S16;
-	if(fmt == "U16")	return gap::sound::FORMAT_U16;
+	if(fmt == "S8")					return gap::sound::FORMAT_S8;
+	if(fmt == "U8")					return gap::sound::FORMAT_U8;
+	if(fmt == "S16")				return gap::sound::FORMAT_S16;
+	if(fmt == "U16")				return gap::sound::FORMAT_U16;
+	if(fmt == "IMA_ADPCM")	return gap::sound::FORMAT_IMA_ADPCM;
 
-	return gap::sound::FORMAT_S8;
+	return gap::sound::FORMAT_UNKNOWN;
 }
 
 int
@@ -1092,10 +1093,10 @@ ParserGAP::command_soundsample(int line_number,const CommandLine & command)
 {
 	std::string 	name;
 	std::string		source;
-	uint8_t				format			= 0;	// Required format.
-	uint8_t				srcformat		= 0;	// Source format hint, for RAW files.
-	uint16_t			srcrate			= 0;	// Source rate hint, for RAW files.
-	uint16_t			rate				= 0; 	// Desired rate
+	uint8_t				format			= gap::sound::FORMAT_UNKNOWN;	// Required format.
+	uint8_t				srcformat		= gap::sound::FORMAT_UNKNOWN;	// Source format hint, for RAW files.
+	uint16_t			srcrate			= 0;			// Source rate hint, for RAW files.
+	uint16_t			rate				= 22050; 	// Desired rate
 
 	//---------------------------------------------------------------------------
 	//	Parse Arguments
@@ -1120,6 +1121,59 @@ ParserGAP::command_soundsample(int line_number,const CommandLine & command)
 
 	std::print("SOUNDSAMPLE: name: {}, source: {}, srcfmt: {}, format: {}, srcrate: {}, rate: {}\n", name, source, format, srcformat, srcrate, rate);
 
+	if(format == gap::sound::FORMAT_UNKNOWN)
+		format = srcformat;
+
+	// ----- Load the sample. -----
+	auto p_sample = gap::sound::load_sound_sample(source, m_filesystem);
+	if(p_sample == nullptr)
+		return on_error(line_number,std::format("Failed to load sound sample! - {}", source));
+
+	if(!name.empty())
+		p_sample->name = name;
+
+	// ----- Ensure that we have a valid source format. -----
+	if((srcformat == gap::sound::FORMAT_UNKNOWN) && (p_sample->format == gap::sound::FORMAT_UNKNOWN))
+		return on_error(line_number,std::format("Unable to determine the sample format for '{}'! Please specify the source format using the 'srcformat' parameter.", source));
+
+	// ----- If we have a source format hint and it doesn't match the actual sample format then warn and use the actual sample format. -----
+	if((srcformat != gap::sound::FORMAT_UNKNOWN) && (p_sample->format != gap::sound::FORMAT_UNKNOWN) && (p_sample->format != srcformat))
+	{
+		on_warning(line_number,std::format("Source format hint '{}' does not match the actual sample format!", srcformat));
+		srcformat = p_sample->format;
+	}
+
+	
+	if(srcformat == gap::sound::FORMAT_UNKNOWN)
+		srcformat = p_sample->format;
+	else if(p_sample->format == gap::sound::FORMAT_UNKNOWN)
+		p_sample->format = srcformat;
+
+	
+	// ----- Validate the sample rates -----
+	if((srcrate != 0) && (p_sample->sample_rate != 0) && (p_sample->sample_rate != srcrate))
+	{
+		on_warning(line_number,std::format("Source rate hint '{}' does not match the actual sample rate!", srcrate));
+		srcrate = p_sample->sample_rate;
+	}
+	
+	if(srcrate == 0)
+		srcrate = p_sample->sample_rate;
+
+	if(srcrate == 0)
+		return on_error(line_number,std::format("Unable to determine the sample rate for '{}'! Please specify the source rate using the 'srcrate' parameter.", source));
+
+	// ----- Resample/convert the sample if necessary. -----
+	if((format != srcformat) || (rate != srcrate))
+	{
+		auto p_converted = gap::sound::convert_sample(*p_sample, format, rate);
+		if(p_converted == nullptr)
+			return on_error(line_number,std::format("Failed to convert sample '{}' to the desired format and rate!", source));
+		p_sample = std::move(p_converted);
+	}
+
+	m_p_assets->add_sound_sample(std::move(p_sample));
+	
 	return 0;
 }
 

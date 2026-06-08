@@ -422,6 +422,15 @@ Assets::enumerate_tilemaps(std::function<bool(const gap::tilemap::TileMap & tile
 }
 
 void
+Assets::enumerate_sound_samples(std::function<bool(const gap::sound::SoundSample & sample)> callback) const
+{
+	for(auto & p_sample : m_sound_samples)
+		if(p_sample != nullptr)
+			if(!callback(*p_sample.get()))
+				break;
+}
+
+void
 Assets::enumerate_files(std::function<bool(const gap::assets::FileInfo & fileinfo)> callback) const
 {
 	for(auto & fileinfo : m_files)

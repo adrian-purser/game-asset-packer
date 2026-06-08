@@ -122,6 +122,7 @@ public:
 	void									enumerate_files(std::function<bool(const gap::assets::FileInfo & fileinfo)> callback) const;
 	void									enumerate_colourmaps(std::function<bool(const gap::assets::ColourMap &)> callback) const;
 	void 									enumerate_tilemaps(std::function<bool(const gap::tilemap::TileMap & tilemap)> callback) const;
+	void 									enumerate_sound_samples(std::function<bool(const gap::sound::SoundSample & sample)> callback) const;
 
 	void									dump();
 
